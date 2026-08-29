@@ -167,6 +167,7 @@
     }
   },
   "activationEvents": [
+    "onUri",
     "workspaceContains:.learn/progress.json"
   ],
   "engines": {

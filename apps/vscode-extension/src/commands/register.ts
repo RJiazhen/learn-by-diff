@@ -1,23 +1,18 @@
-import { ProtocolError } from "@learn-by-diff/protocol";
-import path from "node:path";
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
-import { GitError } from "../git/errors.ts";
 import { openChapterFileDiff, openEntryFile } from "../ui/diff.ts";
 import type { CourseTreeItem, CourseTreeProvider } from "../ui/explorerView.ts";
 import { openChapterDocs } from "../ui/openDocs.ts";
-import { createLearningWorkspace } from "../workspace/creator.ts";
 import { DirtyWorkspaceError } from "../workspace/errors.ts";
-import {
-  isInPlaceLearningTarget,
-  loadLearningSession,
-  type LearningSession,
-} from "../workspace/loader.ts";
+import { loadLearningSession, type LearningSession } from "../workspace/loader.ts";
+import { openCourse } from "../workspace/openCourse.ts";
 import { demoCoursePath } from "../workspace/resolveRepo.ts";
 import { nextChapter, previousChapter, switchToChapter } from "../workspace/session.ts";
+import { registerUriHandler } from "../uri/registerUriHandler.ts";
+import { showError } from "./showError.ts";
 
 /**
- * Registers commands and wires them to the current workspace folder.
+ * Registers commands, deep-link URI handler, and wires them to the open folder.
  *
  * @param context - Extension context
  * @param git - Git CLI client
@@ -62,6 +57,8 @@ export function registerCommands(
     }
   }
 
+  registerUriHandler(context, git, output, setSession);
+
   context.subscriptions.push(
     vscode.commands.registerCommand("learnByDiff.openCourse", async () => {
       const url = await vscode.window.showInputBox({
@@ -77,64 +74,12 @@ export function registerCommands(
         return;
       }
 
-      const root = workspaceRoot();
-      let inPlaceRoot: string | undefined;
-      let parentDir: string | undefined;
-      if (root !== undefined && (await isInPlaceLearningTarget(root))) {
-        inPlaceRoot = root;
-      } else {
-        const picked = await vscode.window.showOpenDialog({
-          canSelectFiles: false,
-          canSelectFolders: true,
-          canSelectMany: false,
-          openLabel: "Create learning workspace here",
-          title: "Parent folder for the learning workspace",
-        });
-        parentDir = picked?.[0]?.fsPath;
-        if (parentDir === undefined) {
-          return;
-        }
-      }
-
-      let learningRoot: string | undefined;
-      await vscode.window.withProgress(
-        {
-          location: vscode.ProgressLocation.Notification,
-          title: "LearnByDiff: opening course",
-          cancellable: false,
-        },
-        async () => {
-          try {
-            const created = await createLearningWorkspace({
-              courseRepoUrl: url.trim(),
-              inPlaceRoot,
-              parentDir,
-              git,
-              onLog: (line) => output.appendLine(line),
-            });
-            learningRoot = created.learningRoot;
-          } catch (error) {
-            if (error instanceof ProtocolError) {
-              void vscode.window.showErrorMessage(
-                `This repository has no valid Learning Course Protocol config.\n${error.message}`,
-              );
-              return;
-            }
-            showError(error);
-          }
-        },
-      );
-
-      if (learningRoot === undefined) {
-        return;
-      }
-
-      const current = workspaceRoot();
-      if (current !== undefined && path.resolve(current) === path.resolve(learningRoot)) {
-        await restore();
-        return;
-      }
-      await vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(learningRoot));
+      await openCourse({
+        courseRepoUrl: url.trim(),
+        git,
+        output,
+        onSession: setSession,
+      });
     }),
   );
 
@@ -307,18 +252,4 @@ export function registerCommands(
   }
 
   void restore();
-}
-
-/**
- * Shows a Git or generic error in a message box.
- *
- * @param error - Thrown value
- */
-function showError(error: unknown): void {
-  if (error instanceof GitError || error instanceof ProtocolError) {
-    void vscode.window.showErrorMessage(error.message);
-    return;
-  }
-  const message = error instanceof Error ? error.message : String(error);
-  void vscode.window.showErrorMessage(message);
 }
