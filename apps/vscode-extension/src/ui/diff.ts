@@ -4,7 +4,7 @@ import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
 import { snapshotFile, writeChapterArchives } from "../snapshot/archive.ts";
 import { learningPaths } from "../workspace/paths.ts";
-import { currentChapter, type LearningSession } from "../workspace/session.ts";
+import { chapterOrdinal, currentChapter, type LearningSession } from "../workspace/session.ts";
 
 /** Scheme for missing snapshot sides so vscode.diff can open adds/deletes. */
 export const EMPTY_DIFF_SCHEME = "learnbydiff-empty";
@@ -50,7 +50,8 @@ export async function uriForDiffSide(fsPath: string): Promise<vscode.Uri> {
  * Opens vscode.diff for one chapter entry file (from snapshot ↔ to snapshot).
  *
  * Missing sides (adds/deletes) use an empty virtual document so the editor still opens,
- * matching Source Control behavior.
+ * matching Source Control behavior. The tab title uses the same ordinal-title label as
+ * the chapter list (no fromDir/toDir — chapters need not depend on a prior step).
  *
  * @param git - Git client
  * @param session - Active learning session
@@ -63,7 +64,8 @@ export async function openChapterFileDiff(
   chapterId: string,
   relativePath: string,
 ): Promise<void> {
-  const chapter = session.course.chapters.find((item) => item.id === chapterId);
+  const chapterIndex = session.course.chapters.findIndex((item) => item.id === chapterId);
+  const chapter = chapterIndex >= 0 ? session.course.chapters[chapterIndex] : undefined;
   if (chapter === undefined) {
     void vscode.window.showWarningMessage(`Unknown chapter: ${chapterId}`);
     return;
@@ -89,7 +91,8 @@ export async function openChapterFileDiff(
   const rightPath = snapshotFile(toDir, relativePath);
   const left = await uriForDiffSide(leftPath);
   const right = await uriForDiffSide(rightPath);
-  const title = `${chapter.title}: ${path.basename(relativePath)} (${chapter.fromDir} ↔ ${chapter.toDir})`;
+  const ordinal = chapterOrdinal(chapterIndex, session.course.chapters.length);
+  const title = `${ordinal}-${chapter.title}: ${path.basename(relativePath)}`;
   await vscode.commands.executeCommand("vscode.diff", left, right, title);
 }
 
