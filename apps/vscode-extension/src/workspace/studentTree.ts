@@ -144,14 +144,17 @@ async function readSourceFile(
  * @param git - Git client
  * @param workspaceRoot - Learning workspace root
  * @param storePath - Materialized source store
- * @param fromDir - Current chapter `fromDir`
+ * @param fromDir - Resolved chapter start directory, or `undefined` for an empty start
  */
 export async function hasStudentEditsSinceChapterStart(
   git: GitClient,
   workspaceRoot: string,
   storePath: string,
-  fromDir: string,
+  fromDir: string | undefined,
 ): Promise<boolean> {
+  if (fromDir === undefined) {
+    return (await listStudentWorkspaceFiles(workspaceRoot)).length > 0;
+  }
   const startFiles = new Set(await listSourceSubtreeFiles(git, storePath, fromDir));
   const workspaceFiles = new Set(await listStudentWorkspaceFiles(workspaceRoot));
 

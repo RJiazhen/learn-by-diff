@@ -1,8 +1,10 @@
 import path from "node:path";
 import type { ChapterConfig } from "@learn-by-diff/protocol";
+import { resolveSourceSubtreePath } from "@learn-by-diff/protocol";
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
 import { classifyEntryChange, type EntryChangeKind } from "../workspace/entryChange.ts";
+import { resolveChapterEntryFiles } from "../workspace/entryFiles.ts";
 import { learningPaths } from "../workspace/paths.ts";
 import { chapterOrdinal, currentChapter, type LearningSession } from "../workspace/session.ts";
 
@@ -260,13 +262,17 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
       return [];
     }
     const { sourceMirror } = learningPaths(this.session.workspaceRoot);
+    const source = this.session.course.config.source;
+    const fromSubtree = resolveSourceSubtreePath(source, chapter.fromDir);
+    const toSubtree = resolveSourceSubtreePath(source, chapter.toDir);
+    const entryFiles = await resolveChapterEntryFiles(this.git, sourceMirror, source, chapter);
     const items: ChangedEntryFile[] = [];
-    for (const relativePath of chapter.entryFiles) {
+    for (const relativePath of entryFiles) {
       const changeKind = await classifyEntryChange(
         this.git,
         sourceMirror,
-        chapter.fromDir,
-        chapter.toDir,
+        fromSubtree,
+        toSubtree,
         relativePath,
       );
       if (changeKind === undefined) {
@@ -330,7 +336,7 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
     total: number,
   ): CourseTreeItem {
     const ordinal = chapterOrdinal(Math.max(index, 0), total);
-    const hasEntries = chapter.entryFiles.length > 0;
+    const hasEntries = chapter.entryFiles === undefined || chapter.entryFiles.length > 0;
     const expanded = this.expandedChapterIds.has(chapter.id);
     const item = new vscode.TreeItem(
       `${ordinal}-${chapter.title}`,

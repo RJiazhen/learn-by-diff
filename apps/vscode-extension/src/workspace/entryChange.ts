@@ -89,23 +89,29 @@ async function readSourceFile(
  * - `M` — modified (both sides, different content)
  * - `undefined` — present on both sides with identical content
  *
+ * Empty snapshot sides (`undefined` dirs) count as missing files.
+ *
  * @param git - Git client
  * @param storePath - Materialized source store
- * @param fromDir - Start chapter directory
- * @param toDir - Goal chapter directory
+ * @param fromDir - Resolved start directory, or `undefined` for an empty start
+ * @param toDir - Resolved goal directory, or `undefined` for an empty goal
  * @param relativePath - Path relative to the chapter tree root
  */
 export async function classifyEntryChange(
   git: GitClient,
   storePath: string,
-  fromDir: string,
-  toDir: string,
+  fromDir: string | undefined,
+  toDir: string | undefined,
   relativePath: string,
 ): Promise<EntryChangeKind | undefined> {
-  const fromRepoPath = path.posix.join(fromDir, relativePath.split(/[/\\]/).join("/"));
-  const toRepoPath = path.posix.join(toDir, relativePath.split(/[/\\]/).join("/"));
-  const fromExists = await sourceFileExists(git, storePath, fromRepoPath);
-  const toExists = await sourceFileExists(git, storePath, toRepoPath);
+  const normalizedRelative = relativePath.split(/[/\\]/).join("/");
+  const fromRepoPath =
+    fromDir === undefined ? undefined : path.posix.join(fromDir, normalizedRelative);
+  const toRepoPath = toDir === undefined ? undefined : path.posix.join(toDir, normalizedRelative);
+  const fromExists =
+    fromRepoPath === undefined ? false : await sourceFileExists(git, storePath, fromRepoPath);
+  const toExists =
+    toRepoPath === undefined ? false : await sourceFileExists(git, storePath, toRepoPath);
 
   if (!fromExists && toExists) {
     return "U";
@@ -117,8 +123,10 @@ export async function classifyEntryChange(
     return undefined;
   }
 
-  const fromText = await readSourceFile(git, storePath, fromRepoPath);
-  const toText = await readSourceFile(git, storePath, toRepoPath);
+  const fromText =
+    fromRepoPath === undefined ? undefined : await readSourceFile(git, storePath, fromRepoPath);
+  const toText =
+    toRepoPath === undefined ? undefined : await readSourceFile(git, storePath, toRepoPath);
   if (fromText === toText) {
     return undefined;
   }

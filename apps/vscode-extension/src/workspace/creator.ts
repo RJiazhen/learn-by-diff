@@ -1,7 +1,12 @@
 import { cp, mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { COURSE_CONFIG_DIR, loadCourseFromConfigDir, type Course } from "@learn-by-diff/protocol";
+import {
+  COURSE_CONFIG_DIR,
+  loadCourseFromConfigDir,
+  resolveSourceSubtreePath,
+  type Course,
+} from "@learn-by-diff/protocol";
 import type { GitClient } from "../git/client.ts";
 import { chapterSnapshotPaths, learningPaths } from "./paths.ts";
 import { isRemoteGitUrl, localCourseOrigin, resolveSourceRepository } from "./resolveRepo.ts";
@@ -71,11 +76,19 @@ export async function createLearningWorkspace(
     if (first === undefined) {
       throw new Error("course has no chapters");
     }
-    await assertSourceSubtree(git, paths.sourceMirror, first.fromDir);
-    await assertSourceSubtree(git, paths.sourceMirror, first.toDir);
+    const fromSubtree = resolveSourceSubtreePath(course.config.source, first.fromDir);
+    const toSubtree = resolveSourceSubtreePath(course.config.source, first.toDir);
+    if (fromSubtree !== undefined) {
+      await assertSourceSubtree(git, paths.sourceMirror, fromSubtree);
+    }
+    if (toSubtree !== undefined) {
+      await assertSourceSubtree(git, paths.sourceMirror, toSubtree);
+    }
 
-    onLog?.(`Exporting chapter ${first.id} (${first.fromDir}/)…`);
-    await replaceStudentTreeFromSource(git, learningRoot, paths.sourceMirror, first.fromDir);
+    onLog?.(
+      `Exporting chapter ${first.id} (${fromSubtree === undefined ? "∅" : `${fromSubtree}/`})…`,
+    );
+    await replaceStudentTreeFromSource(git, learningRoot, paths.sourceMirror, fromSubtree);
 
     await writeProgress(learningRoot, { chapter: first.id, completed: false });
 
@@ -138,8 +151,9 @@ async function resolveCourseConfigDir(
  * @param git - Git client
  * @param workspaceRoot - Learning repository root
  * @param chapterId - Chapter id
- * @param fromDir - Start subdirectory in the source repo
- * @param toDir - Goal subdirectory in the source repo
+ * @param fromDir - Start subdirectory relative to the source repo (or `source.root`)
+ * @param toDir - Goal subdirectory relative to the source repo (or `source.root`)
+ * @param source - Course source block (applies optional `root` prefix)
  */
 export async function materializeChapterSnapshots(
   git: GitClient,
@@ -147,12 +161,23 @@ export async function materializeChapterSnapshots(
   chapterId: string,
   fromDir: string,
   toDir: string,
+  source: Course["config"]["source"],
 ): Promise<{ fromDir: string; toDir: string }> {
   const { sourceMirror } = learningPaths(workspaceRoot);
   const paths = chapterSnapshotPaths(workspaceRoot, chapterId);
   await rm(paths.chapterDir, { recursive: true, force: true });
-  await exportSourceSubtree(git, sourceMirror, fromDir, paths.fromDir);
-  await exportSourceSubtree(git, sourceMirror, toDir, paths.toDir);
+  await exportSourceSubtree(
+    git,
+    sourceMirror,
+    resolveSourceSubtreePath(source, fromDir),
+    paths.fromDir,
+  );
+  await exportSourceSubtree(
+    git,
+    sourceMirror,
+    resolveSourceSubtreePath(source, toDir),
+    paths.toDir,
+  );
   return { fromDir: paths.fromDir, toDir: paths.toDir };
 }
 
@@ -178,7 +203,12 @@ export async function checkoutChapter(
     throw new Error(`unknown chapter: ${chapterId}`);
   }
   const { sourceMirror } = learningPaths(workspaceRoot);
-  await replaceStudentTreeFromSource(git, workspaceRoot, sourceMirror, chapter.fromDir);
+  await replaceStudentTreeFromSource(
+    git,
+    workspaceRoot,
+    sourceMirror,
+    resolveSourceSubtreePath(course.config.source, chapter.fromDir),
+  );
   await writeProgress(workspaceRoot, { chapter: chapterId, completed: false });
 }
 
@@ -187,17 +217,18 @@ export async function checkoutChapter(
  *
  * Chapter snapshots may include a `.gitignore`; that must not replace the learner's
  * file. Learn-related ignore rules are merged afterward via {@link ensureLearnGitignore}.
+ * When `subdir` is `undefined`, the workspace is cleared to an empty tree (empty fromDir).
  *
  * @param git - Git client
  * @param workspaceRoot - Learning workspace root
  * @param sourceStore - Materialized source store
- * @param subdir - Chapter directory to export as the student tree
+ * @param subdir - Chapter directory to export, or `undefined` for an empty start
  */
 async function replaceStudentTreeFromSource(
   git: GitClient,
   workspaceRoot: string,
   sourceStore: string,
-  subdir: string,
+  subdir: string | undefined,
 ): Promise<void> {
   const preservedGitignore = await readGitignore(workspaceRoot);
   await clearStudentTree(workspaceRoot);

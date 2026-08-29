@@ -183,7 +183,7 @@ export function registerCommands(
         return;
       }
       if (session.progress.chapter === chapterId) {
-        await openEntryFile(session);
+        await openEntryFile(git, session);
         await tree.revealCurrentChapter();
         return;
       }
@@ -285,7 +285,7 @@ export function registerCommands(
       }
     }
     setSession(session);
-    await openEntryFile(session);
+    await openEntryFile(git, session);
     await tree.revealCurrentChapter();
   }
 

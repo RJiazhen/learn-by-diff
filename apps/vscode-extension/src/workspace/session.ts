@@ -1,4 +1,5 @@
 import type { ChapterConfig, Course } from "@learn-by-diff/protocol";
+import { resolveSourceSubtreePath } from "@learn-by-diff/protocol";
 import type { GitClient } from "../git/client.ts";
 import { checkoutChapter, materializeChapterSnapshots } from "./creator.ts";
 import { DirtyWorkspaceError } from "./errors.ts";
@@ -71,7 +72,7 @@ export async function switchToChapter(
       git,
       session.workspaceRoot,
       sourceMirror,
-      current.fromDir,
+      resolveSourceSubtreePath(session.course.config.source, current.fromDir),
     );
     if (hasEdits) {
       throw new DirtyWorkspaceError(session.workspaceRoot);
@@ -89,6 +90,7 @@ export async function switchToChapter(
     chapter.id,
     chapter.fromDir,
     chapter.toDir,
+    session.course.config.source,
   );
 }
 

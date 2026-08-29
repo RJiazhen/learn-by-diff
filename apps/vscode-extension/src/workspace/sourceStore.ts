@@ -101,7 +101,7 @@ export async function materializeSourceStore(
  *
  * @param git - Git client
  * @param storePath - Materialized source store
- * @param subdir - Chapter directory name at the source root
+ * @param subdir - Chapter directory path relative to the source root (nested OK)
  */
 export async function assertSourceSubtree(
   git: GitClient,
@@ -112,7 +112,7 @@ export async function assertSourceSubtree(
     await git.assertSubtree(storePath, subdir);
     return;
   }
-  const target = path.join(storePath, subdir);
+  const target = path.join(storePath, ...subdir.split(/[/\\]/).filter(Boolean));
   if (!(await directoryExists(target))) {
     throw new GitError(`source subdirectory not found: ${subdir}`);
   }
@@ -121,24 +121,29 @@ export async function assertSourceSubtree(
 /**
  * Exports `subdir` from the source store into `destDir`.
  *
+ * When `subdir` is `undefined`, creates an empty `destDir` (empty chapter snapshot).
+ *
  * @param git - Git client
  * @param storePath - Materialized source store
- * @param subdir - Chapter directory at the source root
+ * @param subdir - Chapter directory path relative to the source root, or `undefined` for empty
  * @param destDir - Destination directory (contents of the chapter tree)
  */
 export async function exportSourceSubtree(
   git: GitClient,
   storePath: string,
-  subdir: string,
+  subdir: string | undefined,
   destDir: string,
 ): Promise<void> {
+  await mkdir(destDir, { recursive: true });
+  if (subdir === undefined || subdir.trim() === "") {
+    return;
+  }
   await assertSourceSubtree(git, storePath, subdir);
   if (await isGitSourceStore(storePath)) {
     await git.archiveSubtree(storePath, subdir, destDir);
     return;
   }
-  await mkdir(destDir, { recursive: true });
-  const from = path.join(storePath, subdir);
+  const from = path.join(storePath, ...subdir.split(/[/\\]/).filter(Boolean));
   const entries = await readdir(from);
   for (const name of entries) {
     await cp(path.join(from, name), path.join(destDir, name), { recursive: true });

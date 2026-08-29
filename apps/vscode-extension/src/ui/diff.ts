@@ -3,6 +3,7 @@ import path from "node:path";
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
 import { snapshotFile, writeChapterArchives } from "../snapshot/archive.ts";
+import { resolveChapterEntryFiles } from "../workspace/entryFiles.ts";
 import { learningPaths } from "../workspace/paths.ts";
 import { chapterOrdinal, currentChapter, type LearningSession } from "../workspace/session.ts";
 
@@ -56,7 +57,7 @@ export async function uriForDiffSide(fsPath: string): Promise<vscode.Uri> {
  * @param git - Git client
  * @param session - Active learning session
  * @param chapterId - Chapter that owns the entry file
- * @param relativePath - Path from the chapter `entryFiles` list
+ * @param relativePath - Path from the chapter entry-file list (explicit or auto)
  */
 export async function openChapterFileDiff(
   git: GitClient,
@@ -70,14 +71,20 @@ export async function openChapterFileDiff(
     void vscode.window.showWarningMessage(`Unknown chapter: ${chapterId}`);
     return;
   }
-  if (!chapter.entryFiles.includes(relativePath)) {
+  const { sourceMirror } = learningPaths(session.workspaceRoot);
+  const entryFiles = await resolveChapterEntryFiles(
+    git,
+    sourceMirror,
+    session.course.config.source,
+    chapter,
+  );
+  if (!entryFiles.includes(relativePath)) {
     void vscode.window.showWarningMessage(
       `File ${relativePath} is not an entry file for chapter ${chapter.title}.`,
     );
     return;
   }
 
-  const { sourceMirror } = learningPaths(session.workspaceRoot);
   const { fromDir, toDir } = await writeChapterArchives(
     git,
     sourceMirror,
@@ -85,6 +92,7 @@ export async function openChapterFileDiff(
     chapter.id,
     chapter.fromDir,
     chapter.toDir,
+    session.course.config.source,
   );
 
   const leftPath = snapshotFile(fromDir, relativePath);
@@ -99,11 +107,19 @@ export async function openChapterFileDiff(
 /**
  * Opens the first entry file of the current chapter in the editor.
  *
+ * @param git - Git client
  * @param session - Active learning session
  */
-export async function openEntryFile(session: LearningSession): Promise<void> {
+export async function openEntryFile(git: GitClient, session: LearningSession): Promise<void> {
   const chapter = currentChapter(session);
-  const relative = chapter.entryFiles[0];
+  const { sourceMirror } = learningPaths(session.workspaceRoot);
+  const entryFiles = await resolveChapterEntryFiles(
+    git,
+    sourceMirror,
+    session.course.config.source,
+    chapter,
+  );
+  const relative = entryFiles[0];
   if (relative === undefined) {
     return;
   }

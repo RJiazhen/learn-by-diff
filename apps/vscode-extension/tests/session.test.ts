@@ -27,7 +27,6 @@ const session: LearningSession = {
         fromDir: "start",
         toDir: "reactive",
         entryFiles: ["a.ts"],
-        tests: ["a.test.ts"],
       },
       {
         id: "effect",
@@ -35,7 +34,6 @@ const session: LearningSession = {
         fromDir: "reactive",
         toDir: "effect",
         entryFiles: ["b.ts"],
-        tests: ["b.test.ts"],
       },
     ],
   },

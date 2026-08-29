@@ -83,10 +83,10 @@ export class GitClient {
   /**
    * Exports a subdirectory from `HEAD` of a git directory into `destDir`.
    *
-   * Uses `git archive HEAD:<subdir>` so chapter folders live side-by-side in the source repo.
+   * Uses `git archive HEAD:<subdir>` so chapter folders can live anywhere under the source repo.
    *
    * @param gitDir - Absolute path to a `.git` dir or bare repo
-   * @param subdir - Chapter directory at the repository root (e.g. `hello`)
+   * @param subdir - Directory path relative to the repository root (nested OK)
    * @param destDir - Directory to extract into (created if missing)
    */
   async archiveSubtree(gitDir: string, subdir: string, destDir: string): Promise<void> {
