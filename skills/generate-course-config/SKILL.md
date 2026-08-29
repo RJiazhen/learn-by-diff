@@ -9,7 +9,7 @@ description: >-
 
 # Generate course config
 
-Creates `.course-config/course.yml` and `.course-config/chapters/*.yml` (LCP v1) for LearnByDiff.
+Creates `.course-config/course.yml` and `.course-config/chapters/*.yml` for LearnByDiff.
 
 ## Inputs (optional)
 
@@ -91,22 +91,16 @@ Layout:
     …
 ```
 
-`course.yml` template:
+`course.yml` template (all fields optional; omit what defaults cover):
 
 ```yaml
-protocolVersion: 1
-id: <courseId>
-title: <Title Case from id>
+# id / title default from the `.course-config` parent folder (or `{repo}-learn` at a git root)
 source:
-  repository: <url-or-relative-path>
+  repository: <url-or-relative-path> # default: .
   # root: <optional prefix under repository>
-workspace:
-  install: pnpm install
-  dev: pnpm dev
-  test: pnpm test
 ```
 
-Adjust `workspace.*` to match the source (npm/cargo/etc.) when detectable from lockfiles.
+Only set `source.repository` when it is not the course home (`.`). Do not emit `protocolVersion` or `workspace`.
 
 Minimal chapter file (defaults fill the rest):
 
@@ -143,7 +137,7 @@ Summarize generated chapters (`fromDir` → `toDir`) and point authors at:
 - Never fabricate snapshot directories when detection fails — ask the user.
 - One `source.repository` only (no per-chapter remotes).
 - `fromDir` / `toDir` must be repo-relative (no `..`, no absolute paths).
-- Keep generated YAML compatible with LCP v1 / `schema.json`.
+- Keep generated YAML compatible with `schema.json` (additive optional fields only).
 
 ## Reference
 

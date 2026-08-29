@@ -55,7 +55,7 @@ node skills/generate-course-config/scripts/detect-chapter-dirs.mjs --dirs start,
 
 ## Protocol notes
 
-- One `source.repository` per course; optional `source.root` prefix.
+- `course.yml` fields are all optional (`id` / `title` / `source.repository` have path-based defaults; optional `source.root`).
 - Chapter fields are all optional (`id`/`title` from filename; empty `fromDir`/`toDir` = empty trees; omit `entryFiles` to auto-discover files under `toDir`).
-- No `tests` field yet.
+- No `workspace`, `protocolVersion`, or `tests` fields yet (protocol only adds optional fields over time).
 - Schema: [`packages/protocol/schema.json`](../packages/protocol/schema.json).

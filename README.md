@@ -38,7 +38,7 @@ Course repos need:
 .course-config/chapters/*.yml
 ```
 
-`course.yml` points at a single `source.repository` (optional `source.root`). Chapter YAML fields are all optional: `id`/`title` default from the filename, empty `fromDir`/`toDir` mean empty trees, omitted `entryFiles` auto-discovers all files under `toDir`. Nested paths and unrelated parents in the same repo are supported; separate remotes per chapter are not.
+`course.yml` fields are all optional: `id` defaults from the `.course-config` parent (or `{repo}-learn` at a git root), `title` defaults to `id`, `source.repository` defaults to `.` (the course home). Optional `source.root` prefixes chapter dirs. Chapter YAML fields are all optional: `id`/`title` default from the filename, empty `fromDir`/`toDir` mean empty trees, omitted `entryFiles` auto-discovers all files under `toDir`. Nested paths and unrelated parents in the same repo are supported; separate remotes per chapter are not.
 
 Authoring: JSON Schema lives at [`packages/protocol/schema.json`](packages/protocol/schema.json) (wired in this repo via `yaml.schemas`). Runtime validation still uses `@learn-by-diff/protocol`.
 
