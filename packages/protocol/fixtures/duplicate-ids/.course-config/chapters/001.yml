@@ -1,7 +1,7 @@
 id: same
 title: First
-fromRef: a
-toRef: b
+fromDir: a
+toDir: b
 entryFiles:
   - a.ts
 tests:

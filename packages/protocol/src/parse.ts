@@ -60,8 +60,8 @@ export function parseChapterYaml(text: string, path: string): ChapterConfig {
   return {
     id: asString(value.id),
     title: asString(value.title),
-    fromRef: asString(value.fromRef),
-    toRef: asString(value.toRef),
+    fromDir: asString(value.fromDir),
+    toDir: asString(value.toDir),
     entryFiles: asStringArray(value.entryFiles),
     tests: asStringArray(value.tests),
   };

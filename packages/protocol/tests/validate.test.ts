@@ -14,8 +14,8 @@ const validConfig = {
 const validChapter = {
   id: "one",
   title: "One",
-  fromRef: "a",
-  toRef: "b",
+  fromDir: "a",
+  toDir: "b",
   entryFiles: ["src/a.ts"],
   tests: ["src/a.test.ts"],
 };

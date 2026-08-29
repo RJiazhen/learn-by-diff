@@ -1,7 +1,7 @@
 id: effect
 title: Effect
-fromRef: examples/reactive
-toRef: examples/effect
+fromDir: reactive
+toDir: effect
 entryFiles:
   - packages/reactivity/effect.ts
 tests:

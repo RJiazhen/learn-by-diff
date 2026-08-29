@@ -4,7 +4,7 @@ import { PROTOCOL_VERSION, ProtocolError } from "./types.ts";
 /**
  * Validates a parsed course and its chapters; throws {@link ProtocolError} on failure.
  *
- * Does not talk to Git. Remote refs are checked later by the extension.
+ * Does not talk to Git. Source subdirectory existence is checked later by the extension.
  *
  * @param config - Parsed `course.yml`
  * @param chapters - Parsed chapter documents
@@ -61,8 +61,8 @@ function validateChapters(chapters: ChapterConfig[], issues: ProtocolIssue[]): v
     const prefix = `chapters[${String(index)}]`;
     requireNonEmpty(issues, `${prefix}.id`, chapter.id);
     requireNonEmpty(issues, `${prefix}.title`, chapter.title);
-    requireNonEmpty(issues, `${prefix}.fromRef`, chapter.fromRef);
-    requireNonEmpty(issues, `${prefix}.toRef`, chapter.toRef);
+    requireNonEmpty(issues, `${prefix}.fromDir`, chapter.fromDir);
+    requireNonEmpty(issues, `${prefix}.toDir`, chapter.toDir);
     requireNonEmptyPaths(issues, `${prefix}.entryFiles`, chapter.entryFiles);
     requireNonEmptyPaths(issues, `${prefix}.tests`, chapter.tests);
 

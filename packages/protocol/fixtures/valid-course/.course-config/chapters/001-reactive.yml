@@ -1,7 +1,7 @@
 id: reactive
 title: Reactive
-fromRef: examples/start
-toRef: examples/reactive
+fromDir: start
+toDir: reactive
 entryFiles:
   - packages/reactivity/reactive.ts
 tests:

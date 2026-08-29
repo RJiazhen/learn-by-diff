@@ -1,7 +1,7 @@
 id: only
 title: Only
-fromRef: a
-toRef: b
+fromDir: a
+toDir: b
 entryFiles:
   - src/index.ts
 tests:

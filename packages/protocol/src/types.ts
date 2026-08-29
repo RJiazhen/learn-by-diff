@@ -35,8 +35,10 @@ export interface CourseConfig {
 export interface ChapterConfig {
   id: string;
   title: string;
-  fromRef: string;
-  toRef: string;
+  /** Source subdirectory for the chapter start snapshot (e.g. `start`). */
+  fromDir: string;
+  /** Source subdirectory for the chapter goal snapshot (e.g. `hello`). */
+  toDir: string;
   entryFiles: string[];
   tests: string[];
 }
