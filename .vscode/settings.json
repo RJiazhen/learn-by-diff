@@ -12,5 +12,9 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.oxc": "explicit"
   },
-  "npm.scriptRunner": "vp"
+  "npm.scriptRunner": "vp",
+  "yaml.schemas": {
+    "packages/protocol/schema.json#/$defs/course": ["**/.course-config/course.yml"],
+    "packages/protocol/schema.json#/$defs/chapter": ["**/.course-config/chapters/*.yml"]
+  }
 }

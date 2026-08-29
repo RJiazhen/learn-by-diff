@@ -1,8 +1,2 @@
-id: only
-title: Only
 fromDir: a
 toDir: b
-entryFiles:
-  - src/index.ts
-tests:
-  - src/index.test.ts

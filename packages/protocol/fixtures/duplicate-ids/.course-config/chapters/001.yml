@@ -1,8 +1,3 @@
-id: same
-title: First
+id: one
 fromDir: a
 toDir: b
-entryFiles:
-  - a.ts
-tests:
-  - a.test.ts

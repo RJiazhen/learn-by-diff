@@ -13,6 +13,8 @@ export type {
   CourseWorkspace,
   ProtocolIssue,
 } from "./types.ts";
+export { chapterIdFromFileName } from "./chapterDefaults.ts";
 export { parseChapterYaml, parseCourseYaml, parseYamlDocument } from "./parse.ts";
+export { normalizeSourceDirPath, resolveSourceSubtreePath } from "./sourcePath.ts";
 export { validateCourse } from "./validate.ts";
 export { isCourseRepository, loadCourse, loadCourseFromConfigDir } from "./load.ts";

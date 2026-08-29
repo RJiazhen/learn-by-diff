@@ -82,7 +82,7 @@ async function loadChapters(configDir: string): Promise<ChapterConfig[]> {
   for (const name of yamlNames) {
     const relativePath = `${COURSE_CONFIG_DIR}/${CHAPTERS_DIR_NAME}/${name}`;
     const text = await readFile(path.join(chaptersDir, name), "utf8");
-    chapters.push(parseChapterYaml(text, relativePath));
+    chapters.push(parseChapterYaml(text, relativePath, name));
   }
   return chapters;
 }

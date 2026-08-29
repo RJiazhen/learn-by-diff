@@ -4,5 +4,3 @@ fromDir: start
 toDir: reactive
 entryFiles:
   - packages/reactivity/reactive.ts
-tests:
-  - packages/reactivity/__tests__/reactive.spec.ts

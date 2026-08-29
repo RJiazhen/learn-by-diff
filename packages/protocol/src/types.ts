@@ -12,7 +12,13 @@ export const PROTOCOL_VERSION = 1;
 
 /** Source repository pointer in `course.yml`. */
 export interface CourseSource {
+  /** Git URL or path to the source repository (relative paths resolve from the course repo). */
   repository: string;
+  /**
+   * Optional subdirectory under `repository` that prefixes every chapter `fromDir` / `toDir`.
+   * Use this when course snapshots live under one monorepo folder (e.g. `learn/demo`).
+   */
+  root?: string;
 }
 
 /** Install, dev, and test commands declared for the learning workspace. */
@@ -31,16 +37,33 @@ export interface CourseConfig {
   workspace: CourseWorkspace;
 }
 
-/** Parsed chapter yaml document. */
+/**
+ * Parsed chapter yaml document (after load-time defaults).
+ *
+ * No field is required in the YAML file. Defaults:
+ * - `id` ← filename without numeric prefix (`001-hello.yml` → `hello`)
+ * - `title` ← `id`
+ * - `fromDir` / `toDir` ← `""` (empty snapshot tree)
+ * - `entryFiles` ← omitted means discover all files under `toDir` at runtime
+ */
 export interface ChapterConfig {
   id: string;
   title: string;
-  /** Source subdirectory for the chapter start snapshot (e.g. `start`). */
+  /**
+   * Start snapshot directory relative to the source repo root (or `source.root`).
+   * Empty string = empty start tree (no files exported to the student workspace).
+   */
   fromDir: string;
-  /** Source subdirectory for the chapter goal snapshot (e.g. `hello`). */
+  /**
+   * Goal snapshot directory relative to the source repo root (or `source.root`).
+   * Empty string = empty goal tree (e.g. conceptual chapters with no implementation target).
+   */
   toDir: string;
-  entryFiles: string[];
-  tests: string[];
+  /**
+   * Explicit entry-file list relative to the chapter tree root.
+   * `undefined` = auto-discover all files under `toDir` at runtime.
+   */
+  entryFiles?: string[];
 }
 
 /** Fully loaded course: root config plus chapters in file-name order. */

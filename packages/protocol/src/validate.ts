@@ -1,5 +1,6 @@
 import type { ChapterConfig, Course, CourseConfig, ProtocolIssue } from "./types.ts";
 import { PROTOCOL_VERSION, ProtocolError } from "./types.ts";
+import { normalizeSourceDirPath } from "./sourcePath.ts";
 
 /**
  * Validates a parsed course and its chapters; throws {@link ProtocolError} on failure.
@@ -7,7 +8,7 @@ import { PROTOCOL_VERSION, ProtocolError } from "./types.ts";
  * Does not talk to Git. Source subdirectory existence is checked later by the extension.
  *
  * @param config - Parsed `course.yml`
- * @param chapters - Parsed chapter documents
+ * @param chapters - Parsed chapter documents (defaults already applied)
  * @param configDir - `.course-config` directory, used in issue paths
  */
 export function validateCourse(
@@ -39,13 +40,16 @@ function validateCourseConfig(config: CourseConfig, issues: ProtocolIssue[]): vo
   requireNonEmpty(issues, "course.yml#id", config.id);
   requireNonEmpty(issues, "course.yml#title", config.title);
   requireNonEmpty(issues, "course.yml#source.repository", config.source.repository);
+  if (config.source.root !== undefined && config.source.root.trim() !== "") {
+    requireSourceDirPath(issues, "course.yml#source.root", config.source.root);
+  }
   requireNonEmpty(issues, "course.yml#workspace.install", config.workspace.install);
   requireNonEmpty(issues, "course.yml#workspace.dev", config.workspace.dev);
   requireNonEmpty(issues, "course.yml#workspace.test", config.workspace.test);
 }
 
 /**
- * Collects chapter-level issues, including duplicate ids.
+ * Collects chapter-level issues (ids unique; optional dirs/paths when present).
  */
 function validateChapters(chapters: ChapterConfig[], issues: ProtocolIssue[]): void {
   if (chapters.length === 0) {
@@ -61,10 +65,22 @@ function validateChapters(chapters: ChapterConfig[], issues: ProtocolIssue[]): v
     const prefix = `chapters[${String(index)}]`;
     requireNonEmpty(issues, `${prefix}.id`, chapter.id);
     requireNonEmpty(issues, `${prefix}.title`, chapter.title);
-    requireNonEmpty(issues, `${prefix}.fromDir`, chapter.fromDir);
-    requireNonEmpty(issues, `${prefix}.toDir`, chapter.toDir);
-    requireNonEmptyPaths(issues, `${prefix}.entryFiles`, chapter.entryFiles);
-    requireNonEmptyPaths(issues, `${prefix}.tests`, chapter.tests);
+    if (chapter.fromDir.trim() !== "") {
+      requireSourceDirPath(issues, `${prefix}.fromDir`, chapter.fromDir);
+    }
+    if (chapter.toDir.trim() !== "") {
+      requireSourceDirPath(issues, `${prefix}.toDir`, chapter.toDir);
+    }
+    if (chapter.entryFiles !== undefined) {
+      for (const [fileIndex, value] of chapter.entryFiles.entries()) {
+        if (value.trim() === "") {
+          issues.push({
+            path: `${prefix}.entryFiles[${String(fileIndex)}]`,
+            message: "must not be empty",
+          });
+        }
+      }
+    }
 
     if (chapter.id !== "" && seenIds.has(chapter.id)) {
       issues.push({
@@ -88,19 +104,14 @@ function requireNonEmpty(issues: ProtocolIssue[], path: string, value: string): 
 }
 
 /**
- * Pushes issues when the list is empty or contains a blank path.
+ * Pushes an issue when `value` is not a safe source-repo-relative directory path.
  */
-function requireNonEmptyPaths(issues: ProtocolIssue[], path: string, values: string[]): void {
-  if (values.length === 0) {
-    issues.push({ path, message: "must contain at least one path" });
-    return;
-  }
-  for (const [index, value] of values.entries()) {
-    if (value.trim() === "") {
-      issues.push({
-        path: `${path}[${String(index)}]`,
-        message: "must not be empty",
-      });
-    }
+function requireSourceDirPath(issues: ProtocolIssue[], path: string, value: string): void {
+  if (normalizeSourceDirPath(value) === undefined) {
+    issues.push({
+      path,
+      message:
+        "must be a relative directory path under the source repo (nested dirs allowed; no '..' or absolute paths)",
+    });
   }
 }

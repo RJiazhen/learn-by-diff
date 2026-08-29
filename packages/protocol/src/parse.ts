@@ -1,4 +1,5 @@
 import { parse } from "yaml";
+import { chapterIdFromFileName } from "./chapterDefaults.ts";
 import type { ChapterConfig, CourseConfig } from "./types.ts";
 import { ProtocolError } from "./types.ts";
 
@@ -31,12 +32,14 @@ export function parseCourseYaml(text: string, path: string): CourseConfig {
   }
   const source = isRecord(value.source) ? value.source : {};
   const workspace = isRecord(value.workspace) ? value.workspace : {};
+  const root = asString(source.root);
   return {
     protocolVersion: asNumber(value.protocolVersion),
     id: asString(value.id),
     title: asString(value.title),
     source: {
       repository: asString(source.repository),
+      ...(root !== "" ? { root } : {}),
     },
     workspace: {
       install: asString(workspace.install),
@@ -47,23 +50,27 @@ export function parseCourseYaml(text: string, path: string): CourseConfig {
 }
 
 /**
- * Parses a chapter yaml document without validating required fields.
+ * Parses a chapter yaml document and applies filename-based defaults.
  *
  * @param text - Raw YAML
  * @param path - Path used in error messages
+ * @param fileName - Chapter file basename (e.g. `001-hello.yml`) used for default `id`
  */
-export function parseChapterYaml(text: string, path: string): ChapterConfig {
+export function parseChapterYaml(text: string, path: string, fileName: string): ChapterConfig {
   const value = parseYamlDocument(text, path);
   if (!isRecord(value)) {
     throw new ProtocolError([{ path, message: "document must be a mapping" }]);
   }
+  const defaultId = chapterIdFromFileName(fileName);
+  const id = asString(value.id) || defaultId;
+  const title = asString(value.title) || id;
+  const entryFiles = Array.isArray(value.entryFiles) ? asStringArray(value.entryFiles) : undefined;
   return {
-    id: asString(value.id),
-    title: asString(value.title),
+    id,
+    title,
     fromDir: asString(value.fromDir),
     toDir: asString(value.toDir),
-    entryFiles: asStringArray(value.entryFiles),
-    tests: asStringArray(value.tests),
+    ...(entryFiles !== undefined ? { entryFiles } : {}),
   };
 }
 

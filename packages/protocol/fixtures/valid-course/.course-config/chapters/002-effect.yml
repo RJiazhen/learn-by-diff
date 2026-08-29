@@ -4,5 +4,3 @@ fromDir: reactive
 toDir: effect
 entryFiles:
   - packages/reactivity/effect.ts
-tests:
-  - packages/reactivity/__tests__/effect.spec.ts

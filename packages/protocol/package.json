@@ -5,7 +5,8 @@
   "description": "Learning Course Protocol types, parser, and validator.",
   "license": "MIT",
   "files": [
-    "dist"
+    "dist",
+    "schema.json"
   ],
   "type": "module",
   "exports": {
