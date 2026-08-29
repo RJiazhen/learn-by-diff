@@ -72,8 +72,8 @@ export async function switchToChapter(
     git,
     session.workspaceRoot,
     chapter.id,
-    chapter.fromRef,
-    chapter.toRef,
+    chapter.fromDir,
+    chapter.toDir,
   );
 }
 

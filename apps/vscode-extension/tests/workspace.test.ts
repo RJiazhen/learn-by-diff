@@ -1,9 +1,9 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, test } from "vite-plus/test";
 import { GitClient } from "../src/git/client.ts";
-import { createLearningWorkspace } from "../src/workspace/creator.ts";
+import { createLearningWorkspace, checkoutChapter } from "../src/workspace/creator.ts";
 import { isInPlaceLearningTarget, loadLearningSession } from "../src/workspace/loader.ts";
 import { learningPaths } from "../src/workspace/paths.ts";
 import { readProgress } from "../src/workspace/state.ts";
@@ -25,7 +25,7 @@ afterEach(async () => {
 });
 
 /**
- * Writes files and creates a git commit on `branch`.
+ * Writes files and creates a single commit on main.
  */
 async function commitTree(
   dir: string,
@@ -55,13 +55,18 @@ async function commitTree(
 }
 
 describe("learning workspace", () => {
-  test("createLearningWorkspace exports fromRef and records progress", async () => {
+  test("createLearningWorkspace exports fromDir and records progress", async () => {
     const source = await tempDir("lbd-source-");
     await git.run(["init"], { cwd: source });
-    await git.run(["checkout", "-b", "from"], { cwd: source });
-    await commitTree(source, { "pkg/index.ts": "export const v = 1;\n" }, "from");
-    await git.run(["checkout", "-b", "to"], { cwd: source });
-    await commitTree(source, { "pkg/index.ts": "export const v = 2;\n" }, "to");
+    await git.run(["checkout", "-b", "main"], { cwd: source });
+    await commitTree(
+      source,
+      {
+        "start/pkg/index.ts": "export const v = 1;\n",
+        "done/pkg/index.ts": "export const v = 2;\n",
+      },
+      "chapter dirs",
+    );
 
     const course = await tempDir("lbd-course-");
     await mkdir(path.join(course, ".course-config", "chapters"), { recursive: true });
@@ -86,8 +91,8 @@ describe("learning workspace", () => {
       [
         "id: one",
         "title: One",
-        "fromRef: from",
-        "toRef: to",
+        "fromDir: start",
+        "toDir: done",
         "entryFiles:",
         "  - pkg/index.ts",
         "tests:",
@@ -129,9 +134,169 @@ describe("learning workspace", () => {
       chapter: "one",
       completed: false,
     });
+    const gitignore = await readFile(path.join(created.learningRoot, ".gitignore"), "utf8");
+    expect(gitignore).toContain(".learn/source.git/");
+    expect(gitignore).toContain(".learn/snapshots/");
+    expect(gitignore).not.toMatch(/^\.learn\/$/m);
     const session = await loadLearningSession(created.learningRoot);
     expect(session?.course.config.id).toBe("demo");
     expect(learningPaths(created.learningRoot).sourceMirror.length).toBeGreaterThan(0);
+    await expect(
+      stat(path.join(created.learningRoot, ".git")).then(
+        () => true,
+        () => false,
+      ),
+    ).resolves.toBe(false);
+  });
+
+  test("createLearningWorkspace accepts plain local directories without nested git", async () => {
+    const pair = await tempDir("lbd-plain-pair-");
+    const sourceDir = path.join(pair, "demo-source");
+    const courseDir = path.join(pair, "demo-course");
+    await mkdir(path.join(sourceDir, "start", "pkg"), { recursive: true });
+    await mkdir(path.join(sourceDir, "done", "pkg"), { recursive: true });
+    await writeFile(
+      path.join(sourceDir, "start", "pkg", "index.ts"),
+      "export const v = 1;\n",
+      "utf8",
+    );
+    await writeFile(
+      path.join(sourceDir, "done", "pkg", "index.ts"),
+      "export const v = 2;\n",
+      "utf8",
+    );
+
+    await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
+    await writeFile(
+      path.join(courseDir, ".course-config", "course.yml"),
+      [
+        "protocolVersion: 1",
+        "id: plain",
+        "title: Plain",
+        "source:",
+        "  repository: ../demo-source",
+        "workspace:",
+        '  install: "true"',
+        '  dev: "true"',
+        '  test: "true"',
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+    await writeFile(
+      path.join(courseDir, ".course-config", "chapters", "001.yml"),
+      [
+        "id: one",
+        "title: One",
+        "fromDir: start",
+        "toDir: done",
+        "entryFiles:",
+        "  - pkg/index.ts",
+        "tests:",
+        "  - pkg/index.ts",
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+
+    const parent = await tempDir("lbd-plain-parent-");
+    const created = await createLearningWorkspace({
+      courseRepoUrl: courseDir,
+      parentDir: parent,
+      git,
+      runInstall: async () => {},
+    });
+
+    expect(path.basename(created.learningRoot)).toBe("plain");
+    expect(await readFile(path.join(created.learningRoot, "pkg/index.ts"), "utf8")).toBe(
+      "export const v = 1;\n",
+    );
+  });
+
+  test("checkoutChapter preserves workspace .gitignore across chapter export", async () => {
+    const pair = await tempDir("lbd-gi-pair-");
+    const sourceDir = path.join(pair, "demo-source");
+    const courseDir = path.join(pair, "demo-course");
+    await mkdir(path.join(sourceDir, "start", "pkg"), { recursive: true });
+    await mkdir(path.join(sourceDir, "two", "pkg"), { recursive: true });
+    await writeFile(
+      path.join(sourceDir, "start", "pkg", "index.ts"),
+      "export const v = 1;\n",
+      "utf8",
+    );
+    await writeFile(
+      path.join(sourceDir, "two", "pkg", "index.ts"),
+      "export const v = 2;\n",
+      "utf8",
+    );
+    await writeFile(path.join(sourceDir, "two", ".gitignore"), "from-chapter\n", "utf8");
+
+    await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
+    await writeFile(
+      path.join(courseDir, ".course-config", "course.yml"),
+      [
+        "protocolVersion: 1",
+        "id: gi",
+        "title: Gitignore",
+        "source:",
+        "  repository: ../demo-source",
+        "workspace:",
+        '  install: "true"',
+        '  dev: "true"',
+        '  test: "true"',
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+    await writeFile(
+      path.join(courseDir, ".course-config", "chapters", "001.yml"),
+      [
+        "id: one",
+        "title: One",
+        "fromDir: start",
+        "toDir: two",
+        "entryFiles:",
+        "  - pkg/index.ts",
+        "tests:",
+        "  - pkg/index.ts",
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+    await writeFile(
+      path.join(courseDir, ".course-config", "chapters", "002.yml"),
+      [
+        "id: two",
+        "title: Two",
+        "fromDir: two",
+        "toDir: two",
+        "entryFiles:",
+        "  - pkg/index.ts",
+        "tests:",
+        "  - pkg/index.ts",
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+
+    const parent = await tempDir("lbd-gi-parent-");
+    const created = await createLearningWorkspace({
+      courseRepoUrl: courseDir,
+      parentDir: parent,
+      git,
+      runInstall: async () => {},
+    });
+
+    await writeFile(
+      path.join(created.learningRoot, ".gitignore"),
+      "custom-keep\n.learn/source.git/\n.learn/snapshots/\nnode_modules/\n",
+      "utf8",
+    );
+
+    await checkoutChapter(git, created.learningRoot, created.course, "two");
+    const gitignore = await readFile(path.join(created.learningRoot, ".gitignore"), "utf8");
+    expect(gitignore).toContain("custom-keep");
+    expect(gitignore).not.toContain("from-chapter");
   });
 
   test("isInPlaceLearningTarget allows README-only folders", async () => {

@@ -81,6 +81,20 @@ export class GitClient {
   }
 
   /**
+   * Exports a subdirectory from `HEAD` of a git directory into `destDir`.
+   *
+   * Uses `git archive HEAD:<subdir>` so chapter folders live side-by-side in the source repo.
+   *
+   * @param gitDir - Absolute path to a `.git` dir or bare repo
+   * @param subdir - Chapter directory at the repository root (e.g. `hello`)
+   * @param destDir - Directory to extract into (created if missing)
+   */
+  async archiveSubtree(gitDir: string, subdir: string, destDir: string): Promise<void> {
+    await this.assertSubtree(gitDir, subdir);
+    await this.archive(gitDir, `HEAD:${subdir}`, destDir);
+  }
+
+  /**
    * Returns unified diff text between two refs on a git directory.
    */
   async diff(gitDir: string, fromRef: string, toRef: string): Promise<string> {
@@ -96,37 +110,42 @@ export class GitClient {
   }
 
   /**
-   * Returns whether `cwd` has uncommitted changes (including untracked files).
+   * Asserts that `subdir` exists as a tree under `HEAD`.
+   *
+   * @param gitDir - Absolute path to a `.git` dir or bare repo
+   * @param subdir - Directory path relative to the repository root
    */
-  async isWorkTreeDirty(cwd: string): Promise<boolean> {
-    const result = await this.run(["status", "--porcelain"], { cwd });
-    return result.stdout.trim() !== "";
+  async assertSubtree(gitDir: string, subdir: string): Promise<void> {
+    const result = await this.run([
+      "--git-dir",
+      gitDir,
+      "ls-tree",
+      "-d",
+      "--name-only",
+      "HEAD",
+      "--",
+      subdir,
+    ]);
+    if (result.stdout.trim() === "") {
+      throw new GitError(`source subdirectory not found on HEAD: ${subdir}`);
+    }
   }
 
   /**
-   * Initializes a git repository at `cwd` if needed and makes an initial commit.
+   * Returns whether `cwd` is a git work tree with uncommitted changes (including untracked).
+   *
+   * Returns `false` when `cwd` is not a git repository so chapter switches work before the
+   * learner manually runs `git init`.
    *
    * @param cwd - Learning workspace root
-   * @param message - Commit message
    */
-  async initWithCommit(cwd: string, message: string): Promise<void> {
-    await this.run(["init"], { cwd });
-    await this.run(["add", "-A"], { cwd });
-    await this.run(
-      [
-        "-c",
-        "user.email=learnbydiff@local",
-        "-c",
-        "user.name=LearnByDiff",
-        "-c",
-        "commit.gpgsign=false",
-        "commit",
-        "--allow-empty",
-        "-m",
-        message,
-      ],
-      { cwd },
-    );
+  async isWorkTreeDirty(cwd: string): Promise<boolean> {
+    try {
+      const result = await this.run(["status", "--porcelain"], { cwd });
+      return result.stdout.trim() !== "";
+    } catch {
+      return false;
+    }
   }
 
   /**

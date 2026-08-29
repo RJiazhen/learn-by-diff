@@ -13,6 +13,7 @@ import {
   loadLearningSession,
   type LearningSession,
 } from "../workspace/loader.ts";
+import { demoCoursePath } from "../workspace/resolveRepo.ts";
 import { nextChapter, previousChapter, switchToChapter } from "../workspace/session.ts";
 
 /**
@@ -31,6 +32,8 @@ export function registerCommands(
 ): void {
   const output = vscode.window.createOutputChannel("LearnByDiff");
   context.subscriptions.push(output);
+  const isDevHost = context.extensionMode === vscode.ExtensionMode.Development;
+  const defaultCourseUrl = isDevHost ? demoCoursePath(context.extensionPath) : undefined;
 
   /**
    * Returns the first workspace folder path, if any.
@@ -63,8 +66,11 @@ export function registerCommands(
     vscode.commands.registerCommand("learnByDiff.openCourse", async () => {
       const url = await vscode.window.showInputBox({
         title: "LearnByDiff: Open Course",
-        prompt: "Course repository URL (must contain .course-config/course.yml)",
+        prompt: isDevHost
+          ? "Course repository URL (prefilled with local examples/demo-course)"
+          : "Course repository URL (must contain .course-config/course.yml)",
         placeHolder: "https://github.com/org/course.git",
+        value: defaultCourseUrl,
         ignoreFocusOut: true,
       });
       if (url === undefined || url.trim() === "") {

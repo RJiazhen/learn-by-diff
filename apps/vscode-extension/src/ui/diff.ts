@@ -19,8 +19,8 @@ export async function openChapterDiff(git: GitClient, session: LearningSession):
     sourceMirror,
     session.workspaceRoot,
     chapter.id,
-    chapter.fromRef,
-    chapter.toRef,
+    chapter.fromDir,
+    chapter.toDir,
   );
 
   if (chapter.entryFiles.length === 0) {

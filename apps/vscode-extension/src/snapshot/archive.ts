@@ -1,32 +1,32 @@
-import { mkdir } from "node:fs/promises";
+import { rm } from "node:fs/promises";
 import path from "node:path";
 import type { GitClient } from "../git/client.ts";
 import { chapterSnapshotPaths } from "../workspace/paths.ts";
+import { exportSourceSubtree } from "../workspace/sourceStore.ts";
 
 /**
- * Archives from/to refs into `.learn/snapshots/{chapterId}` for vscode.diff.
+ * Materializes from/to chapter directories into `.learn/snapshots/{chapterId}` for vscode.diff.
  *
  * @param git - Git client
- * @param gitDir - Bare source mirror
+ * @param sourceStore - Materialized source store (mirror or tree copy)
  * @param workspaceRoot - Learning workspace
  * @param chapterId - Chapter id
- * @param fromRef - Start ref
- * @param toRef - Goal ref
+ * @param fromDir - Start subdirectory in the source repo
+ * @param toDir - Goal subdirectory in the source repo
  */
 export async function writeChapterArchives(
   git: GitClient,
-  gitDir: string,
+  sourceStore: string,
   workspaceRoot: string,
   chapterId: string,
-  fromRef: string,
-  toRef: string,
+  fromDir: string,
+  toDir: string,
 ): Promise<{ fromDir: string; toDir: string }> {
-  const { fromDir, toDir } = chapterSnapshotPaths(workspaceRoot, chapterId);
-  await mkdir(fromDir, { recursive: true });
-  await mkdir(toDir, { recursive: true });
-  await git.archive(gitDir, fromRef, fromDir);
-  await git.archive(gitDir, toRef, toDir);
-  return { fromDir, toDir };
+  const paths = chapterSnapshotPaths(workspaceRoot, chapterId);
+  await rm(paths.chapterDir, { recursive: true, force: true });
+  await exportSourceSubtree(git, sourceStore, fromDir, paths.fromDir);
+  await exportSourceSubtree(git, sourceStore, toDir, paths.toDir);
+  return { fromDir: paths.fromDir, toDir: paths.toDir };
 }
 
 /**

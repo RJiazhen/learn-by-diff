@@ -1,24 +1,11 @@
-import {
-  appendFile,
-  cp,
-  mkdir,
-  mkdtemp,
-  readFile,
-  readdir,
-  rm,
-  stat,
-  writeFile,
-} from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import {
-  COURSE_CONFIG_DIR,
-  loadCourse,
-  loadCourseFromConfigDir,
-  type Course,
-} from "@learn-by-diff/protocol";
+import { COURSE_CONFIG_DIR, loadCourseFromConfigDir, type Course } from "@learn-by-diff/protocol";
 import type { GitClient } from "../git/client.ts";
 import { chapterSnapshotPaths, learningPaths } from "./paths.ts";
+import { isRemoteGitUrl, localCourseOrigin, resolveSourceRepository } from "./resolveRepo.ts";
+import { assertSourceSubtree, exportSourceSubtree, materializeSourceStore } from "./sourceStore.ts";
 import { writeProgress } from "./state.ts";
 
 /** Options for creating a learning workspace from a course repository URL. */
@@ -42,9 +29,10 @@ export interface CreatedLearningWorkspace {
 }
 
 /**
- * Clones the course repo, mirrors the source repo, exports chapter one, and writes `.learn`.
+ * Loads course config into `.learn/course`, materializes source, exports chapter one.
  *
- * The learning workspace GIT_DIR is a new repo for the student; it never points at the mirror.
+ * Local course/source directories (including committed `examples/`) do not need nested git.
+ * The learning workspace GIT_DIR is a new repo for the student; it never points at the source store.
  *
  * @param options - Clone URLs, destination, and git client
  * @returns Loaded course
@@ -54,11 +42,10 @@ export async function createLearningWorkspace(
 ): Promise<CreatedLearningWorkspace> {
   const { courseRepoUrl, git, onLog, runInstall, inPlaceRoot, parentDir } = options;
   await git.ensureAvailable();
-  onLog?.("Cloning course repository…");
-  const courseCloneDir = await mkdtemp(path.join(tmpdir(), "learn-by-diff-course-"));
+
+  const courseConfigSource = await resolveCourseConfigDir(git, courseRepoUrl, onLog);
   try {
-    await git.clone(courseRepoUrl, courseCloneDir);
-    const preview = await loadCourse(courseCloneDir);
+    const preview = await loadCourseFromConfigDir(courseConfigSource.configDir);
     const learningRoot =
       inPlaceRoot ??
       (parentDir !== undefined ? path.join(parentDir, preview.config.id) : undefined);
@@ -70,34 +57,29 @@ export async function createLearningWorkspace(
     const paths = learningPaths(learningRoot);
     await mkdir(paths.learnDir, { recursive: true });
     await rm(paths.courseDir, { recursive: true, force: true });
-    await cp(path.join(courseCloneDir, COURSE_CONFIG_DIR), paths.courseDir, {
-      recursive: true,
-    });
+    await cp(courseConfigSource.configDir, paths.courseDir, { recursive: true });
 
     const course = await loadCourseFromConfigDir(paths.courseDir);
 
-    onLog?.("Cloning source mirror…");
-    await rm(paths.sourceMirror, { recursive: true, force: true });
-    await git.cloneMirror(course.config.source.repository, paths.sourceMirror);
+    const sourceRepository = resolveSourceRepository(
+      course.config.source.repository,
+      courseRepoUrl,
+    );
+    await materializeSourceStore(git, sourceRepository, paths.sourceMirror, onLog);
 
     const first = course.chapters[0];
     if (first === undefined) {
       throw new Error("course has no chapters");
     }
-    await git.assertRef(paths.sourceMirror, first.fromRef);
-    await git.assertRef(paths.sourceMirror, first.toRef);
+    await assertSourceSubtree(git, paths.sourceMirror, first.fromDir);
+    await assertSourceSubtree(git, paths.sourceMirror, first.toDir);
 
     await clearStudentTree(learningRoot);
-    onLog?.(`Exporting chapter ${first.id} (${first.fromRef})…`);
-    await git.archive(paths.sourceMirror, first.fromRef, learningRoot);
+    onLog?.(`Exporting chapter ${first.id} (${first.fromDir}/)…`);
+    await exportSourceSubtree(git, paths.sourceMirror, first.fromDir, learningRoot);
     await ensureLearnGitignore(learningRoot);
 
     await writeProgress(learningRoot, { chapter: first.id, completed: false });
-
-    const hasGit = await directoryExists(path.join(learningRoot, ".git"));
-    if (!hasGit) {
-      await git.initWithCommit(learningRoot, `LearnByDiff: start ${first.id}`);
-    }
 
     if (runInstall) {
       onLog?.(`Running: ${course.config.workspace.install}`);
@@ -106,36 +88,81 @@ export async function createLearningWorkspace(
 
     return { course, learningRoot };
   } finally {
-    await rm(courseCloneDir, { recursive: true, force: true });
+    await courseConfigSource.cleanup();
   }
 }
 
+/** Temporary or in-place course config directory used while creating a workspace. */
+interface CourseConfigSource {
+  configDir: string;
+  cleanup: () => Promise<void>;
+}
+
 /**
- * Exports from/to snapshots for a chapter (used by the diff editor).
+ * Resolves `.course-config` from a local path or by cloning a git course repository.
+ *
+ * @param git - Git client
+ * @param courseRepoUrl - User-supplied course URL or path
+ * @param onLog - Optional progress logger
+ */
+async function resolveCourseConfigDir(
+  git: GitClient,
+  courseRepoUrl: string,
+  onLog?: (line: string) => void,
+): Promise<CourseConfigSource> {
+  const local = localCourseOrigin(courseRepoUrl);
+  if (local !== undefined) {
+    const configDir = path.join(local, COURSE_CONFIG_DIR);
+    if (await directoryExists(configDir)) {
+      onLog?.(`Using local course config… (${local})`);
+      return { configDir, cleanup: async () => {} };
+    }
+  }
+
+  if (!isRemoteGitUrl(courseRepoUrl) && local === undefined) {
+    throw new Error(`course repository not found: ${courseRepoUrl}`);
+  }
+
+  onLog?.("Cloning course repository…");
+  const courseCloneDir = await mkdtemp(path.join(tmpdir(), "learn-by-diff-course-"));
+  await git.clone(courseRepoUrl, courseCloneDir);
+  return {
+    configDir: path.join(courseCloneDir, COURSE_CONFIG_DIR),
+    cleanup: async () => {
+      await rm(courseCloneDir, { recursive: true, force: true });
+    },
+  };
+}
+
+/**
+ * Exports from/to chapter directory snapshots for the diff editor.
  *
  * @param git - Git client
  * @param workspaceRoot - Learning repository root
  * @param chapterId - Chapter id
- * @param fromRef - Start tree-ish
- * @param toRef - Goal tree-ish
+ * @param fromDir - Start subdirectory in the source repo
+ * @param toDir - Goal subdirectory in the source repo
  */
 export async function materializeChapterSnapshots(
   git: GitClient,
   workspaceRoot: string,
   chapterId: string,
-  fromRef: string,
-  toRef: string,
+  fromDir: string,
+  toDir: string,
 ): Promise<{ fromDir: string; toDir: string }> {
   const { sourceMirror } = learningPaths(workspaceRoot);
-  const { fromDir, toDir, chapterDir } = chapterSnapshotPaths(workspaceRoot, chapterId);
-  await rm(chapterDir, { recursive: true, force: true });
-  await git.archive(sourceMirror, fromRef, fromDir);
-  await git.archive(sourceMirror, toRef, toDir);
-  return { fromDir, toDir };
+  const paths = chapterSnapshotPaths(workspaceRoot, chapterId);
+  await rm(paths.chapterDir, { recursive: true, force: true });
+  await exportSourceSubtree(git, sourceMirror, fromDir, paths.fromDir);
+  await exportSourceSubtree(git, sourceMirror, toDir, paths.toDir);
+  return { fromDir: paths.fromDir, toDir: paths.toDir };
 }
 
 /**
- * Replaces the student tree with `fromRef` for `chapterId` and updates progress.
+ * Replaces the student tree with `fromDir` for `chapterId` and updates progress.
+ *
+ * Preserves the workspace `.gitignore` across the export so regenerable `.learn`
+ * paths stay ignored and course config under `.learn/course` remains commit-able.
  *
  * @param git - Git client
  * @param workspaceRoot - Learning repository root
@@ -153,21 +180,30 @@ export async function checkoutChapter(
     throw new Error(`unknown chapter: ${chapterId}`);
   }
   const { sourceMirror } = learningPaths(workspaceRoot);
-  await git.assertRef(sourceMirror, chapter.fromRef);
+  const preservedGitignore = await readGitignore(workspaceRoot);
   await clearStudentTree(workspaceRoot);
-  await git.archive(sourceMirror, chapter.fromRef, workspaceRoot);
+  await exportSourceSubtree(git, sourceMirror, chapter.fromDir, workspaceRoot);
+  if (preservedGitignore !== undefined) {
+    await writeFile(path.join(workspaceRoot, ".gitignore"), preservedGitignore, "utf8");
+  }
+  await ensureLearnGitignore(workspaceRoot);
   await writeProgress(workspaceRoot, { chapter: chapterId, completed: false });
 }
 
 /**
- * Deletes workspace files except `.git` and `.learn`.
+ * Deletes workspace files except `.git`, `.learn`, `README.md`, and `.gitignore`.
  *
  * @param workspaceRoot - Learning repository root
  */
 export async function clearStudentTree(workspaceRoot: string): Promise<void> {
   const entries = await readdir(workspaceRoot, { withFileTypes: true });
   for (const entry of entries) {
-    if (entry.name === ".git" || entry.name === ".learn") {
+    if (
+      entry.name === ".git" ||
+      entry.name === ".learn" ||
+      entry.name === "README.md" ||
+      entry.name === ".gitignore"
+    ) {
       continue;
     }
     await rm(path.join(workspaceRoot, entry.name), {
@@ -189,25 +225,57 @@ async function directoryExists(dir: string): Promise<boolean> {
 }
 
 /**
- * Ensures `.learn/` is ignored so the source mirror is not committed by the student repo.
+ * Reads the workspace `.gitignore`, or `undefined` when missing.
+ *
+ * @param workspaceRoot - Learning repository root
+ */
+async function readGitignore(workspaceRoot: string): Promise<string | undefined> {
+  try {
+    return await readFile(path.join(workspaceRoot, ".gitignore"), "utf8");
+  } catch {
+    return undefined;
+  }
+}
+
+/** Ignore rules for regenerable `.learn` data; course config and progress stay trackable. */
+const LEARN_GITIGNORE_RULES = [".learn/source.git/", ".learn/snapshots/", "node_modules/"];
+
+/**
+ * Ensures regenerable `.learn` paths and `node_modules/` are ignored.
+ *
+ * Does not ignore `.learn/course` or `.learn/progress.json`, so learners can commit
+ * course config (and progress) and reopen the same repo later. Removes a legacy
+ * blanket `.learn/` rule when present.
  *
  * @param workspaceRoot - Learning repository root
  */
 async function ensureLearnGitignore(workspaceRoot: string): Promise<void> {
   const gitignorePath = path.join(workspaceRoot, ".gitignore");
-  const extra = [".learn/", "node_modules/"];
-  let existing = "";
+  let lines: string[];
   try {
-    existing = await readFile(gitignorePath, "utf8");
+    lines = (await readFile(gitignorePath, "utf8")).split(/\r?\n/);
   } catch {
-    await writeFile(gitignorePath, `${extra.join("\n")}\n`, "utf8");
+    await writeFile(gitignorePath, `${LEARN_GITIGNORE_RULES.join("\n")}\n`, "utf8");
     return;
   }
-  const lines = existing.split(/\r?\n/);
-  const missing = extra.filter((rule) => !lines.some((line) => line.trim() === rule));
-  if (missing.length === 0) {
+
+  const withoutObsolete = lines.filter((line) => {
+    const trimmed = line.trim();
+    return trimmed !== ".learn/" && trimmed !== ".learn";
+  });
+  const missing = LEARN_GITIGNORE_RULES.filter(
+    (rule) => !withoutObsolete.some((line) => line.trim() === rule),
+  );
+  if (missing.length === 0 && withoutObsolete.length === lines.length) {
     return;
   }
-  const prefix = existing.endsWith("\n") || existing === "" ? "" : "\n";
-  await appendFile(gitignorePath, `${prefix}${missing.join("\n")}\n`, "utf8");
+
+  let content = withoutObsolete.join("\n");
+  if (content !== "" && !content.endsWith("\n")) {
+    content += "\n";
+  }
+  if (missing.length > 0) {
+    content += `${missing.join("\n")}\n`;
+  }
+  await writeFile(gitignorePath, content, "utf8");
 }
