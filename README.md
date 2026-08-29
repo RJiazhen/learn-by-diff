@@ -6,12 +6,12 @@ This repo is a pnpm + [Vite+](https://viteplus.dev/) monorepo. It does not host 
 
 ## Packages
 
-| Path                                             | Role                                                          |
-| ------------------------------------------------ | ------------------------------------------------------------- |
-| [`packages/protocol`](packages/protocol)         | LCP types, YAML parse, validation (`@learn-by-diff/protocol`) |
-| [`apps/vscode-extension`](apps/vscode-extension) | VS Code extension (`learn-by-diff`)                           |
-| [`sandbox/`](sandbox)                            | F5 debug workspace (generated files are gitignored)           |
-| [`skills/`](skills), [`examples/`](examples)     | Author skills placeholder; committed local demo course/source |
+| Path                                             | Role                                                                   |
+| ------------------------------------------------ | ---------------------------------------------------------------------- |
+| [`packages/protocol`](packages/protocol)         | LCP types, YAML parse, validation (`@learn-by-diff/protocol`)          |
+| [`apps/vscode-extension`](apps/vscode-extension) | VS Code extension (`learn-by-diff`)                                    |
+| [`sandbox/`](sandbox)                            | F5 debug workspace (generated files are gitignored)                    |
+| [`skills/`](skills), [`examples/`](examples)     | Author skills (course scaffolding); committed local demo course/source |
 
 ## Develop
 
@@ -37,6 +37,20 @@ Course repos need:
 .course-config/course.yml
 .course-config/chapters/*.yml
 ```
+
+`course.yml` points at a single `source.repository` (optional `source.root`). Chapter YAML fields are all optional: `id`/`title` default from the filename, empty `fromDir`/`toDir` mean empty trees, omitted `entryFiles` auto-discovers all files under `toDir`. Nested paths and unrelated parents in the same repo are supported; separate remotes per chapter are not.
+
+Authoring: JSON Schema lives at [`packages/protocol/schema.json`](packages/protocol/schema.json) (wired in this repo via `yaml.schemas`). Runtime validation still uses `@learn-by-diff/protocol`.
+
+### Author skills
+
+Scaffold `.course-config` from chapter snapshot folders with the `generate-course-config` skill:
+
+```bash
+npx skills add RJiazhen/learn-by-diff@generate-course-config -y
+```
+
+Then open an Agent chat and run `/generate-course-config` (or ask to generate course config). Without explicit directories, the skill tries to detect `start` / `step-N`-style siblings; if detection fails it asks you for paths. Details: [`skills/README.md`](skills/README.md).
 
 Learning workspaces created by the extension use `.learn/` (progress, source mirror, config copy). Opening a course repo to edit config does not restore a learning session.
 
