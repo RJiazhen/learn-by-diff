@@ -2,10 +2,3 @@ id: hello
 title: Hello
 fromDir: start
 toDir: hello
-entryFiles:
-  - src/index.ts
-  - src/greeting/config.ts
-  - src/greeting/greeter.ts
-  - src/greeting/types.ts
-tests:
-  - src/index.ts

@@ -2,11 +2,3 @@ id: world
 title: World
 fromDir: hello
 toDir: world
-entryFiles:
-  - src/index.ts
-  - src/greeting/config.ts
-  - src/greeting/greeter.ts
-  - src/greeting/format/parts.ts
-  - src/greeting/types.ts
-tests:
-  - src/index.ts
