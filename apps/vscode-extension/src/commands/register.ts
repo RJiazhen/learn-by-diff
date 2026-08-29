@@ -144,7 +144,7 @@ export function registerCommands(
 
   context.subscriptions.push(
     vscode.commands.registerCommand("learnByDiff.nextChapter", async () => {
-      const session = (await restore()) ?? (await loadFromRoot());
+      const session = await loadFromRoot();
       if (session === undefined) {
         return;
       }
@@ -159,7 +159,7 @@ export function registerCommands(
 
   context.subscriptions.push(
     vscode.commands.registerCommand("learnByDiff.previousChapter", async () => {
-      const session = (await restore()) ?? (await loadFromRoot());
+      const session = await loadFromRoot();
       if (session === undefined) {
         return;
       }
@@ -178,7 +178,7 @@ export function registerCommands(
       if (chapterId === undefined || chapterId === "") {
         return;
       }
-      const session = (await restore()) ?? (await loadFromRoot());
+      const session = await loadFromRoot();
       if (session === undefined) {
         return;
       }
@@ -201,52 +201,34 @@ export function registerCommands(
       if (item?.kind !== "file" || item.relativePath === undefined) {
         return;
       }
-      const session = (await restore()) ?? (await loadFromRoot());
+      // Use loadFromRoot (not restore): restore refreshes the tree + re-selects the
+      // chapter, which flashes selection when opening a file diff.
+      const session = await loadFromRoot();
       if (session === undefined) {
         return;
       }
       try {
+        // Click selects the row; clear before slow archive work so it never stays highlighted.
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        await tree.clearSelection();
         await openChapterFileDiff(git, session, item.chapterId, item.relativePath);
       } catch (error) {
         showError(error);
+      } finally {
+        await tree.clearSelection();
       }
     }),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("learnByDiff.openDiff", async () => {
-      const session = (await restore()) ?? (await loadFromRoot());
-      if (session === undefined) {
-        return;
-      }
-      await tree.revealCurrentChapter();
+    vscode.commands.registerCommand("learnByDiff.viewAsTree", async () => {
+      await tree.setViewMode("tree");
     }),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("learnByDiff.runTests", async () => {
-      const session = (await restore()) ?? (await loadFromRoot());
-      if (session === undefined) {
-        return;
-      }
-      output.show(true);
-      output.appendLine(`$ ${session.course.config.workspace.test}`);
-      try {
-        await runWorkspaceCommand(
-          session.course.config.workspace.test,
-          session.workspaceRoot,
-          (chunk) => output.append(chunk),
-        );
-        const goNext = await vscode.window.showInformationMessage(
-          "Tests passed. Open the next chapter?",
-          "Next Chapter",
-        );
-        if (goNext === "Next Chapter") {
-          await vscode.commands.executeCommand("learnByDiff.nextChapter");
-        }
-      } catch (error) {
-        showError(error);
-      }
+    vscode.commands.registerCommand("learnByDiff.viewAsList", async () => {
+      await tree.setViewMode("list");
     }),
   );
 
@@ -267,7 +249,7 @@ export function registerCommands(
   }
 
   /**
-   * Switches chapter after an optional non-modal confirmation, then opens the entry file.
+   * Switches chapter after an optional QuickPick confirmation, then opens the entry file.
    */
   async function applyChapterSwitch(session: LearningSession, chapterId: string): Promise<void> {
     try {
@@ -276,12 +258,24 @@ export function registerCommands(
       if (error instanceof DirtyWorkspaceError) {
         const chapter = session.course.chapters.find((item) => item.id === chapterId);
         const label = chapter?.title ?? chapterId;
-        const choice = await vscode.window.showWarningMessage(
-          `Switch to “${label}”? Your current working files will be replaced with that chapter’s starting tree. Uncommitted edits will be lost.`,
-          "Switch Chapter",
-          "Keep Editing",
+        const pick = await vscode.window.showQuickPick(
+          [
+            {
+              label: "Switch Chapter",
+              description: `Replace working files with “${label}” start`,
+            },
+            {
+              label: "Keep Editing",
+              description: "Stay on the current chapter",
+            },
+          ],
+          {
+            title: `Switch to “${label}”?`,
+            placeHolder: "Your edits since this chapter’s start will be discarded",
+            ignoreFocusOut: true,
+          },
         );
-        if (choice !== "Switch Chapter") {
+        if (pick?.label !== "Switch Chapter") {
           return;
         }
         await switchToChapter(git, session, chapterId, true);
@@ -291,8 +285,8 @@ export function registerCommands(
       }
     }
     setSession(session);
-    tree.setSession(session);
     await openEntryFile(session);
+    await tree.revealCurrentChapter();
   }
 
   void restore();

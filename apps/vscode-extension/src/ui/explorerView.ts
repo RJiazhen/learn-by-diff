@@ -12,41 +12,104 @@ export const CHAPTER_URI_SCHEME = "learnbydiff-chapter";
 /** URI scheme used to decorate entry-file rows with U/M/D badges. */
 export const FILE_URI_SCHEME = "learnbydiff-file";
 
-/** Tree row for a course chapter or one of its entry files. */
+/** How chapter entry files are nested under each chapter row. */
+export type CourseViewMode = "tree" | "list";
+
+const VIEW_MODE_STATE_KEY = "learnByDiff.viewMode";
+
+/** Tree row for a course chapter, folder, or entry file. */
 export type CourseTreeItem = vscode.TreeItem & {
-  kind: "chapter" | "file";
+  kind: "chapter" | "folder" | "file";
   chapterId: string;
+  /** File path or folder prefix relative to the chapter tree root. */
   relativePath?: string;
   changeKind?: EntryChangeKind;
 };
 
+/** One changed entry file under a chapter. */
+interface ChangedEntryFile {
+  relativePath: string;
+  changeKind: EntryChangeKind;
+}
+
 /**
  * Chapter + entry-file tree in the Explorer LearnByDiff view.
  *
- * Chapters are collapsible (click toggles the file list). Jumping to a chapter is
- * done via the hover inline action or the context menu — not by clicking the title.
+ * Supports SCM-like tree and flat list layouts. Jumping to a chapter is done via
+ * the hover inline action or the context menu — not by clicking the title.
  */
 export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeItem> {
   private session: LearningSession | undefined;
   private treeView: vscode.TreeView<CourseTreeItem> | undefined;
+  private viewMode: CourseViewMode;
   private readonly chapterElements = new Map<string, CourseTreeItem>();
+  /** Chapter ids the user (or reveal) has expanded — used to auto-expand folder trees. */
+  private readonly expandedChapterIds = new Set<string>();
   private readonly emitter = new vscode.EventEmitter<CourseTreeItem | undefined>();
 
   /**
    * @param git - Git client used to classify entry-file changes
+   * @param workspaceState - Persists tree/list view mode
    */
-  constructor(private readonly git: GitClient) {}
+  constructor(
+    private readonly git: GitClient,
+    private readonly workspaceState: vscode.Memento,
+  ) {
+    const stored = workspaceState.get<string>(VIEW_MODE_STATE_KEY);
+    this.viewMode = stored === "list" ? "list" : "tree";
+  }
 
   /** VS Code subscription hook for tree refresh. */
   readonly onDidChangeTreeData = this.emitter.event;
 
   /**
-   * Stores the created tree view so current chapter rows can be revealed.
+   * Returns the current tree/list view mode.
+   */
+  getViewMode(): CourseViewMode {
+    return this.viewMode;
+  }
+
+  /**
+   * Sets tree/list view mode, persists it, and refreshes the view.
+   *
+   * @param mode - Desired layout
+   */
+  async setViewMode(mode: CourseViewMode): Promise<void> {
+    if (this.viewMode === mode) {
+      await this.syncViewModeContext();
+      return;
+    }
+    this.viewMode = mode;
+    await this.workspaceState.update(VIEW_MODE_STATE_KEY, mode);
+    await this.syncViewModeContext();
+    this.emitter.fire(undefined);
+  }
+
+  /**
+   * Publishes `learnByDiff.viewMode` for menu `when` clauses.
+   */
+  async syncViewModeContext(): Promise<void> {
+    await vscode.commands.executeCommand("setContext", "learnByDiff.viewMode", this.viewMode);
+  }
+
+  /**
+   * Stores the created tree view so current chapter rows can be revealed,
+   * and tracks which chapters are expanded for tree-mode folder auto-expand.
    *
    * @param treeView - View registered for `learnByDiff.courseView`
    */
   setTreeView(treeView: vscode.TreeView<CourseTreeItem>): void {
     this.treeView = treeView;
+    treeView.onDidExpandElement((event) => {
+      if (event.element.kind === "chapter") {
+        this.expandedChapterIds.add(event.element.chapterId);
+      }
+    });
+    treeView.onDidCollapseElement((event) => {
+      if (event.element.kind === "chapter") {
+        this.expandedChapterIds.delete(event.element.chapterId);
+      }
+    });
   }
 
   /**
@@ -57,6 +120,7 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
   setSession(session: LearningSession | undefined): void {
     this.session = session;
     this.chapterElements.clear();
+    this.expandedChapterIds.clear();
     this.emitter.fire(undefined);
     if (session !== undefined) {
       void this.revealCurrentChapter();
@@ -64,7 +128,7 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
   }
 
   /**
-   * Expands and selects the current chapter so its entry files are visible.
+   * Expands the current chapter so its entry files are visible (does not steal selection).
    */
   async revealCurrentChapter(): Promise<void> {
     if (this.session === undefined || this.treeView === undefined) {
@@ -81,9 +145,35 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
       );
     this.chapterElements.set(chapter.id, element);
     try {
-      await this.treeView.reveal(element, { expand: true, select: true, focus: false });
+      await this.treeView.reveal(element, { expand: true, select: false, focus: false });
     } catch {
       // Tree may not be visible yet; ignore.
+    }
+  }
+
+  /**
+   * Clears any tree selection so opening a diff does not leave a sticky file highlight.
+   * Refocuses the active editor group afterward when the tree had to take focus to clear.
+   */
+  async clearSelection(): Promise<void> {
+    if (this.treeView === undefined || this.treeView.selection.length === 0) {
+      return;
+    }
+    try {
+      await vscode.commands.executeCommand("list.clearSelection");
+    } catch {
+      // Command unavailable in this host.
+    }
+    if (this.treeView.selection.length === 0) {
+      return;
+    }
+    // Selection APIs only affect the focused list; reclaim focus briefly, then return.
+    try {
+      await vscode.commands.executeCommand("learnByDiff.courseView.focus");
+      await vscode.commands.executeCommand("list.clearSelection");
+      await vscode.commands.executeCommand("workbench.action.focusActiveEditorGroup");
+    } catch {
+      // View or editor commands unavailable.
     }
   }
 
@@ -95,19 +185,35 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
   }
 
   /**
-   * Returns the parent chapter for a file row (needed for `reveal`).
+   * Returns the parent element for `reveal` support.
    *
    * @param element - Tree element
    */
   getParent(element: CourseTreeItem): CourseTreeItem | undefined {
-    if (element.kind !== "file") {
+    if (element.kind === "chapter") {
       return undefined;
     }
-    return this.chapterElements.get(element.chapterId);
+    const chapterItem = this.chapterElements.get(element.chapterId);
+    if (element.kind === "file" && this.viewMode === "list") {
+      return chapterItem;
+    }
+    const relative = element.relativePath ?? "";
+    const parentPath = path.posix.dirname(relative);
+    if (parentPath === "." || parentPath === "") {
+      return chapterItem;
+    }
+    if (this.session === undefined) {
+      return chapterItem;
+    }
+    const chapter = this.session.course.chapters.find((item) => item.id === element.chapterId);
+    if (chapter === undefined) {
+      return chapterItem;
+    }
+    return this.buildFolderItem(chapter, parentPath);
   }
 
   /**
-   * Returns chapter rows, or entry files under an expanded chapter.
+   * Returns chapter rows, folders, or entry files depending on view mode.
    *
    * @param element - Parent element, or `undefined` for the root
    */
@@ -124,15 +230,37 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
         return item;
       });
     }
-    if (element.kind !== "chapter") {
+    if (element.kind === "file") {
       return [];
     }
+
     const chapter = this.session.course.chapters.find((item) => item.id === element.chapterId);
     if (chapter === undefined) {
       return [];
     }
+    const changed = await this.listChangedEntryFiles(chapter);
+    if (element.kind === "chapter") {
+      // getChildren runs when the chapter is (being) expanded — mark before building folders
+      // so tree-mode folders default to Expanded under open chapters.
+      this.expandedChapterIds.add(chapter.id);
+      return this.viewMode === "list"
+        ? changed.map((entry) => this.buildFileItem(chapter, entry.relativePath, entry.changeKind))
+        : this.buildTreeChildren(chapter, "", changed);
+    }
+    return this.buildTreeChildren(chapter, element.relativePath ?? "", changed);
+  }
+
+  /**
+   * Lists entry files that differ between a chapter's from/to snapshots.
+   *
+   * @param chapter - Chapter config
+   */
+  private async listChangedEntryFiles(chapter: ChapterConfig): Promise<ChangedEntryFile[]> {
+    if (this.session === undefined) {
+      return [];
+    }
     const { sourceMirror } = learningPaths(this.session.workspaceRoot);
-    const items: CourseTreeItem[] = [];
+    const items: ChangedEntryFile[] = [];
     for (const relativePath of chapter.entryFiles) {
       const changeKind = await classifyEntryChange(
         this.git,
@@ -144,9 +272,47 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
       if (changeKind === undefined) {
         continue;
       }
-      items.push(this.buildFileItem(chapter, relativePath, changeKind));
+      items.push({ relativePath, changeKind });
     }
     return items;
+  }
+
+  /**
+   * Builds immediate folder/file children under `folderPath` in tree mode.
+   *
+   * @param chapter - Parent chapter
+   * @param folderPath - Folder prefix (empty string at chapter root)
+   * @param changed - All changed entry files for the chapter
+   */
+  private buildTreeChildren(
+    chapter: ChapterConfig,
+    folderPath: string,
+    changed: ChangedEntryFile[],
+  ): CourseTreeItem[] {
+    const prefix = folderPath === "" ? "" : `${folderPath}/`;
+    const folders = new Set<string>();
+    const files: ChangedEntryFile[] = [];
+
+    for (const entry of changed) {
+      if (prefix !== "" && !entry.relativePath.startsWith(prefix)) {
+        continue;
+      }
+      const rest = prefix === "" ? entry.relativePath : entry.relativePath.slice(prefix.length);
+      const slash = rest.indexOf("/");
+      if (slash === -1) {
+        files.push(entry);
+      } else {
+        folders.add(prefix === "" ? rest.slice(0, slash) : `${folderPath}/${rest.slice(0, slash)}`);
+      }
+    }
+
+    const folderItems = [...folders]
+      .sort((left, right) => left.localeCompare(right))
+      .map((folder) => this.buildFolderItem(chapter, folder));
+    const fileItems = files
+      .sort((left, right) => left.relativePath.localeCompare(right.relativePath))
+      .map((entry) => this.buildFileItem(chapter, entry.relativePath, entry.changeKind));
+    return [...folderItems, ...fileItems];
   }
 
   /**
@@ -164,11 +330,15 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
     total: number,
   ): CourseTreeItem {
     const ordinal = chapterOrdinal(Math.max(index, 0), total);
+    const hasEntries = chapter.entryFiles.length > 0;
+    const expanded = this.expandedChapterIds.has(chapter.id);
     const item = new vscode.TreeItem(
       `${ordinal}-${chapter.title}`,
-      chapter.entryFiles.length > 0
-        ? vscode.TreeItemCollapsibleState.Collapsed
-        : vscode.TreeItemCollapsibleState.None,
+      !hasEntries
+        ? vscode.TreeItemCollapsibleState.None
+        : expanded
+          ? vscode.TreeItemCollapsibleState.Expanded
+          : vscode.TreeItemCollapsibleState.Collapsed,
     ) as CourseTreeItem;
     item.kind = "chapter";
     item.chapterId = chapter.id;
@@ -184,35 +354,58 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
   }
 
   /**
-   * Builds an entry-file row under a chapter (SCM-style name + U/M/D decoration).
+   * Builds a folder row used only in tree view mode (no folder icon, like SCM).
+   * Folders under an already-expanded chapter start expanded.
+   *
+   * @param chapter - Parent chapter
+   * @param folderPath - Folder path relative to the chapter tree root
+   */
+  private buildFolderItem(chapter: ChapterConfig, folderPath: string): CourseTreeItem {
+    const expandFolders = this.expandedChapterIds.has(chapter.id);
+    const item = new vscode.TreeItem(
+      path.posix.basename(folderPath),
+      expandFolders
+        ? vscode.TreeItemCollapsibleState.Expanded
+        : vscode.TreeItemCollapsibleState.Collapsed,
+    ) as CourseTreeItem;
+    item.kind = "folder";
+    item.chapterId = chapter.id;
+    item.relativePath = folderPath;
+    item.contextValue = "chapterFolder";
+    item.tooltip = folderPath;
+    return item;
+  }
+
+  /**
+   * Builds an entry-file row (SCM-style name + U/M/D decoration).
    *
    * @param chapter - Parent chapter
    * @param relativePath - Path from chapter `entryFiles`
-   * @param changeKind - Optional U/M/D classification
+   * @param changeKind - U/M/D classification
    */
   private buildFileItem(
     chapter: ChapterConfig,
     relativePath: string,
-    changeKind: EntryChangeKind | undefined,
+    changeKind: EntryChangeKind,
   ): CourseTreeItem {
     const item = new vscode.TreeItem(
-      path.basename(relativePath),
+      path.posix.basename(relativePath),
       vscode.TreeItemCollapsibleState.None,
     ) as CourseTreeItem;
     item.kind = "file";
     item.chapterId = chapter.id;
     item.relativePath = relativePath;
     item.changeKind = changeKind;
-    const folder = path.dirname(relativePath);
-    item.description = folder === "." ? undefined : folder;
+    if (this.viewMode === "list") {
+      const folder = path.posix.dirname(relativePath);
+      item.description = folder === "." ? undefined : folder;
+    }
     item.contextValue = "chapterFile";
-    item.tooltip = changeKind
-      ? `${relativePath} (${chapter.fromDir} ↔ ${chapter.toDir}) · ${changeKind}`
-      : `${relativePath} (${chapter.fromDir} ↔ ${chapter.toDir})`;
+    item.tooltip = `${relativePath} (${chapter.fromDir} ↔ ${chapter.toDir}) · ${changeKind}`;
     item.resourceUri = vscode.Uri.from({
       scheme: FILE_URI_SCHEME,
       path: `/${chapter.id}/${relativePath.split(/[/\\]/).join("/")}`,
-      query: changeKind ?? "",
+      query: changeKind,
     });
     item.command = {
       command: "learnByDiff.openFileDiff",

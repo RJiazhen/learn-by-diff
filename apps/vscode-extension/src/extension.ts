@@ -13,7 +13,7 @@ import type { LearningSession } from "./workspace/loader.ts";
  */
 export function activate(context: vscode.ExtensionContext): void {
   const git = new GitClient();
-  const tree = new CourseTreeProvider(git);
+  const tree = new CourseTreeProvider(git, context.workspaceState);
   const decorations = new LearnByDiffDecorationProvider();
   const emptyDiff = new EmptyDiffContentProvider();
   const treeView = vscode.window.createTreeView("learnByDiff.courseView", {
@@ -21,6 +21,7 @@ export function activate(context: vscode.ExtensionContext): void {
     showCollapseAll: true,
   });
   tree.setTreeView(treeView);
+  void tree.syncViewModeContext();
   context.subscriptions.push(
     treeView,
     vscode.window.registerFileDecorationProvider(decorations),

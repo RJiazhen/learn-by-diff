@@ -53,11 +53,6 @@
         "icon": "$(arrow-left)"
       },
       {
-        "command": "learnByDiff.openDiff",
-        "title": "LearnByDiff: Reveal Current Chapter Files",
-        "icon": "$(diff)"
-      },
-      {
         "command": "learnByDiff.openFileDiff",
         "title": "LearnByDiff: Open File Diff"
       },
@@ -67,9 +62,14 @@
         "icon": "$(arrow-right)"
       },
       {
-        "command": "learnByDiff.runTests",
-        "title": "LearnByDiff: Run Tests",
-        "icon": "$(testing-run-all-icon)"
+        "command": "learnByDiff.viewAsTree",
+        "title": "View as Tree",
+        "icon": "$(list-tree)"
+      },
+      {
+        "command": "learnByDiff.viewAsList",
+        "title": "View as List",
+        "icon": "$(list-flat)"
       }
     ],
     "colors": [
@@ -105,25 +105,25 @@
           "group": "navigation@2"
         },
         {
-          "command": "learnByDiff.openDiff",
-          "when": "view == learnByDiff.courseView",
+          "command": "learnByDiff.viewAsTree",
+          "when": "view == learnByDiff.courseView && learnByDiff.viewMode == 'list'",
           "group": "navigation@3"
         },
         {
-          "command": "learnByDiff.runTests",
-          "when": "view == learnByDiff.courseView",
-          "group": "navigation@4"
+          "command": "learnByDiff.viewAsList",
+          "when": "view == learnByDiff.courseView && learnByDiff.viewMode != 'list'",
+          "group": "navigation@3"
         }
       ],
       "view/item/context": [
         {
           "command": "learnByDiff.goToChapter",
-          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter/",
+          "when": "view == learnByDiff.courseView && viewItem == 'chapter'",
           "group": "inline"
         },
         {
           "command": "learnByDiff.goToChapter",
-          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter/",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-current)?$/",
           "group": "navigation@1"
         }
       ],
@@ -134,6 +134,14 @@
         },
         {
           "command": "learnByDiff.goToChapter",
+          "when": "false"
+        },
+        {
+          "command": "learnByDiff.viewAsTree",
+          "when": "false"
+        },
+        {
+          "command": "learnByDiff.viewAsList",
           "when": "false"
         }
       ]
