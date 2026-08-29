@@ -29,6 +29,25 @@ Press **F5** (`Run Extension`). The prelaunch task runs `vp pack --watch`, then 
 
 Real users pick a parent folder; the workspace is created as `{parent}/{course.id}/`.
 
+### Open from a browser link
+
+With the extension installed, a link can launch VS Code or Cursor and run **Open Course**:
+
+```text
+vscode://rjiazhen.learn-by-diff/open?url=<urlencoded-course-repo>
+cursor://rjiazhen.learn-by-diff/open?url=<urlencoded-course-repo>
+```
+
+Optional `parent=<urlencoded-absolute-folder>` skips the folder picker. Example:
+
+```html
+<a href="vscode://rjiazhen.learn-by-diff/open?url=https%3A%2F%2Fgithub.com%2Forg%2Fcourse.git">
+  Open in VS Code
+</a>
+```
+
+The IDE must already have LearnByDiff installed; the OS may ask to allow the `vscode://` / `cursor://` protocol once.
+
 ## Course protocol (LCP)
 
 Course repos need:
