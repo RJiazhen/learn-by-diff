@@ -11,7 +11,7 @@
         "${workspaceFolder}/sandbox"
       ],
       "outFiles": ["${workspaceFolder}/apps/vscode-extension/dist/**/*.js"],
-      "preLaunchTask": "prelaunch"
+      "preLaunchTask": "watch-extension"
     }
   ]
 }

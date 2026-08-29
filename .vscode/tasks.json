@@ -2,6 +2,30 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "watch-extension",
+      "type": "shell",
+      "command": "vp pack --watch",
+      "options": {
+        "cwd": "${workspaceFolder}/apps/vscode-extension"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "learn-by-diff-pack",
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Build start|Rebuilt in",
+          "endsPattern": "Rebuilt in"
+        }
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated"
+      }
+    },
+    {
       "label": "pack-extension",
       "type": "shell",
       "command": "vp pack",
@@ -12,12 +36,6 @@
         "kind": "build",
         "isDefault": true
       },
-      "problemMatcher": []
-    },
-    {
-      "label": "prelaunch",
-      "dependsOrder": "sequence",
-      "dependsOn": ["pack-extension"],
       "problemMatcher": []
     }
   ]

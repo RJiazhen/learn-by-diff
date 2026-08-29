@@ -25,7 +25,7 @@ pnpm exec vp run @learn-by-diff/protocol#pack
 pnpm exec vp run learn-by-diff#pack
 ```
 
-Press **F5** (`Run Extension`). The Extension Development Host opens [`sandbox/`](sandbox) with **other extensions disabled**. The prelaunch task packs the extension. **LearnByDiff: Open Course** prefills [`examples/demo-course`](examples/demo-course) (committed fixtures under [`examples/`](examples)).
+Press **F5** (`Run Extension`). The prelaunch task runs `vp pack --watch`, then the Extension Development Host opens [`sandbox/`](sandbox) with **other extensions disabled**. After code changes, reload the Extension Development Host window to pick up the rebuilt bundle. **LearnByDiff: Open Course** prefills [`examples/demo-course`](examples/demo-course).
 
 Real users pick a parent folder; the workspace is created as `{parent}/{course.id}/`.
 
