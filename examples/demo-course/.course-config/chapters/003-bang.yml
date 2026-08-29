@@ -1,0 +1,8 @@
+id: bang
+title: Bang
+fromDir: world
+toDir: bang
+entryFiles:
+  - src/index.ts
+tests:
+  - src/index.ts

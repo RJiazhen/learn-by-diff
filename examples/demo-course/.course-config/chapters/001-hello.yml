@@ -1,0 +1,8 @@
+id: hello
+title: Hello
+fromDir: start
+toDir: hello
+entryFiles:
+  - src/index.ts
+tests:
+  - src/index.ts

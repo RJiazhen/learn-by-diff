@@ -1,0 +1,9 @@
+protocolVersion: 1
+id: demo
+title: Demo
+source:
+  repository: ../demo-source
+workspace:
+  install: node -e "console.log('install ok')"
+  dev: node -e "console.log('dev ok')"
+  test: node -e "console.log('test ok')"

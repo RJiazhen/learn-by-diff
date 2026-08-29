@@ -1,0 +1,8 @@
+id: world
+title: World
+fromDir: hello
+toDir: world
+entryFiles:
+  - src/index.ts
+tests:
+  - src/index.ts
