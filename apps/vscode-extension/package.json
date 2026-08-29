@@ -62,6 +62,11 @@
         "icon": "$(arrow-right)"
       },
       {
+        "command": "learnByDiff.openChapterDocs",
+        "title": "Open Chapter Docs",
+        "icon": "$(book)"
+      },
+      {
         "command": "learnByDiff.viewAsTree",
         "title": "View as Tree",
         "icon": "$(list-tree)"
@@ -117,14 +122,24 @@
       ],
       "view/item/context": [
         {
-          "command": "learnByDiff.goToChapter",
-          "when": "view == learnByDiff.courseView && viewItem == 'chapter'",
-          "group": "inline"
+          "command": "learnByDiff.openChapterDocs",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-current)?-docs$/",
+          "group": "inline@1"
         },
         {
           "command": "learnByDiff.goToChapter",
-          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-current)?$/",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-current)?(-docs)?$/",
+          "group": "inline@2"
+        },
+        {
+          "command": "learnByDiff.goToChapter",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-current)?(-docs)?$/",
           "group": "navigation@1"
+        },
+        {
+          "command": "learnByDiff.openChapterDocs",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-current)?-docs$/",
+          "group": "navigation@2"
         }
       ],
       "commandPalette": [
@@ -134,6 +149,10 @@
         },
         {
           "command": "learnByDiff.goToChapter",
+          "when": "false"
+        },
+        {
+          "command": "learnByDiff.openChapterDocs",
           "when": "false"
         },
         {

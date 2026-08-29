@@ -348,9 +348,20 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
     ) as CourseTreeItem;
     item.kind = "chapter";
     item.chapterId = chapter.id;
-    item.contextValue = isCurrent ? "chapter-current" : "chapter";
+    const hasDocs = chapter.docs !== undefined && chapter.docs.trim() !== "";
+    if (isCurrent && hasDocs) {
+      item.contextValue = "chapter-current-docs";
+    } else if (isCurrent) {
+      item.contextValue = "chapter-current";
+    } else if (hasDocs) {
+      item.contextValue = "chapter-docs";
+    } else {
+      item.contextValue = "chapter";
+    }
     item.description = isCurrent ? "current" : undefined;
-    item.tooltip = `${ordinal}-${chapter.title}${isCurrent ? " (current)" : ""}`;
+    item.tooltip = `${ordinal}-${chapter.title}${isCurrent ? " (current)" : ""}${
+      hasDocs ? `\nDocs: ${chapter.docs}` : ""
+    }`;
     item.resourceUri = vscode.Uri.from({
       scheme: CHAPTER_URI_SCHEME,
       path: `/${chapter.id}`,

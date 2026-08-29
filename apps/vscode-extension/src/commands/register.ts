@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
 import { GitError } from "../git/errors.ts";
 import { openChapterFileDiff, openEntryFile } from "../ui/diff.ts";
+import { openChapterDocs } from "../ui/openDocs.ts";
 import type { CourseTreeItem, CourseTreeProvider } from "../ui/explorerView.ts";
 import { createLearningWorkspace } from "../workspace/creator.ts";
 import { DirtyWorkspaceError } from "../workspace/errors.ts";
@@ -213,6 +214,27 @@ export function registerCommands(
         await tree.clearSelection();
       }
     }),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "learnByDiff.openChapterDocs",
+      async (item?: CourseTreeItem) => {
+        const chapterId = item?.chapterId;
+        if (chapterId === undefined || chapterId === "") {
+          return;
+        }
+        const session = await loadFromRoot();
+        if (session === undefined) {
+          return;
+        }
+        try {
+          await openChapterDocs(session, chapterId);
+        } catch (error) {
+          showError(error);
+        }
+      },
+    ),
   );
 
   context.subscriptions.push(
