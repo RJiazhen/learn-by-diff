@@ -13,6 +13,12 @@
         "isDefault": true
       },
       "problemMatcher": []
+    },
+    {
+      "label": "prelaunch",
+      "dependsOrder": "sequence",
+      "dependsOn": ["pack-extension"],
+      "problemMatcher": []
     }
   ]
 }
