@@ -4,8 +4,8 @@ import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
 import { GitError } from "../git/errors.ts";
 import { runWorkspaceCommand } from "../runtime/command.ts";
-import { openChapterDiff, openEntryFile } from "../ui/diff.ts";
-import type { CourseTreeProvider } from "../ui/explorerView.ts";
+import { openChapterFileDiff, openEntryFile } from "../ui/diff.ts";
+import type { CourseTreeItem, CourseTreeProvider } from "../ui/explorerView.ts";
 import { createLearningWorkspace } from "../workspace/creator.ts";
 import { DirtyWorkspaceError } from "../workspace/errors.ts";
 import {
@@ -173,12 +173,53 @@ export function registerCommands(
   );
 
   context.subscriptions.push(
+    vscode.commands.registerCommand("learnByDiff.goToChapter", async (item?: CourseTreeItem) => {
+      const chapterId = item?.chapterId;
+      if (chapterId === undefined || chapterId === "") {
+        return;
+      }
+      const session = (await restore()) ?? (await loadFromRoot());
+      if (session === undefined) {
+        return;
+      }
+      if (session.progress.chapter === chapterId) {
+        await openEntryFile(session);
+        await tree.revealCurrentChapter();
+        return;
+      }
+      const exists = session.course.chapters.some((chapter) => chapter.id === chapterId);
+      if (!exists) {
+        void vscode.window.showWarningMessage(`Unknown chapter: ${chapterId}`);
+        return;
+      }
+      await applyChapterSwitch(session, chapterId);
+    }),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("learnByDiff.openFileDiff", async (item?: CourseTreeItem) => {
+      if (item?.kind !== "file" || item.relativePath === undefined) {
+        return;
+      }
+      const session = (await restore()) ?? (await loadFromRoot());
+      if (session === undefined) {
+        return;
+      }
+      try {
+        await openChapterFileDiff(git, session, item.chapterId, item.relativePath);
+      } catch (error) {
+        showError(error);
+      }
+    }),
+  );
+
+  context.subscriptions.push(
     vscode.commands.registerCommand("learnByDiff.openDiff", async () => {
       const session = (await restore()) ?? (await loadFromRoot());
       if (session === undefined) {
         return;
       }
-      await openChapterDiff(git, session);
+      await tree.revealCurrentChapter();
     }),
   );
 
@@ -226,19 +267,21 @@ export function registerCommands(
   }
 
   /**
-   * Switches chapter after optional dirty confirmation, then opens entry + diff.
+   * Switches chapter after an optional non-modal confirmation, then opens the entry file.
    */
   async function applyChapterSwitch(session: LearningSession, chapterId: string): Promise<void> {
     try {
       await switchToChapter(git, session, chapterId, false);
     } catch (error) {
       if (error instanceof DirtyWorkspaceError) {
+        const chapter = session.course.chapters.find((item) => item.id === chapterId);
+        const label = chapter?.title ?? chapterId;
         const choice = await vscode.window.showWarningMessage(
-          "Uncommitted changes will be overwritten. Continue?",
-          { modal: true },
-          "Continue",
+          `Switch to “${label}”? Your current working files will be replaced with that chapter’s starting tree. Uncommitted edits will be lost.`,
+          "Switch Chapter",
+          "Keep Editing",
         );
-        if (choice !== "Continue") {
+        if (choice !== "Switch Chapter") {
           return;
         }
         await switchToChapter(git, session, chapterId, true);
@@ -250,7 +293,6 @@ export function registerCommands(
     setSession(session);
     tree.setSession(session);
     await openEntryFile(session);
-    await openChapterDiff(git, session);
   }
 
   void restore();

@@ -54,13 +54,33 @@
       },
       {
         "command": "learnByDiff.openDiff",
-        "title": "LearnByDiff: Open Diff",
+        "title": "LearnByDiff: Reveal Current Chapter Files",
         "icon": "$(diff)"
+      },
+      {
+        "command": "learnByDiff.openFileDiff",
+        "title": "LearnByDiff: Open File Diff"
+      },
+      {
+        "command": "learnByDiff.goToChapter",
+        "title": "Go to Chapter",
+        "icon": "$(arrow-right)"
       },
       {
         "command": "learnByDiff.runTests",
         "title": "LearnByDiff: Run Tests",
         "icon": "$(testing-run-all-icon)"
+      }
+    ],
+    "colors": [
+      {
+        "id": "learnByDiff.currentChapter",
+        "description": "Highlight color for the current chapter in the LearnByDiff view",
+        "defaults": {
+          "dark": "#4FC1FF",
+          "light": "#0078D4",
+          "highContrast": "#FFFFFF"
+        }
       }
     ],
     "views": {
@@ -97,9 +117,24 @@
       ],
       "view/item/context": [
         {
-          "command": "learnByDiff.openDiff",
-          "when": "view == learnByDiff.courseView && viewItem == chapter",
+          "command": "learnByDiff.goToChapter",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter/",
           "group": "inline"
+        },
+        {
+          "command": "learnByDiff.goToChapter",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter/",
+          "group": "navigation@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "learnByDiff.openFileDiff",
+          "when": "false"
+        },
+        {
+          "command": "learnByDiff.goToChapter",
+          "when": "false"
         }
       ]
     }

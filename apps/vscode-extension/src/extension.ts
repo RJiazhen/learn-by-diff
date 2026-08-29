@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
 import { registerCommands } from "./commands/register.ts";
 import { GitClient } from "./git/client.ts";
-import { CourseTreeProvider } from "./ui/explorerView.ts";
+import { EmptyDiffContentProvider, EMPTY_DIFF_SCHEME } from "./ui/diff.ts";
+import { CourseTreeProvider, LearnByDiffDecorationProvider } from "./ui/explorerView.ts";
 import { registerStatusBar } from "./ui/statusBar.ts";
 import type { LearningSession } from "./workspace/loader.ts";
 
@@ -12,9 +13,18 @@ import type { LearningSession } from "./workspace/loader.ts";
  */
 export function activate(context: vscode.ExtensionContext): void {
   const git = new GitClient();
-  const tree = new CourseTreeProvider();
+  const tree = new CourseTreeProvider(git);
+  const decorations = new LearnByDiffDecorationProvider();
+  const emptyDiff = new EmptyDiffContentProvider();
+  const treeView = vscode.window.createTreeView("learnByDiff.courseView", {
+    treeDataProvider: tree,
+    showCollapseAll: true,
+  });
+  tree.setTreeView(treeView);
   context.subscriptions.push(
-    vscode.window.registerTreeDataProvider("learnByDiff.courseView", tree),
+    treeView,
+    vscode.window.registerFileDecorationProvider(decorations),
+    vscode.workspace.registerTextDocumentContentProvider(EMPTY_DIFF_SCHEME, emptyDiff),
   );
   const updateStatus = registerStatusBar(context);
 
@@ -25,6 +35,7 @@ export function activate(context: vscode.ExtensionContext): void {
    */
   function setSession(session: LearningSession | undefined): void {
     tree.setSession(session);
+    decorations.refresh();
     updateStatus(session);
     void vscode.commands.executeCommand(
       "setContext",

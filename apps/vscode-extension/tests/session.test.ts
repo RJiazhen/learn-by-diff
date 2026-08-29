@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vite-plus/test";
 import {
+  chapterOrdinal,
   chapterPosition,
   currentChapter,
   nextChapter,
@@ -46,5 +47,12 @@ describe("session navigation", () => {
     expect(previousChapter(session)?.id).toBe("reactive");
     expect(nextChapter(session)).toBeUndefined();
     expect(chapterPosition(session.course, "effect")).toBe("2/2");
+  });
+
+  test("chapterOrdinal pads to the width of the total count", () => {
+    expect(chapterOrdinal(0, 3)).toBe("1");
+    expect(chapterOrdinal(0, 12)).toBe("01");
+    expect(chapterOrdinal(11, 12)).toBe("12");
+    expect(chapterOrdinal(0, 100)).toBe("001");
   });
 });

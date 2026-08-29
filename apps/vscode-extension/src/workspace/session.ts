@@ -78,13 +78,27 @@ export async function switchToChapter(
 }
 
 /**
- * Returns a 1-based chapter index label such as `2/10`.
+ * Returns the zero-padded 1-based chapter ordinal with width matching `total`.
+ *
+ * Examples: 3 chapters → `1`; 12 chapters → `01`; 100 chapters → `001`.
+ *
+ * @param index - Zero-based chapter index
+ * @param total - Total number of chapters
+ */
+export function chapterOrdinal(index: number, total: number): string {
+  const width = Math.max(1, String(Math.max(total, 1)).length);
+  return String(index + 1).padStart(width, "0");
+}
+
+/**
+ * Returns a 1-based chapter index label such as `02/10`.
  *
  * @param course - Course
  * @param chapterId - Current chapter id
  */
 export function chapterPosition(course: Course, chapterId: string): string {
   const index = course.chapters.findIndex((chapter) => chapter.id === chapterId);
-  const current = index >= 0 ? index + 1 : 1;
-  return `${String(current)}/${String(course.chapters.length)}`;
+  const current = index >= 0 ? index : 0;
+  const total = course.chapters.length;
+  return `${chapterOrdinal(current, total)}/${chapterOrdinal(Math.max(total, 1) - 1, total)}`;
 }
