@@ -1,11 +1,11 @@
-import path from "node:path";
 import { ProtocolError } from "@learn-by-diff/protocol";
+import path from "node:path";
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
 import { GitError } from "../git/errors.ts";
 import { openChapterFileDiff, openEntryFile } from "../ui/diff.ts";
-import { openChapterDocs } from "../ui/openDocs.ts";
 import type { CourseTreeItem, CourseTreeProvider } from "../ui/explorerView.ts";
+import { openChapterDocs } from "../ui/openDocs.ts";
 import { createLearningWorkspace } from "../workspace/creator.ts";
 import { DirtyWorkspaceError } from "../workspace/errors.ts";
 import {

@@ -1,6 +1,6 @@
-import path from "node:path";
 import type { ChapterConfig } from "@learn-by-diff/protocol";
 import { resolveSourceSubtreePath } from "@learn-by-diff/protocol";
+import path from "node:path";
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
 import { classifyEntryChange, type EntryChangeKind } from "../workspace/entryChange.ts";

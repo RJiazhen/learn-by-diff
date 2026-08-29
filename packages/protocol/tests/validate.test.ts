@@ -4,13 +4,13 @@ import path from "node:path";
 import { describe, expect, test } from "vite-plus/test";
 import { chapterIdFromFileName } from "../src/chapterDefaults.ts";
 import { applyCourseDefaults, courseHomeDir, defaultCourseId } from "../src/courseDefaults.ts";
+import { parseChapterYaml, parseCourseYaml } from "../src/parse.ts";
 import {
   isHttpUrl,
   normalizeRelativeFilePath,
   normalizeSourceDirPath,
   resolveSourceSubtreePath,
 } from "../src/sourcePath.ts";
-import { parseChapterYaml, parseCourseYaml } from "../src/parse.ts";
 import { ProtocolError } from "../src/types.ts";
 import { validateCourse } from "../src/validate.ts";
 
