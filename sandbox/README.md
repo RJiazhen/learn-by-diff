@@ -1,7 +1,5 @@
-# LearnByDiff sandbox
+# Extension Development Host workspace
 
-This folder is the Extension Development Host workspace.
+F5 opens this folder. Use **LearnByDiff: Open Course** with `examples/demo-course` (prefilled in Development mode) to create a learning session here.
 
-F5 opens this directory. **LearnByDiff: Open Course** initializes a learning repo **in place** here so the launch path stays stable. Generated files (`.learn/`, source trees, `node_modules`) are gitignored.
-
-Do not commit course source or mirrors.
+Generated `.learn/` and student files under this directory are gitignored. The extension does not `git init` here — create a repo yourself if you want one.

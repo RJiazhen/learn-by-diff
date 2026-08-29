@@ -11,7 +11,7 @@ This repo is a pnpm + [Vite+](https://viteplus.dev/) monorepo. It does not host 
 | [`packages/protocol`](packages/protocol)         | LCP types, YAML parse, validation (`@learn-by-diff/protocol`) |
 | [`apps/vscode-extension`](apps/vscode-extension) | VS Code extension (`learn-by-diff`)                           |
 | [`sandbox/`](sandbox)                            | F5 debug workspace (generated files are gitignored)           |
-| [`skills/`](skills), [`examples/`](examples)     | Placeholders for later author skills and sample courses       |
+| [`skills/`](skills), [`examples/`](examples)     | Author skills placeholder; committed local demo course/source |
 
 ## Develop
 
@@ -25,7 +25,7 @@ pnpm exec vp run @learn-by-diff/protocol#pack
 pnpm exec vp run learn-by-diff#pack
 ```
 
-Press **F5** (`Run Extension`). The Extension Development Host opens [`sandbox/`](sandbox). Run **LearnByDiff: Open Course**, paste a course git URL. If the folder is still only this README, the learning repo is created **in place**.
+Press **F5** (`Run Extension`). The Extension Development Host opens [`sandbox/`](sandbox) with **other extensions disabled**. The prelaunch task packs the extension. **LearnByDiff: Open Course** prefills [`examples/demo-course`](examples/demo-course) (committed fixtures under [`examples/`](examples)).
 
 Real users pick a parent folder; the workspace is created as `{parent}/{course.id}/`.
 
