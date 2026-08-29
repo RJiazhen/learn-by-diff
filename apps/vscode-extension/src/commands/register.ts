@@ -3,7 +3,6 @@ import { ProtocolError } from "@learn-by-diff/protocol";
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
 import { GitError } from "../git/errors.ts";
-import { runWorkspaceCommand } from "../runtime/command.ts";
 import { openChapterFileDiff, openEntryFile } from "../ui/diff.ts";
 import type { CourseTreeItem, CourseTreeProvider } from "../ui/explorerView.ts";
 import { createLearningWorkspace } from "../workspace/creator.ts";
@@ -111,10 +110,6 @@ export function registerCommands(
               parentDir,
               git,
               onLog: (line) => output.appendLine(line),
-              runInstall: async (command, cwd) => {
-                output.show(true);
-                await runWorkspaceCommand(command, cwd, (chunk) => output.append(chunk));
-              },
             });
             learningRoot = created.learningRoot;
           } catch (error) {

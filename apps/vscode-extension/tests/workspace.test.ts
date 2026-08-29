@@ -72,18 +72,7 @@ describe("learning workspace", () => {
     await mkdir(path.join(course, ".course-config", "chapters"), { recursive: true });
     await writeFile(
       path.join(course, ".course-config", "course.yml"),
-      [
-        "protocolVersion: 1",
-        "id: demo",
-        "title: Demo",
-        "source:",
-        `  repository: ${source}`,
-        "workspace:",
-        '  install: "true"',
-        '  dev: "true"',
-        '  test: "true"',
-        "",
-      ].join("\n"),
+      ["id: demo", "title: Demo", "source:", `  repository: ${source}`, ""].join("\n"),
       "utf8",
     );
     await writeFile(
@@ -121,7 +110,6 @@ describe("learning workspace", () => {
       courseRepoUrl: course,
       parentDir: parent,
       git,
-      runInstall: async () => {},
     });
 
     expect(path.basename(created.learningRoot)).toBe("demo");
@@ -167,18 +155,7 @@ describe("learning workspace", () => {
     await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
     await writeFile(
       path.join(courseDir, ".course-config", "course.yml"),
-      [
-        "protocolVersion: 1",
-        "id: plain",
-        "title: Plain",
-        "source:",
-        "  repository: ../demo-source",
-        "workspace:",
-        '  install: "true"',
-        '  dev: "true"',
-        '  test: "true"',
-        "",
-      ].join("\n"),
+      ["id: plain", "title: Plain", "source:", "  repository: ../demo-source", ""].join("\n"),
       "utf8",
     );
     await writeFile(
@@ -200,7 +177,6 @@ describe("learning workspace", () => {
       courseRepoUrl: courseDir,
       parentDir: parent,
       git,
-      runInstall: async () => {},
     });
 
     expect(path.basename(created.learningRoot)).toBe("plain");
@@ -230,18 +206,7 @@ describe("learning workspace", () => {
     await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
     await writeFile(
       path.join(courseDir, ".course-config", "course.yml"),
-      [
-        "protocolVersion: 1",
-        "id: mergegi",
-        "title: Merge",
-        "source:",
-        "  repository: ../demo-source",
-        "workspace:",
-        '  install: "true"',
-        '  dev: "true"',
-        '  test: "true"',
-        "",
-      ].join("\n"),
+      ["id: mergegi", "title: Merge", "source:", "  repository: ../demo-source", ""].join("\n"),
       "utf8",
     );
     await writeFile(
@@ -266,7 +231,6 @@ describe("learning workspace", () => {
       courseRepoUrl: courseDir,
       inPlaceRoot: inPlace,
       git,
-      runInstall: async () => {},
     });
 
     const gitignore = await readFile(path.join(created.learningRoot, ".gitignore"), "utf8");
@@ -298,18 +262,7 @@ describe("learning workspace", () => {
     await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
     await writeFile(
       path.join(courseDir, ".course-config", "course.yml"),
-      [
-        "protocolVersion: 1",
-        "id: gi",
-        "title: Gitignore",
-        "source:",
-        "  repository: ../demo-source",
-        "workspace:",
-        '  install: "true"',
-        '  dev: "true"',
-        '  test: "true"',
-        "",
-      ].join("\n"),
+      ["id: gi", "title: Gitignore", "source:", "  repository: ../demo-source", ""].join("\n"),
       "utf8",
     );
     await writeFile(
@@ -344,7 +297,6 @@ describe("learning workspace", () => {
       courseRepoUrl: courseDir,
       parentDir: parent,
       git,
-      runInstall: async () => {},
     });
 
     await writeFile(

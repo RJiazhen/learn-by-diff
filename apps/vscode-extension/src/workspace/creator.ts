@@ -21,10 +21,8 @@ export interface CreateLearningWorkspaceOptions {
   inPlaceRoot?: string;
   /** Parent directory; workspace becomes `{parent}/{course.id}`. */
   parentDir?: string;
-  /** Optional logger for clone/install output. */
+  /** Optional logger for clone/materialize output. */
   onLog?: (line: string) => void;
-  /** Runs the course `workspace.install` command in the learning root. */
-  runInstall?: (command: string, cwd: string) => Promise<void>;
 }
 
 /** Result of {@link createLearningWorkspace}. */
@@ -45,7 +43,7 @@ export interface CreatedLearningWorkspace {
 export async function createLearningWorkspace(
   options: CreateLearningWorkspaceOptions,
 ): Promise<CreatedLearningWorkspace> {
-  const { courseRepoUrl, git, onLog, runInstall, inPlaceRoot, parentDir } = options;
+  const { courseRepoUrl, git, onLog, inPlaceRoot, parentDir } = options;
   await git.ensureAvailable();
 
   const courseConfigSource = await resolveCourseConfigDir(git, courseRepoUrl, onLog);
@@ -91,11 +89,6 @@ export async function createLearningWorkspace(
     await replaceStudentTreeFromSource(git, learningRoot, paths.sourceMirror, fromSubtree);
 
     await writeProgress(learningRoot, { chapter: first.id, completed: false });
-
-    if (runInstall) {
-      onLog?.(`Running: ${course.config.workspace.install}`);
-      await runInstall(course.config.workspace.install, learningRoot);
-    }
 
     return { course, learningRoot };
   } finally {

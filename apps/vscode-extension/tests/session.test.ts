@@ -14,11 +14,9 @@ const session: LearningSession = {
   course: {
     configDir: "/tmp/course",
     config: {
-      protocolVersion: 1,
       id: "demo",
       title: "Demo",
       source: { repository: "https://example.com/src.git" },
-      workspace: { install: "true", dev: "true", test: "true" },
     },
     chapters: [
       {
