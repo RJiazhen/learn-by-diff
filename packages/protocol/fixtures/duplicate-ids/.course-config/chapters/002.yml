@@ -1,0 +1,8 @@
+id: same
+title: Second
+fromRef: b
+toRef: c
+entryFiles:
+  - b.ts
+tests:
+  - b.test.ts

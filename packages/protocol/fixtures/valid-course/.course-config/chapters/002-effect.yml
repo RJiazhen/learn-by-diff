@@ -1,0 +1,8 @@
+id: effect
+title: Effect
+fromRef: examples/reactive
+toRef: examples/effect
+entryFiles:
+  - packages/reactivity/effect.ts
+tests:
+  - packages/reactivity/__tests__/effect.spec.ts

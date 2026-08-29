@@ -1,0 +1,9 @@
+protocolVersion: 2
+id: future
+title: Future
+source:
+  repository: https://example.com/repo.git
+workspace:
+  install: true
+  dev: true
+  test: true

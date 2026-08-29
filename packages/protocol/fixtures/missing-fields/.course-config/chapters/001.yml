@@ -1,0 +1,8 @@
+id: only
+title: Only
+fromRef: a
+toRef: b
+entryFiles:
+  - src/index.ts
+tests:
+  - src/index.test.ts

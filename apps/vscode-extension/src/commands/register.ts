@@ -1,0 +1,265 @@
+import path from "node:path";
+import { ProtocolError } from "@learn-by-diff/protocol";
+import * as vscode from "vscode";
+import type { GitClient } from "../git/client.ts";
+import { GitError } from "../git/errors.ts";
+import { runWorkspaceCommand } from "../runtime/command.ts";
+import { openChapterDiff, openEntryFile } from "../ui/diff.ts";
+import type { CourseTreeProvider } from "../ui/explorerView.ts";
+import { createLearningWorkspace } from "../workspace/creator.ts";
+import { DirtyWorkspaceError } from "../workspace/errors.ts";
+import {
+  isInPlaceLearningTarget,
+  loadLearningSession,
+  type LearningSession,
+} from "../workspace/loader.ts";
+import { nextChapter, previousChapter, switchToChapter } from "../workspace/session.ts";
+
+/**
+ * Registers commands and wires them to the current workspace folder.
+ *
+ * @param context - Extension context
+ * @param git - Git CLI client
+ * @param tree - Explorer tree provider
+ * @param setSession - Updates tree + status bar
+ */
+export function registerCommands(
+  context: vscode.ExtensionContext,
+  git: GitClient,
+  tree: CourseTreeProvider,
+  setSession: (session: LearningSession | undefined) => void,
+): void {
+  const output = vscode.window.createOutputChannel("LearnByDiff");
+  context.subscriptions.push(output);
+
+  /**
+   * Returns the first workspace folder path, if any.
+   */
+  function workspaceRoot(): string | undefined {
+    return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  }
+
+  /**
+   * Reloads `.learn` state for the open folder into the UI.
+   */
+  async function restore(): Promise<LearningSession | undefined> {
+    const root = workspaceRoot();
+    if (root === undefined) {
+      setSession(undefined);
+      return undefined;
+    }
+    try {
+      const session = await loadLearningSession(root);
+      setSession(session);
+      return session;
+    } catch (error) {
+      setSession(undefined);
+      showError(error);
+      return undefined;
+    }
+  }
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("learnByDiff.openCourse", async () => {
+      const url = await vscode.window.showInputBox({
+        title: "LearnByDiff: Open Course",
+        prompt: "Course repository URL (must contain .course-config/course.yml)",
+        placeHolder: "https://github.com/org/course.git",
+        ignoreFocusOut: true,
+      });
+      if (url === undefined || url.trim() === "") {
+        return;
+      }
+
+      const root = workspaceRoot();
+      let inPlaceRoot: string | undefined;
+      let parentDir: string | undefined;
+      if (root !== undefined && (await isInPlaceLearningTarget(root))) {
+        inPlaceRoot = root;
+      } else {
+        const picked = await vscode.window.showOpenDialog({
+          canSelectFiles: false,
+          canSelectFolders: true,
+          canSelectMany: false,
+          openLabel: "Create learning workspace here",
+          title: "Parent folder for the learning workspace",
+        });
+        parentDir = picked?.[0]?.fsPath;
+        if (parentDir === undefined) {
+          return;
+        }
+      }
+
+      let learningRoot: string | undefined;
+      await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: "LearnByDiff: opening course",
+          cancellable: false,
+        },
+        async () => {
+          try {
+            const created = await createLearningWorkspace({
+              courseRepoUrl: url.trim(),
+              inPlaceRoot,
+              parentDir,
+              git,
+              onLog: (line) => output.appendLine(line),
+              runInstall: async (command, cwd) => {
+                output.show(true);
+                await runWorkspaceCommand(command, cwd, (chunk) => output.append(chunk));
+              },
+            });
+            learningRoot = created.learningRoot;
+          } catch (error) {
+            if (error instanceof ProtocolError) {
+              void vscode.window.showErrorMessage(
+                `This repository has no valid Learning Course Protocol config.\n${error.message}`,
+              );
+              return;
+            }
+            showError(error);
+          }
+        },
+      );
+
+      if (learningRoot === undefined) {
+        return;
+      }
+
+      const current = workspaceRoot();
+      if (current !== undefined && path.resolve(current) === path.resolve(learningRoot)) {
+        await restore();
+        return;
+      }
+      await vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(learningRoot));
+    }),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("learnByDiff.nextChapter", async () => {
+      const session = (await restore()) ?? (await loadFromRoot());
+      if (session === undefined) {
+        return;
+      }
+      const next = nextChapter(session);
+      if (next === undefined) {
+        void vscode.window.showInformationMessage("This is the last chapter.");
+        return;
+      }
+      await applyChapterSwitch(session, next.id);
+    }),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("learnByDiff.previousChapter", async () => {
+      const session = (await restore()) ?? (await loadFromRoot());
+      if (session === undefined) {
+        return;
+      }
+      const previous = previousChapter(session);
+      if (previous === undefined) {
+        void vscode.window.showInformationMessage("This is the first chapter.");
+        return;
+      }
+      await applyChapterSwitch(session, previous.id);
+    }),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("learnByDiff.openDiff", async () => {
+      const session = (await restore()) ?? (await loadFromRoot());
+      if (session === undefined) {
+        return;
+      }
+      await openChapterDiff(git, session);
+    }),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("learnByDiff.runTests", async () => {
+      const session = (await restore()) ?? (await loadFromRoot());
+      if (session === undefined) {
+        return;
+      }
+      output.show(true);
+      output.appendLine(`$ ${session.course.config.workspace.test}`);
+      try {
+        await runWorkspaceCommand(
+          session.course.config.workspace.test,
+          session.workspaceRoot,
+          (chunk) => output.append(chunk),
+        );
+        const goNext = await vscode.window.showInformationMessage(
+          "Tests passed. Open the next chapter?",
+          "Next Chapter",
+        );
+        if (goNext === "Next Chapter") {
+          await vscode.commands.executeCommand("learnByDiff.nextChapter");
+        }
+      } catch (error) {
+        showError(error);
+      }
+    }),
+  );
+
+  /**
+   * Loads a session from the open folder without resetting UI on failure.
+   */
+  async function loadFromRoot(): Promise<LearningSession | undefined> {
+    const root = workspaceRoot();
+    if (root === undefined) {
+      void vscode.window.showWarningMessage("Open a folder first.");
+      return undefined;
+    }
+    const session = await loadLearningSession(root);
+    if (session === undefined) {
+      void vscode.window.showWarningMessage("This folder is not a LearnByDiff learning workspace.");
+    }
+    return session;
+  }
+
+  /**
+   * Switches chapter after optional dirty confirmation, then opens entry + diff.
+   */
+  async function applyChapterSwitch(session: LearningSession, chapterId: string): Promise<void> {
+    try {
+      await switchToChapter(git, session, chapterId, false);
+    } catch (error) {
+      if (error instanceof DirtyWorkspaceError) {
+        const choice = await vscode.window.showWarningMessage(
+          "Uncommitted changes will be overwritten. Continue?",
+          { modal: true },
+          "Continue",
+        );
+        if (choice !== "Continue") {
+          return;
+        }
+        await switchToChapter(git, session, chapterId, true);
+      } else {
+        showError(error);
+        return;
+      }
+    }
+    setSession(session);
+    tree.setSession(session);
+    await openEntryFile(session);
+    await openChapterDiff(git, session);
+  }
+
+  void restore();
+}
+
+/**
+ * Shows a Git or generic error in a message box.
+ *
+ * @param error - Thrown value
+ */
+function showError(error: unknown): void {
+  if (error instanceof GitError || error instanceof ProtocolError) {
+    void vscode.window.showErrorMessage(error.message);
+    return;
+  }
+  const message = error instanceof Error ? error.message : String(error);
+  void vscode.window.showErrorMessage(message);
+}

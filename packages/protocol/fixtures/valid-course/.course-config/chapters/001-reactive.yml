@@ -1,0 +1,8 @@
+id: reactive
+title: Reactive
+fromRef: examples/start
+toRef: examples/reactive
+entryFiles:
+  - packages/reactivity/reactive.ts
+tests:
+  - packages/reactivity/__tests__/reactive.spec.ts
