@@ -1,2 +1,3 @@
+# yaml-language-server: $schema=../../../packages/protocol/schema.json#/$defs/course
 source:
   repository: ../demo-source
