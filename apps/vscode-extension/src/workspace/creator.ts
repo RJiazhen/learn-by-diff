@@ -74,10 +74,8 @@ export async function createLearningWorkspace(
     await assertSourceSubtree(git, paths.sourceMirror, first.fromDir);
     await assertSourceSubtree(git, paths.sourceMirror, first.toDir);
 
-    await clearStudentTree(learningRoot);
     onLog?.(`Exporting chapter ${first.id} (${first.fromDir}/)…`);
-    await exportSourceSubtree(git, paths.sourceMirror, first.fromDir, learningRoot);
-    await ensureLearnGitignore(learningRoot);
+    await replaceStudentTreeFromSource(git, learningRoot, paths.sourceMirror, first.fromDir);
 
     await writeProgress(learningRoot, { chapter: first.id, completed: false });
 
@@ -180,14 +178,34 @@ export async function checkoutChapter(
     throw new Error(`unknown chapter: ${chapterId}`);
   }
   const { sourceMirror } = learningPaths(workspaceRoot);
+  await replaceStudentTreeFromSource(git, workspaceRoot, sourceMirror, chapter.fromDir);
+  await writeProgress(workspaceRoot, { chapter: chapterId, completed: false });
+}
+
+/**
+ * Clears the student tree and exports `subdir`, preserving any existing `.gitignore`.
+ *
+ * Chapter snapshots may include a `.gitignore`; that must not replace the learner's
+ * file. Learn-related ignore rules are merged afterward via {@link ensureLearnGitignore}.
+ *
+ * @param git - Git client
+ * @param workspaceRoot - Learning workspace root
+ * @param sourceStore - Materialized source store
+ * @param subdir - Chapter directory to export as the student tree
+ */
+async function replaceStudentTreeFromSource(
+  git: GitClient,
+  workspaceRoot: string,
+  sourceStore: string,
+  subdir: string,
+): Promise<void> {
   const preservedGitignore = await readGitignore(workspaceRoot);
   await clearStudentTree(workspaceRoot);
-  await exportSourceSubtree(git, sourceMirror, chapter.fromDir, workspaceRoot);
+  await exportSourceSubtree(git, sourceStore, subdir, workspaceRoot);
   if (preservedGitignore !== undefined) {
     await writeFile(path.join(workspaceRoot, ".gitignore"), preservedGitignore, "utf8");
   }
   await ensureLearnGitignore(workspaceRoot);
-  await writeProgress(workspaceRoot, { chapter: chapterId, completed: false });
 }
 
 /**

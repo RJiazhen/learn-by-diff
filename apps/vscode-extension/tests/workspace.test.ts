@@ -213,6 +213,76 @@ describe("learning workspace", () => {
     );
   });
 
+  test("createLearningWorkspace merges learn ignore rules into an existing .gitignore", async () => {
+    const pair = await tempDir("lbd-merge-gi-");
+    const sourceDir = path.join(pair, "demo-source");
+    const courseDir = path.join(pair, "demo-course");
+    await mkdir(path.join(sourceDir, "start", "pkg"), { recursive: true });
+    await mkdir(path.join(sourceDir, "done", "pkg"), { recursive: true });
+    await writeFile(
+      path.join(sourceDir, "start", "pkg", "index.ts"),
+      "export const v = 1;\n",
+      "utf8",
+    );
+    await writeFile(
+      path.join(sourceDir, "done", "pkg", "index.ts"),
+      "export const v = 2;\n",
+      "utf8",
+    );
+    await writeFile(path.join(sourceDir, "start", ".gitignore"), "from-chapter\n", "utf8");
+
+    await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
+    await writeFile(
+      path.join(courseDir, ".course-config", "course.yml"),
+      [
+        "protocolVersion: 1",
+        "id: mergegi",
+        "title: Merge",
+        "source:",
+        "  repository: ../demo-source",
+        "workspace:",
+        '  install: "true"',
+        '  dev: "true"',
+        '  test: "true"',
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+    await writeFile(
+      path.join(courseDir, ".course-config", "chapters", "001.yml"),
+      [
+        "id: one",
+        "title: One",
+        "fromDir: start",
+        "toDir: done",
+        "entryFiles:",
+        "  - pkg/index.ts",
+        "tests:",
+        "  - pkg/index.ts",
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+
+    const inPlace = await tempDir("lbd-merge-gi-root-");
+    await writeFile(path.join(inPlace, "README.md"), "sandbox\n", "utf8");
+    await writeFile(path.join(inPlace, ".gitignore"), "keep-me\ndist/\n", "utf8");
+
+    const created = await createLearningWorkspace({
+      courseRepoUrl: courseDir,
+      inPlaceRoot: inPlace,
+      git,
+      runInstall: async () => {},
+    });
+
+    const gitignore = await readFile(path.join(created.learningRoot, ".gitignore"), "utf8");
+    expect(gitignore).toContain("keep-me");
+    expect(gitignore).toContain("dist/");
+    expect(gitignore).toContain(".learn/source.git/");
+    expect(gitignore).toContain(".learn/snapshots/");
+    expect(gitignore).not.toContain("from-chapter");
+  });
+
   test("checkoutChapter preserves workspace .gitignore across chapter export", async () => {
     const pair = await tempDir("lbd-gi-pair-");
     const sourceDir = path.join(pair, "demo-source");
