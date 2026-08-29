@@ -1,5 +1,5 @@
 import type { ChapterConfig, Course, CourseConfig, ProtocolIssue } from "./types.ts";
-import { PROTOCOL_VERSION, ProtocolError } from "./types.ts";
+import { ProtocolError } from "./types.ts";
 import { normalizeSourceDirPath } from "./sourcePath.ts";
 
 /**
@@ -7,7 +7,7 @@ import { normalizeSourceDirPath } from "./sourcePath.ts";
  *
  * Does not talk to Git. Source subdirectory existence is checked later by the extension.
  *
- * @param config - Parsed `course.yml`
+ * @param config - Parsed `course.yml` (defaults already applied)
  * @param chapters - Parsed chapter documents (defaults already applied)
  * @param configDir - `.course-config` directory, used in issue paths
  */
@@ -28,24 +28,15 @@ export function validateCourse(
 }
 
 /**
- * Collects `course.yml` field issues into `issues`.
+ * Collects `course.yml` field issues into `issues` (after defaults).
  */
 function validateCourseConfig(config: CourseConfig, issues: ProtocolIssue[]): void {
-  if (config.protocolVersion !== PROTOCOL_VERSION) {
-    issues.push({
-      path: "course.yml#protocolVersion",
-      message: `unsupported protocolVersion ${String(config.protocolVersion)}; expected ${String(PROTOCOL_VERSION)}`,
-    });
-  }
   requireNonEmpty(issues, "course.yml#id", config.id);
   requireNonEmpty(issues, "course.yml#title", config.title);
   requireNonEmpty(issues, "course.yml#source.repository", config.source.repository);
   if (config.source.root !== undefined && config.source.root.trim() !== "") {
     requireSourceDirPath(issues, "course.yml#source.root", config.source.root);
   }
-  requireNonEmpty(issues, "course.yml#workspace.install", config.workspace.install);
-  requireNonEmpty(issues, "course.yml#workspace.dev", config.workspace.dev);
-  requireNonEmpty(issues, "course.yml#workspace.test", config.workspace.test);
 }
 
 /**

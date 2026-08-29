@@ -7,9 +7,6 @@ export const COURSE_FILE_NAME = "course.yml";
 /** Directory of per-chapter protocol documents under the course config dir. */
 export const CHAPTERS_DIR_NAME = "chapters";
 
-/** Supported Learning Course Protocol version. */
-export const PROTOCOL_VERSION = 1;
-
 /** Source repository pointer in `course.yml`. */
 export interface CourseSource {
   /** Git URL or path to the source repository (relative paths resolve from the course repo). */
@@ -21,20 +18,20 @@ export interface CourseSource {
   root?: string;
 }
 
-/** Install, dev, and test commands declared for the learning workspace. */
-export interface CourseWorkspace {
-  install: string;
-  dev: string;
-  test: string;
-}
-
-/** Parsed `course.yml` document. */
+/**
+ * Parsed `course.yml` document (after load-time defaults).
+ *
+ * No field is required in the YAML file. Defaults:
+ * - `id` ← parent dir of `.course-config`, or `{repoName}-learn` when that parent is a git root
+ * - `title` ← `id`
+ * - `source.repository` ← `.` (course home directory containing `.course-config`)
+ *
+ * Protocol evolves by adding optional fields only; there is no `protocolVersion` gate.
+ */
 export interface CourseConfig {
-  protocolVersion: number;
   id: string;
   title: string;
   source: CourseSource;
-  workspace: CourseWorkspace;
 }
 
 /**

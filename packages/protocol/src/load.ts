@@ -1,5 +1,6 @@
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
+import { applyCourseDefaults } from "./courseDefaults.ts";
 import { parseChapterYaml, parseCourseYaml } from "./parse.ts";
 import type { ChapterConfig, Course } from "./types.ts";
 import { CHAPTERS_DIR_NAME, COURSE_CONFIG_DIR, COURSE_FILE_NAME, ProtocolError } from "./types.ts";
@@ -50,7 +51,8 @@ export async function loadCourseFromConfigDir(configDir: string): Promise<Course
     ]);
   }
 
-  const config = parseCourseYaml(courseText, `${COURSE_CONFIG_DIR}/${COURSE_FILE_NAME}`);
+  const parsed = parseCourseYaml(courseText, `${COURSE_CONFIG_DIR}/${COURSE_FILE_NAME}`);
+  const config = applyCourseDefaults(parsed, configDir);
   const chapters = await loadChapters(configDir);
   return validateCourse(config, chapters, configDir);
 }

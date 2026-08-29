@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/packages/protocol/schema.json",
-  "title": "Learning Course Protocol (LCP) v1",
-  "description": "JSON Schema for LearnByDiff course.yml and chapter YAML documents. Wire via YAML language server ($schema comment or yaml.schemas).",
+  "title": "Learning Course Protocol (LCP)",
+  "description": "JSON Schema for LearnByDiff course.yml and chapter YAML documents. Wire via YAML language server ($schema comment or yaml.schemas). Protocol evolves additively; all course.yml fields are optional.",
   "oneOf": [{ "$ref": "#/$defs/course" }, { "$ref": "#/$defs/chapter" }],
   "$defs": {
     "nonEmptyString": {
@@ -25,12 +25,11 @@
     "courseSource": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["repository"],
       "properties": {
         "repository": {
           "type": "string",
           "minLength": 1,
-          "description": "Git URL or filesystem path to the source repository. Relative paths resolve from the course repository."
+          "description": "Git URL or filesystem path to the source repository. Defaults to `.` (the directory that contains `.course-config`). Relative paths resolve from the course repository."
         },
         "root": {
           "$ref": "#/$defs/sourceDirPath",
@@ -38,48 +37,21 @@
         }
       }
     },
-    "courseWorkspace": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["install", "dev", "test"],
-      "properties": {
-        "install": {
-          "$ref": "#/$defs/nonEmptyString",
-          "description": "Command run once when creating the learning workspace."
-        },
-        "dev": {
-          "$ref": "#/$defs/nonEmptyString",
-          "description": "Dev-server / watch command for the learning workspace."
-        },
-        "test": {
-          "$ref": "#/$defs/nonEmptyString",
-          "description": "Test command for the learning workspace."
-        }
-      }
-    },
     "course": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["protocolVersion", "id", "title", "source", "workspace"],
+      "description": "All fields optional. Defaults: id from parent of `.course-config` (or `{repo}-learn` at a git root), title=id, source.repository=`.`.",
       "properties": {
-        "protocolVersion": {
-          "type": "integer",
-          "const": 1,
-          "description": "Learning Course Protocol version. Must be 1."
-        },
         "id": {
           "$ref": "#/$defs/nonEmptyString",
-          "description": "Stable course id (also used as the default learning workspace folder name)."
+          "description": "Stable course id (also used as the default learning workspace folder name). Defaults from the `.course-config` parent directory."
         },
         "title": {
           "$ref": "#/$defs/nonEmptyString",
-          "description": "Human-readable course title."
+          "description": "Human-readable course title. Defaults to id."
         },
         "source": {
           "$ref": "#/$defs/courseSource"
-        },
-        "workspace": {
-          "$ref": "#/$defs/courseWorkspace"
         }
       }
     },
@@ -107,7 +79,7 @@
         "entryFiles": {
           "type": "array",
           "uniqueItems": true,
-          "description": "Optional paths relative to the chapter tree root. When omitted, all files under toDir are used.",
+          "description": "Optional paths relative to the chapter snapshot tree root. When omitted, all files under toDir are used.",
           "items": {
             "$ref": "#/$defs/relativeFilePath"
           }

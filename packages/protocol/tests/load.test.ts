@@ -21,18 +21,12 @@ describe("loadCourse", () => {
     expect(course.chapters.map((chapter) => chapter.id)).toEqual(["reactive", "effect"]);
   });
 
-  test("rejects missing required fields", async () => {
-    await expect(loadCourse(fixtureRoot("missing-fields"))).rejects.toBeInstanceOf(ProtocolError);
-  });
-
-  test("rejects unsupported protocol versions", async () => {
-    try {
-      await loadCourse(fixtureRoot("unsupported-version"));
-      throw new Error("expected ProtocolError");
-    } catch (error) {
-      expect(error).toBeInstanceOf(ProtocolError);
-      expect((error as ProtocolError).message).toMatch(/protocolVersion/);
-    }
+  test("applies course.yml defaults when fields are omitted", async () => {
+    const course = await loadCourse(fixtureRoot("empty-course"));
+    expect(course.config.id).toBe("empty-course");
+    expect(course.config.title).toBe("empty-course");
+    expect(course.config.source.repository).toBe(".");
+    expect(course.chapters.map((chapter) => chapter.id)).toEqual(["hello"]);
   });
 
   test("rejects duplicate chapter ids", async () => {

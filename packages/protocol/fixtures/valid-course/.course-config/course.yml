@@ -1,9 +1,4 @@
-protocolVersion: 1
 id: chibivue
 title: ChibiVue
 source:
   repository: https://github.com/chibivue-land/chibivue
-workspace:
-  install: pnpm install
-  dev: pnpm dev
-  test: pnpm test
