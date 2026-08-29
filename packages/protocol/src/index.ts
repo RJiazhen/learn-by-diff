@@ -8,6 +8,11 @@ export {
   type ParsedCourseFields,
 } from "./courseDefaults.ts";
 export { parseChapterYaml, parseCourseYaml, parseYamlDocument } from "./parse.ts";
-export { normalizeSourceDirPath, resolveSourceSubtreePath } from "./sourcePath.ts";
+export {
+  isHttpUrl,
+  normalizeRelativeFilePath,
+  normalizeSourceDirPath,
+  resolveSourceSubtreePath,
+} from "./sourcePath.ts";
 export { validateCourse } from "./validate.ts";
 export { isCourseRepository, loadCourse, loadCourseFromConfigDir } from "./load.ts";

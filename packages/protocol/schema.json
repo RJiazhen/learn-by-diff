@@ -83,6 +83,11 @@
           "items": {
             "$ref": "#/$defs/relativeFilePath"
           }
+        },
+        "docs": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional chapter documentation: an http(s) URL, or a file path relative to the chapter snapshot tree (toDir / fromDir), e.g. README.md or notes/guide.pdf."
         }
       }
     }

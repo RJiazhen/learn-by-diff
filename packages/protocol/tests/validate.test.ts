@@ -4,7 +4,12 @@ import path from "node:path";
 import { describe, expect, test } from "vite-plus/test";
 import { chapterIdFromFileName } from "../src/chapterDefaults.ts";
 import { applyCourseDefaults, courseHomeDir, defaultCourseId } from "../src/courseDefaults.ts";
-import { normalizeSourceDirPath, resolveSourceSubtreePath } from "../src/sourcePath.ts";
+import {
+  isHttpUrl,
+  normalizeRelativeFilePath,
+  normalizeSourceDirPath,
+  resolveSourceSubtreePath,
+} from "../src/sourcePath.ts";
 import { parseChapterYaml, parseCourseYaml } from "../src/parse.ts";
 import { ProtocolError } from "../src/types.ts";
 import { validateCourse } from "../src/validate.ts";
@@ -104,11 +109,39 @@ describe("parseChapterYaml", () => {
     expect(chapter.entryFiles).toBeUndefined();
   });
 
+  test("parses optional docs", () => {
+    const chapter = parseChapterYaml(
+      "docs: https://example.com/lesson\n",
+      "chapters/001-hello.yml",
+      "001-hello.yml",
+    );
+    expect(chapter.docs).toBe("https://example.com/lesson");
+  });
+
   test("allows empty fromDir and toDir", () => {
     const chapter = parseChapterYaml("{}\n", "chapters/001-concept.yml", "001-concept.yml");
     expect(chapter.id).toBe("concept");
     expect(chapter.fromDir).toBe("");
     expect(chapter.toDir).toBe("");
+  });
+});
+
+describe("isHttpUrl", () => {
+  test("detects http(s) URLs", () => {
+    expect(isHttpUrl("https://example.com/a")).toBe(true);
+    expect(isHttpUrl("http://localhost:3000")).toBe(true);
+    expect(isHttpUrl("README.md")).toBe(false);
+    expect(isHttpUrl("ftp://x")).toBe(false);
+  });
+});
+
+describe("normalizeRelativeFilePath", () => {
+  test("accepts nested file paths", () => {
+    expect(normalizeRelativeFilePath("notes/guide.pdf")).toBe("notes/guide.pdf");
+  });
+
+  test("rejects traversal", () => {
+    expect(normalizeRelativeFilePath("../secret.md")).toBeUndefined();
   });
 });
 
@@ -196,6 +229,21 @@ describe("validateCourse", () => {
         "/tmp/config",
       ),
     ).toThrow(ProtocolError);
+  });
+
+  test("rejects unsafe docs paths", () => {
+    expect(() =>
+      validateCourse(validConfig, [{ ...validChapter, docs: "../secret.md" }], "/tmp/config"),
+    ).toThrow(/docs/);
+  });
+
+  test("accepts http docs URLs", () => {
+    const course = validateCourse(
+      validConfig,
+      [{ ...validChapter, docs: "https://example.com/docs" }],
+      "/tmp/config",
+    );
+    expect(course.chapters[0]?.docs).toBe("https://example.com/docs");
   });
 
   test("rejects unsafe fromDir paths", () => {

@@ -1,6 +1,6 @@
 import type { ChapterConfig, Course, CourseConfig, ProtocolIssue } from "./types.ts";
 import { ProtocolError } from "./types.ts";
-import { normalizeSourceDirPath } from "./sourcePath.ts";
+import { isHttpUrl, normalizeRelativeFilePath, normalizeSourceDirPath } from "./sourcePath.ts";
 
 /**
  * Validates a parsed course and its chapters; throws {@link ProtocolError} on failure.
@@ -72,6 +72,9 @@ function validateChapters(chapters: ChapterConfig[], issues: ProtocolIssue[]): v
         }
       }
     }
+    if (chapter.docs !== undefined && chapter.docs.trim() !== "") {
+      requireDocsRef(issues, `${prefix}.docs`, chapter.docs);
+    }
 
     if (chapter.id !== "" && seenIds.has(chapter.id)) {
       issues.push({
@@ -103,6 +106,22 @@ function requireSourceDirPath(issues: ProtocolIssue[], path: string, value: stri
       path,
       message:
         "must be a relative directory path under the source repo (nested dirs allowed; no '..' or absolute paths)",
+    });
+  }
+}
+
+/**
+ * Pushes an issue when `value` is neither an http(s) URL nor a safe relative file path.
+ */
+function requireDocsRef(issues: ProtocolIssue[], path: string, value: string): void {
+  if (isHttpUrl(value)) {
+    return;
+  }
+  if (normalizeRelativeFilePath(value) === undefined) {
+    issues.push({
+      path,
+      message:
+        "must be an http(s) URL or a relative file path under the chapter snapshot (no '..' or absolute paths)",
     });
   }
 }

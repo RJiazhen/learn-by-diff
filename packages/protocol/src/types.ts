@@ -42,6 +42,7 @@ export interface CourseConfig {
  * - `title` ← `id`
  * - `fromDir` / `toDir` ← `""` (empty snapshot tree)
  * - `entryFiles` ← omitted means discover all files under `toDir` at runtime
+ * - `docs` ← omitted means no documentation button
  */
 export interface ChapterConfig {
   id: string;
@@ -61,6 +62,11 @@ export interface ChapterConfig {
    * `undefined` = auto-discover all files under `toDir` at runtime.
    */
   entryFiles?: string[];
+  /**
+   * Optional chapter documentation: an `http(s)` URL, or a file path relative to the
+   * chapter snapshot tree (`toDir`, then `fromDir`) such as `README.md` or `notes/guide.pdf`.
+   */
+  docs?: string;
 }
 
 /** Fully loaded course: root config plus chapters in file-name order. */

@@ -67,12 +67,14 @@ export function parseChapterYaml(text: string, path: string, fileName: string): 
   const id = asString(value.id) || defaultId;
   const title = asString(value.title) || id;
   const entryFiles = Array.isArray(value.entryFiles) ? asStringArray(value.entryFiles) : undefined;
+  const docs = asString(value.docs).trim();
   return {
     id,
     title,
     fromDir: asString(value.fromDir),
     toDir: asString(value.toDir),
     ...(entryFiles !== undefined ? { entryFiles } : {}),
+    ...(docs !== "" ? { docs } : {}),
   };
 }
 

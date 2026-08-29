@@ -28,6 +28,27 @@ export function normalizeSourceDirPath(value: string): string | undefined {
 }
 
 /**
+ * Returns whether `value` is an `http:` or `https:` URL.
+ *
+ * @param value - Declared docs string
+ */
+export function isHttpUrl(value: string): boolean {
+  return /^https?:\/\//i.test(value.trim());
+}
+
+/**
+ * Normalizes a chapter-relative file path (for `docs` / `entryFiles`-style values).
+ *
+ * Rejects absolute paths and `..` traversal. Allows nested paths and file names.
+ *
+ * @param value - Raw relative file path
+ * @returns Normalized posix path, or `undefined` when invalid
+ */
+export function normalizeRelativeFilePath(value: string): string | undefined {
+  return normalizeSourceDirPath(value);
+}
+
+/**
  * Resolves a chapter `fromDir` / `toDir` to a path relative to the source repository root.
  *
  * When `source.root` is set, chapter dirs are nested under that prefix so different
