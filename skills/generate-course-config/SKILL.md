@@ -94,6 +94,7 @@ Layout:
 `course.yml` template (all fields optional; omit what defaults cover):
 
 ```yaml
+# yaml-language-server: $schema=<relative-path-to>/packages/protocol/schema.json#/$defs/course
 # id / title default from the `.course-config` parent folder (or `{repo}-learn` at a git root)
 source:
   repository: <url-or-relative-path> # default: .
@@ -105,6 +106,7 @@ Only set `source.repository` when it is not the course home (`.`). Do not emit `
 Minimal chapter file (defaults fill the rest):
 
 ```yaml
+# yaml-language-server: $schema=<relative-path-to>/packages/protocol/schema.json#/$defs/chapter
 fromDir: <fromDir>
 toDir: <toDir>
 ```
@@ -112,12 +114,14 @@ toDir: <toDir>
 Or with explicit fields:
 
 ```yaml
+# yaml-language-server: $schema=<relative-path-to>/packages/protocol/schema.json#/$defs/chapter
 id: <id>
 title: <title>
 fromDir: <fromDir>
 toDir: <toDir>
 # entryFiles:   # optional; omit to auto-discover
 #   - src/index.ts
+# docs: README.md   # optional http(s) URL or path under toDir/fromDir
 ```
 
 Number chapter filenames `001-`, `002-`, … (sort order = course order). Empty `fromDir` / `toDir` are allowed (empty trees).
