@@ -3,6 +3,8 @@ import type { GitClient } from "../git/client.ts";
 import { checkoutChapter, materializeChapterSnapshots } from "./creator.ts";
 import { DirtyWorkspaceError } from "./errors.ts";
 import type { LearningSession } from "./loader.ts";
+import { learningPaths } from "./paths.ts";
+import { hasStudentEditsSinceChapterStart } from "./studentTree.ts";
 
 export type { LearningSession };
 
@@ -46,12 +48,15 @@ export function previousChapter(session: LearningSession): ChapterConfig | undef
 }
 
 /**
- * Checks dirtiness, exports the chapter start tree, and writes from/to snapshots.
+ * Checks for learner edits vs the current chapter start, then exports the target chapter.
+ *
+ * Confirmation is only required when student-visible files differ from the current
+ * chapter's `fromDir` snapshot. Matching the start tree switches immediately.
  *
  * @param git - Git client
  * @param session - Session to mutate via checkout
  * @param chapterId - Target chapter
- * @param force - Skip dirty check when the user already confirmed
+ * @param force - Skip edit check when the user already confirmed
  */
 export async function switchToChapter(
   git: GitClient,
@@ -59,8 +64,18 @@ export async function switchToChapter(
   chapterId: string,
   force = false,
 ): Promise<void> {
-  if (!force && (await git.isWorkTreeDirty(session.workspaceRoot))) {
-    throw new DirtyWorkspaceError(session.workspaceRoot);
+  if (!force) {
+    const current = currentChapter(session);
+    const { sourceMirror } = learningPaths(session.workspaceRoot);
+    const hasEdits = await hasStudentEditsSinceChapterStart(
+      git,
+      session.workspaceRoot,
+      sourceMirror,
+      current.fromDir,
+    );
+    if (hasEdits) {
+      throw new DirtyWorkspaceError(session.workspaceRoot);
+    }
   }
   await checkoutChapter(git, session.workspaceRoot, session.course, chapterId);
   session.progress = { chapter: chapterId, completed: false };
