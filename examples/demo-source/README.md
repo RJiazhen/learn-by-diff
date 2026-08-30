@@ -11,8 +11,9 @@ Each snapshot’s `index.html` loads a single entry: `<script src="src/main.js" 
 | `particles/` | particles goal / follow start   | add `src/particle/`; `boot()` calls `createParticles()` |
 | `follow/`    | follow goal / glow start        | add `src/pointer/`; orbit ring + scatter on leave       |
 | `glow/`      | glow goal                       | constant glow + trails in `particle.js` / `canvas.js`   |
+| `blank/`     | blank chapter Completed         | `README.md` only; Not Started is an empty tree          |
 
-The course also has a fifth chapter (`blank`) that points `fromDir` and `toDir` at `glow/` — no extra snapshot — so the docs button can open `https://book.chibivue.land`.
+The fifth chapter (`blank`) has an empty `fromDir` and `toDir: blank`, with `docs: https://book.chibivue.land`, so the docs button can open a web URL.
 
 `glow/docs.pdf` is the chapter docs sample (PDF). Rebuild it from `glow/docs.md` with pandoc (this repo does not assume LaTeX):
 
