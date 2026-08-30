@@ -130,7 +130,17 @@ Do **not** overwrite existing `.course-config` without asking.
 
 ### 4. Done
 
-Summarize generated chapters (`fromDir` → `toDir`) and point authors at:
+Summarize generated chapters (`fromDir` → `toDir`). Then give the author a way to **try the course immediately**:
+
+1. Print the **absolute path** of the course root (the directory that contains `.course-config`). They can paste it into **Open Course**.
+2. Print clickable local deep links (URL-encode the same absolute path, or a `file:` URL, as `url=`):
+
+```text
+vscode://rjiazhen.learn-by-diff/open?url=<urlencoded-absolute-course-root>
+cursor://rjiazhen.learn-by-diff/open?url=<urlencoded-absolute-course-root>
+```
+
+Also point authors at:
 
 - Schema: `packages/protocol/schema.json` (or repo README)
 - Demo pair: `examples/demo-course` + `examples/demo-source`

@@ -53,6 +53,16 @@ node skills/generate-course-config/scripts/detect-chapter-dirs.mjs .
 node skills/generate-course-config/scripts/detect-chapter-dirs.mjs --dirs start,hello,world .
 ```
 
+After files are written, the agent should print:
+
+- The **absolute course root** (parent of `.course-config`) to paste into **Open Course**
+- Local try-open links:
+
+```text
+vscode://rjiazhen.learn-by-diff/open?url=<urlencoded-absolute-course-root>
+cursor://rjiazhen.learn-by-diff/open?url=<urlencoded-absolute-course-root>
+```
+
 ## Protocol notes
 
 - `course.yml` fields are all optional (`id` / `title` / `source.repository` have path-based defaults; optional `source.root`).
