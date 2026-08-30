@@ -1,6 +1,0 @@
-# yaml-language-server: $schema=../../../../packages/protocol/schema.json#/$defs/chapter
-id: world
-title: World
-fromDir: hello
-toDir: world
-docs: https://book.chibivue.land

@@ -1,0 +1,13 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: radial-gradient(circle at 50% 40%, #1a2450 0%, #070b14 62%);
+  overflow: hidden;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

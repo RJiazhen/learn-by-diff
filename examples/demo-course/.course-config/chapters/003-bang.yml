@@ -1,6 +1,0 @@
-# yaml-language-server: $schema=../../../../packages/protocol/schema.json#/$defs/chapter
-id: bang
-title: Bang
-fromDir: world
-toDir: bang
-docs: docs.pdf

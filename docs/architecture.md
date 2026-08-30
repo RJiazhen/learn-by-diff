@@ -104,8 +104,8 @@ Deep link authority = `publisher.name` → `rjiazhen.learn-by-diff`.
 
 ## Examples
 
-- `examples/demo-course` — course config (relative `../demo-source`, chapter `docs` samples).
-- `examples/demo-source` — `start` / `hello` / `world` / `bang` snapshots (+ README/pdf docs).
+- `examples/demo-course` — course config (relative `../demo-source`, chapter `docs` samples: Markdown, PDF, and an https URL).
+- `examples/demo-source` — `start` / `skeleton` / `particles` / `follow` / `glow` snapshots (canvas particles that follow the cursor).
 
 ## Related docs
 

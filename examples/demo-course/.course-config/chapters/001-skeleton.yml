@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=../../../../packages/protocol/schema.json#/$defs/chapter
+id: skeleton
+title: Canvas skeleton
+fromDir: start
+toDir: skeleton
+docs: README.md

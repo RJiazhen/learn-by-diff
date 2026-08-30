@@ -1,6 +1,0 @@
-# yaml-language-server: $schema=../../../../packages/protocol/schema.json#/$defs/chapter
-id: hello
-title: Hello
-fromDir: start
-toDir: hello
-docs: README.md

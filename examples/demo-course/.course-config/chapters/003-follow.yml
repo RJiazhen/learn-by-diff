@@ -1,0 +1,6 @@
+# yaml-language-server: $schema=../../../../packages/protocol/schema.json#/$defs/chapter
+id: follow
+title: Follow the cursor
+fromDir: particles
+toDir: follow
+docs: README.md

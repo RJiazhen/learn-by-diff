@@ -1,3 +1,4 @@
 # yaml-language-server: $schema=../../../packages/protocol/schema.json#/$defs/course
+title: Cursor particles
 source:
   repository: ../demo-source

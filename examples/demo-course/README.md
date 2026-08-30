@@ -1,6 +1,7 @@
 # Demo course (local F5 fixture)
 
-Minimal Learning Course Protocol course used when debugging the extension.
+Particle-cursor course used when debugging the extension. Five chapters: canvas skeleton → drifting particles → pointer follow → glow trails → a blank chapter whose docs are an https URL.
 
 - Config: [`.course-config/`](.course-config/)
 - Source tree: [`../demo-source`](../demo-source) with per-chapter directories (`fromDir` / `toDir`)
+- Docs samples: Markdown, PDF (`glow/docs.pdf`), and `https://book.chibivue.land` on the last chapter

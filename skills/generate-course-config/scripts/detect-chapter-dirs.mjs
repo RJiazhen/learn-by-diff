@@ -54,8 +54,8 @@ const NAME_SCORE = [
   [/^ch[-_]?(\d+)$/i, 30],
   [/^(\d{2,3})([-_.].+)?$/i, 30],
   [/^v?\d+(\.\d+)*$/i, 20],
-  // Common lesson folder tokens (demo-source style)
-  [/^(hello|world|bang|done|goal|final|reactive|effect)$/i, 25],
+  // Common lesson folder tokens (including the local demo-source names)
+  [/^(hello|world|bang|done|goal|final|reactive|effect|skeleton|particles|follow|glow)$/i, 25],
 ];
 
 /**
