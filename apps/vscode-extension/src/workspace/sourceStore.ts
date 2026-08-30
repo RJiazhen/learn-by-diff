@@ -1,4 +1,5 @@
-import { access, cp, mkdir, readdir, rm, stat } from "node:fs/promises";
+import { access, cp, mkdir, mkdtemp, readdir, rm, stat } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import type { GitClient } from "../git/client.ts";
 import { GitError } from "../git/errors.ts";
@@ -119,9 +120,30 @@ export async function assertSourceSubtree(
 }
 
 /**
+ * Copies each top-level entry from `fromDir` into `destDir`, replacing any
+ * existing file or directory of the same name (does not merge directory trees).
+ *
+ * Names present only in `destDir` are left in place; callers that need a full
+ * replace must clear those first.
+ *
+ * @param fromDir - Source directory whose children are copied
+ * @param destDir - Destination directory (created if missing)
+ */
+async function copyChildrenReplacing(fromDir: string, destDir: string): Promise<void> {
+  await mkdir(destDir, { recursive: true });
+  const entries = await readdir(fromDir);
+  for (const name of entries) {
+    const destPath = path.join(destDir, name);
+    await rm(destPath, { recursive: true, force: true });
+    await cp(path.join(fromDir, name), destPath, { recursive: true });
+  }
+}
+
+/**
  * Exports `subdir` from the source store into `destDir`.
  *
- * When `subdir` is `undefined`, creates an empty `destDir` (empty chapter snapshot).
+ * Same-named directories are replaced rather than merged. When `subdir` is
+ * `undefined`, creates an empty `destDir` (empty chapter snapshot).
  *
  * @param git - Git client
  * @param storePath - Materialized source store
@@ -140,12 +162,15 @@ export async function exportSourceSubtree(
   }
   await assertSourceSubtree(git, storePath, subdir);
   if (await isGitSourceStore(storePath)) {
-    await git.archiveSubtree(storePath, subdir, destDir);
+    const staging = await mkdtemp(path.join(tmpdir(), "learn-by-diff-export-"));
+    try {
+      await git.archiveSubtree(storePath, subdir, staging);
+      await copyChildrenReplacing(staging, destDir);
+    } finally {
+      await rm(staging, { recursive: true, force: true });
+    }
     return;
   }
   const from = path.join(storePath, ...subdir.split(/[/\\]/).filter(Boolean));
-  const entries = await readdir(from);
-  for (const name of entries) {
-    await cp(path.join(from, name), path.join(destDir, name), { recursive: true });
-  }
+  await copyChildrenReplacing(from, destDir);
 }

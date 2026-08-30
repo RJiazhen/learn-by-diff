@@ -244,19 +244,17 @@ async function replaceStudentTreeFromSource(
 }
 
 /**
- * Deletes workspace files except `.git`, `.learn`, `README.md`, and `.gitignore`.
+ * Deletes workspace files except `.git`, `.learn`, and `.gitignore`.
+ *
+ * Chapter docs such as `README.md` are snapshot content and must be removed so
+ * the next export is a replace, not a merge with the previous chapter.
  *
  * @param workspaceRoot - Learning repository root
  */
 export async function clearStudentTree(workspaceRoot: string): Promise<void> {
   const entries = await readdir(workspaceRoot, { withFileTypes: true });
   for (const entry of entries) {
-    if (
-      entry.name === ".git" ||
-      entry.name === ".learn" ||
-      entry.name === "README.md" ||
-      entry.name === ".gitignore"
-    ) {
+    if (entry.name === ".git" || entry.name === ".learn" || entry.name === ".gitignore") {
       continue;
     }
     await rm(path.join(workspaceRoot, entry.name), {

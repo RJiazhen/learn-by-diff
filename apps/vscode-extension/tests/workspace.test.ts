@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, test } from "vite-plus/test";
@@ -410,6 +410,88 @@ describe("learning workspace", () => {
       chapter: "one",
       completed: false,
       appliedSide: "finish",
+    });
+  });
+
+  test("applyChapterSnapshot replaces the student tree instead of merging snapshots", async () => {
+    const pair = await tempDir("lbd-replace-pair-");
+    const sourceDir = path.join(pair, "demo-source");
+    const courseDir = path.join(pair, "demo-course");
+    await mkdir(path.join(sourceDir, "start", "src"), { recursive: true });
+    await mkdir(path.join(sourceDir, "done", "src", "particle"), { recursive: true });
+    await writeFile(
+      path.join(sourceDir, "start", "src", "main.ts"),
+      "export const v = 1;\n",
+      "utf8",
+    );
+    await writeFile(path.join(sourceDir, "start", "README.md"), "# start docs\n", "utf8");
+    await writeFile(
+      path.join(sourceDir, "done", "src", "main.ts"),
+      "export const v = 2;\n",
+      "utf8",
+    );
+    await writeFile(
+      path.join(sourceDir, "done", "src", "particle", "field.ts"),
+      "export {};\n",
+      "utf8",
+    );
+    await writeFile(path.join(sourceDir, "done", "docs.md"), "finish notes\n", "utf8");
+
+    await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
+    await writeFile(
+      path.join(courseDir, ".course-config", "course.yml"),
+      ["id: replace", "title: Replace", "source:", "  repository: ../demo-source", ""].join("\n"),
+      "utf8",
+    );
+    await writeFile(
+      path.join(courseDir, ".course-config", "chapters", "001.yml"),
+      [
+        "id: one",
+        "title: One",
+        "fromDir: start",
+        "toDir: done",
+        "entryFiles:",
+        "  - src/main.ts",
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+
+    const parent = await tempDir("lbd-replace-parent-");
+    const created = await createLearningWorkspace({
+      courseRepoUrl: courseDir,
+      parentDir: parent,
+      git,
+    });
+    const session = await loadLearningSession(created.learningRoot);
+    expect(session).toBeDefined();
+    if (session === undefined) {
+      return;
+    }
+
+    await applyChapterSnapshot(git, session, "one", "finish");
+    expect(await readFile(path.join(created.learningRoot, "src/particle/field.ts"), "utf8")).toBe(
+      "export {};\n",
+    );
+    expect(await readFile(path.join(created.learningRoot, "docs.md"), "utf8")).toBe(
+      "finish notes\n",
+    );
+    await expect(access(path.join(created.learningRoot, "README.md"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+
+    await applyChapterSnapshot(git, session, "one", "start");
+    expect(await readFile(path.join(created.learningRoot, "src/main.ts"), "utf8")).toBe(
+      "export const v = 1;\n",
+    );
+    expect(await readFile(path.join(created.learningRoot, "README.md"), "utf8")).toBe(
+      "# start docs\n",
+    );
+    await expect(
+      access(path.join(created.learningRoot, "src/particle/field.ts")),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+    await expect(access(path.join(created.learningRoot, "docs.md"))).rejects.toMatchObject({
+      code: "ENOENT",
     });
   });
 
