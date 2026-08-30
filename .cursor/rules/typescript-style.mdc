@@ -1,0 +1,13 @@
+---
+description: TypeScript style for this monorepo
+globs: "**/*.{ts,mts,cts}"
+alwaysApply: false
+---
+
+# TypeScript style
+
+- Doc-comment every function, method, and named/assigned callback: purpose, non-obvious inputs/outputs, side effects, failures. Restating the name is not enough.
+- Prefer explicit types at module boundaries; match neighboring import style (`.ts` extensions in local imports where already used).
+- No drive-by refactors or unrelated formatting. Run `pnpm exec vp check` on touched packages.
+- Tests colocated under package `tests/`; use `vite-plus/test` (`describe`/`expect`/`test`).
+- Errors: protocol → `ProtocolError` with field paths; extension git → `GitError`; UI surfaces via `showError`.

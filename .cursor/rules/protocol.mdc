@@ -1,0 +1,14 @@
+---
+description: Conventions for @learn-by-diff/protocol and schema.json
+globs: packages/protocol/**/*
+alwaysApply: false
+---
+
+# Protocol package
+
+- Pure Node/TS: no `vscode`, no git side effects. Defaults belong in parse/load (`courseDefaults`, `chapterDefaults`), not in the extension.
+- Keep `schema.json` in sync with types; course/chapter are separate `$defs`. Authors use YAML modelines, not workspace `yaml.schemas`.
+- Validate only structure/safety (paths, uniqueness). Existence of snapshot dirs is the extension’s job.
+- Paths: reject `..` and absolutes for source/chapter-relative fields (`normalizeSourceDirPath` / relative file helpers).
+- Update `fixtures/` + `tests/` with any behavior change. Empty/`{}` course.yml must still load via defaults.
+- Export new helpers from `src/index.ts`. Pack before consumers run (`vp run @learn-by-diff/protocol#pack`).

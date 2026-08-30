@@ -1,0 +1,15 @@
+---
+description: LearnByDiff project core — read before changing behavior
+alwaysApply: true
+---
+
+# LearnByDiff core
+
+- Monorepo: `packages/protocol` (LCP) + `apps/vscode-extension` + `examples/` + `skills/` + `sandbox/`.
+- Entry docs: `AGENTS.md`, `docs/architecture.md`.
+- Protocol: additive optional fields only; no version gate; no `workspace` / chapter `tests` yet.
+- Prefer teaching via **diff reference**; overwrite the student tree only through **Chapter Start** / **Chapter Finish**.
+- After protocol `src` edits: `pnpm exec vp run @learn-by-diff/protocol#pack` before extension test/F5.
+- Every function/method/named callback needs a real doc comment (what it does).
+- Conventional Commits; one logical change per commit when asked to commit.
+- Do not commit secrets; do not edit `sandbox/**` generated state (gitignored) as source of truth—use `examples/`.

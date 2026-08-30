@@ -4,6 +4,8 @@ VS Code / Cursor extension that turns a GitHub **course repository** (Learning C
 
 This repo is a pnpm + [Vite+](https://viteplus.dev/) monorepo. It does not host courses, user accounts, or AI explanations.
 
+**Agents:** start at [`AGENTS.md`](AGENTS.md) (architecture: [`docs/architecture.md`](docs/architecture.md)).
+
 ## Packages
 
 | Path                                             | Role                                                                   |
@@ -25,7 +27,7 @@ pnpm exec vp run @learn-by-diff/protocol#pack
 pnpm exec vp run learn-by-diff#pack
 ```
 
-Press **F5** (`Run Extension`). The prelaunch task runs `vp pack --watch`, then the Extension Development Host opens [`sandbox/`](sandbox) with **other extensions disabled**. After code changes, reload the Extension Development Host window to pick up the rebuilt bundle. **LearnByDiff: Open Course** prefills [`examples/demo-course`](examples/demo-course).
+Press **F5** (`Run Extension`). The prelaunch task runs `vp pack --watch`, then the Extension Development Host opens [`sandbox/`](sandbox) in a temporary empty profile (no other user extensions). After code changes, reload the Extension Development Host window to pick up the rebuilt bundle. **LearnByDiff: Open Course** prefills [`examples/demo-course`](examples/demo-course).
 
 Real users pick a parent folder; the workspace is created as `{parent}/{course.id}/`.
 
