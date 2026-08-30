@@ -1,4 +1,4 @@
-import { stat } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
@@ -6,43 +6,42 @@ import { snapshotFile, writeChapterArchives } from "../snapshot/archive.ts";
 import { resolveChapterEntryFiles } from "../workspace/entryFiles.ts";
 import { learningPaths } from "../workspace/paths.ts";
 import { chapterOrdinal, type LearningSession } from "../workspace/session.ts";
-
-/** Scheme for missing snapshot sides so vscode.diff can open adds/deletes. */
-export const EMPTY_DIFF_SCHEME = "learnbydiff-empty";
+import { decodeSnapshotUriPath, encodeSnapshotUriPath } from "./snapshotUri.ts";
 
 /**
- * Provides empty document content for missing from/to snapshot files.
+ * Virtual scheme for vscode.diff sides so Explorer does not reveal `.learn/snapshots`.
  */
-export class EmptyDiffContentProvider implements vscode.TextDocumentContentProvider {
+export const SNAPSHOT_DIFF_SCHEME = "learnbydiff-snapshot";
+
+/**
+ * Serves snapshot file text (or empty for missing sides) to the diff editor.
+ */
+export class SnapshotDiffContentProvider implements vscode.TextDocumentContentProvider {
   /**
-   * Returns an empty string for any empty-diff URI.
+   * Returns snapshot file contents for `uri`, or an empty document when the file is missing.
+   *
+   * @param uri - Snapshot-diff URI whose path encodes the absolute snapshot file path
    */
-  provideTextDocumentContent(): string {
-    return "";
+  async provideTextDocumentContent(uri: vscode.Uri): Promise<string> {
+    try {
+      return await readFile(decodeSnapshotUriPath(uri.path), "utf8");
+    } catch {
+      return "";
+    }
   }
 }
 
 /**
- * Returns a URI usable as a vscode.diff side, using an empty virtual doc when the file is missing.
+ * Builds a virtual URI for one vscode.diff side from a snapshot file path.
  *
- * @param fsPath - Absolute snapshot file path
+ * Uses a custom scheme so opening the diff does not select `.learn/snapshots` in Explorer.
+ *
+ * @param fsPath - Absolute snapshot file path (file may be missing)
  */
-export async function uriForDiffSide(fsPath: string): Promise<vscode.Uri> {
-  try {
-    if ((await stat(fsPath)).isFile()) {
-      return vscode.Uri.file(fsPath);
-    }
-  } catch {
-    // Missing or not a file — fall through to empty virtual document.
-  }
-  // Avoid `//…` paths (illegal without an authority) when `fsPath` is absolute.
-  const normalized = fsPath
-    .split(/[/\\]/)
-    .filter((segment) => segment !== "")
-    .join("/");
+export function uriForDiffSide(fsPath: string): vscode.Uri {
   return vscode.Uri.from({
-    scheme: EMPTY_DIFF_SCHEME,
-    path: `/${normalized}`,
+    scheme: SNAPSHOT_DIFF_SCHEME,
+    path: encodeSnapshotUriPath(fsPath),
     query: path.basename(fsPath),
   });
 }
@@ -95,10 +94,8 @@ export async function openChapterFileDiff(
     session.course.config.source,
   );
 
-  const leftPath = snapshotFile(fromDir, relativePath);
-  const rightPath = snapshotFile(toDir, relativePath);
-  const left = await uriForDiffSide(leftPath);
-  const right = await uriForDiffSide(rightPath);
+  const left = uriForDiffSide(snapshotFile(fromDir, relativePath));
+  const right = uriForDiffSide(snapshotFile(toDir, relativePath));
   const ordinal = chapterOrdinal(chapterIndex, session.course.chapters.length);
   const title = `${ordinal}-${chapter.title}: ${path.basename(relativePath)}`;
   await vscode.commands.executeCommand("vscode.diff", left, right, title);
