@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { appliedSnapshotSide, chapterSnapshotStatusLabel } from "../workspace/state.ts";
 import { chapterPosition, currentChapter, type LearningSession } from "../workspace/session.ts";
 
 /**
@@ -26,7 +27,8 @@ export function registerStatusBar(
     }
     const chapter = currentChapter(session);
     const position = chapterPosition(session.course, chapter.id);
-    item.text = `$(mortar-board) ${session.course.config.title} · ${position} ${chapter.title}`;
+    const side = chapterSnapshotStatusLabel(appliedSnapshotSide(session.progress));
+    item.text = `$(mortar-board) ${session.course.config.title} · ${position} ${chapter.title} · ${side}`;
     item.tooltip = "LearnByDiff: Next Chapter";
     item.show();
   }

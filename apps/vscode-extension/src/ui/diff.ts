@@ -1,11 +1,11 @@
-import { access, stat } from "node:fs/promises";
+import { stat } from "node:fs/promises";
 import path from "node:path";
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
 import { snapshotFile, writeChapterArchives } from "../snapshot/archive.ts";
 import { resolveChapterEntryFiles } from "../workspace/entryFiles.ts";
 import { learningPaths } from "../workspace/paths.ts";
-import { chapterOrdinal, currentChapter, type LearningSession } from "../workspace/session.ts";
+import { chapterOrdinal, type LearningSession } from "../workspace/session.ts";
 
 /** Scheme for missing snapshot sides so vscode.diff can open adds/deletes. */
 export const EMPTY_DIFF_SCHEME = "learnbydiff-empty";
@@ -102,33 +102,4 @@ export async function openChapterFileDiff(
   const ordinal = chapterOrdinal(chapterIndex, session.course.chapters.length);
   const title = `${ordinal}-${chapter.title}: ${path.basename(relativePath)}`;
   await vscode.commands.executeCommand("vscode.diff", left, right, title);
-}
-
-/**
- * Opens the first entry file of the current chapter in the editor.
- *
- * @param git - Git client
- * @param session - Active learning session
- */
-export async function openEntryFile(git: GitClient, session: LearningSession): Promise<void> {
-  const chapter = currentChapter(session);
-  const { sourceMirror } = learningPaths(session.workspaceRoot);
-  const entryFiles = await resolveChapterEntryFiles(
-    git,
-    sourceMirror,
-    session.course.config.source,
-    chapter,
-  );
-  const relative = entryFiles[0];
-  if (relative === undefined) {
-    return;
-  }
-  const uri = vscode.Uri.file(path.join(session.workspaceRoot, relative));
-  try {
-    await access(uri.fsPath);
-  } catch {
-    void vscode.window.showWarningMessage(`Entry file not found in workspace: ${relative}`);
-    return;
-  }
-  await vscode.window.showTextDocument(uri);
 }

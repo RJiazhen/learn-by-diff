@@ -40,7 +40,8 @@
     "commands": [
       {
         "command": "learnByDiff.openCourse",
-        "title": "LearnByDiff: Open Course"
+        "title": "LearnByDiff: Open Course",
+        "icon": "$(folder-opened)"
       },
       {
         "command": "learnByDiff.nextChapter",
@@ -57,9 +58,14 @@
         "title": "LearnByDiff: Open File Diff"
       },
       {
-        "command": "learnByDiff.goToChapter",
-        "title": "Go to Chapter",
-        "icon": "$(arrow-right)"
+        "command": "learnByDiff.applyChapterStart",
+        "title": "Not Started",
+        "icon": "$(circle-outline)"
+      },
+      {
+        "command": "learnByDiff.applyChapterFinish",
+        "title": "Completed",
+        "icon": "$(check)"
       },
       {
         "command": "learnByDiff.openChapterDocs",
@@ -80,7 +86,7 @@
     "colors": [
       {
         "id": "learnByDiff.currentChapter",
-        "description": "Highlight color for the current chapter in the LearnByDiff view",
+        "description": "Highlight color for the active chapter in the Learn By Diff view",
         "defaults": {
           "dark": "#4FC1FF",
           "light": "#0078D4",
@@ -92,54 +98,75 @@
       "explorer": [
         {
           "id": "learnByDiff.courseView",
-          "name": "LearnByDiff",
-          "when": "learnByDiff.isLearningWorkspace"
+          "name": "Learn By Diff"
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "learnByDiff.courseView",
+        "contents": "Open a LearnByDiff course to start learning.\n[Open Course](command:learnByDiff.openCourse)",
+        "when": "!learnByDiff.isLearningWorkspace"
+      }
+    ],
     "menus": {
       "view/title": [
         {
-          "command": "learnByDiff.previousChapter",
+          "command": "learnByDiff.openCourse",
           "when": "view == learnByDiff.courseView",
+          "group": "navigation@0"
+        },
+        {
+          "command": "learnByDiff.previousChapter",
+          "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace",
           "group": "navigation@1"
         },
         {
           "command": "learnByDiff.nextChapter",
-          "when": "view == learnByDiff.courseView",
+          "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace",
           "group": "navigation@2"
         },
         {
           "command": "learnByDiff.viewAsTree",
-          "when": "view == learnByDiff.courseView && learnByDiff.viewMode == 'list'",
+          "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace && learnByDiff.viewMode == 'list'",
           "group": "navigation@3"
         },
         {
           "command": "learnByDiff.viewAsList",
-          "when": "view == learnByDiff.courseView && learnByDiff.viewMode != 'list'",
+          "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace && learnByDiff.viewMode != 'list'",
           "group": "navigation@3"
         }
       ],
       "view/item/context": [
         {
           "command": "learnByDiff.openChapterDocs",
-          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-current)?-docs$/",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?-docs$/",
           "group": "inline@1"
         },
         {
-          "command": "learnByDiff.goToChapter",
-          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-current)?(-docs)?$/",
+          "command": "learnByDiff.applyChapterStart",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
           "group": "inline@2"
         },
         {
-          "command": "learnByDiff.goToChapter",
-          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-current)?(-docs)?$/",
+          "command": "learnByDiff.applyChapterFinish",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
+          "group": "inline@3"
+        },
+        {
+          "command": "learnByDiff.applyChapterStart",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
           "group": "navigation@1"
         },
         {
-          "command": "learnByDiff.openChapterDocs",
-          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-current)?-docs$/",
+          "command": "learnByDiff.applyChapterFinish",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
           "group": "navigation@2"
+        },
+        {
+          "command": "learnByDiff.openChapterDocs",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?-docs$/",
+          "group": "navigation@3"
         }
       ],
       "commandPalette": [
@@ -148,7 +175,11 @@
           "when": "false"
         },
         {
-          "command": "learnByDiff.goToChapter",
+          "command": "learnByDiff.applyChapterStart",
+          "when": "false"
+        },
+        {
+          "command": "learnByDiff.applyChapterFinish",
           "when": "false"
         },
         {
@@ -168,6 +199,7 @@
   },
   "activationEvents": [
     "onUri",
+    "onView:learnByDiff.courseView",
     "workspaceContains:.learn/progress.json"
   ],
   "engines": {

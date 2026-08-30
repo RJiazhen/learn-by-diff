@@ -7,6 +7,7 @@ import {
   previousChapter,
 } from "../src/workspace/session.ts";
 import type { LearningSession } from "../src/workspace/loader.ts";
+import { chapterSnapshotStatusLabel } from "../src/workspace/state.ts";
 
 const session: LearningSession = {
   workspaceRoot: "/tmp/learn",
@@ -50,5 +51,12 @@ describe("session navigation", () => {
     expect(chapterOrdinal(0, 12)).toBe("01");
     expect(chapterOrdinal(11, 12)).toBe("12");
     expect(chapterOrdinal(0, 100)).toBe("001");
+  });
+});
+
+describe("chapterSnapshotStatusLabel", () => {
+  test("maps snapshot sides to Not Started and Completed", () => {
+    expect(chapterSnapshotStatusLabel("start")).toBe("Not Started");
+    expect(chapterSnapshotStatusLabel("finish")).toBe("Completed");
   });
 });

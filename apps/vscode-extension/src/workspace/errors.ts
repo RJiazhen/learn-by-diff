@@ -1,4 +1,4 @@
-/** Thrown when chapter switch is blocked by uncommitted student changes. */
+/** Thrown when applying a chapter snapshot is blocked by student edits vs the last applied tree. */
 export class DirtyWorkspaceError extends Error {
   /**
    * Creates an error that asks the UI to confirm discarding local changes.

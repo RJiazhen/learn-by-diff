@@ -1,13 +1,19 @@
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
-import { openChapterFileDiff, openEntryFile } from "../ui/diff.ts";
+import { openChapterFileDiff } from "../ui/diff.ts";
 import type { CourseTreeItem, CourseTreeProvider } from "../ui/explorerView.ts";
 import { openChapterDocs } from "../ui/openDocs.ts";
 import { DirtyWorkspaceError } from "../workspace/errors.ts";
 import { loadLearningSession, type LearningSession } from "../workspace/loader.ts";
 import { openCourse } from "../workspace/openCourse.ts";
 import { demoCoursePath } from "../workspace/resolveRepo.ts";
-import { nextChapter, previousChapter, switchToChapter } from "../workspace/session.ts";
+import {
+  applyChapterSnapshot,
+  nextChapter,
+  previousChapter,
+  type ChapterSnapshotSide,
+} from "../workspace/session.ts";
+import { chapterSnapshotStatusLabel } from "../workspace/state.ts";
 import { registerUriHandler } from "../uri/registerUriHandler.ts";
 import { showError } from "./showError.ts";
 
@@ -94,7 +100,7 @@ export function registerCommands(
         void vscode.window.showInformationMessage("This is the last chapter.");
         return;
       }
-      await applyChapterSwitch(session, next.id);
+      await applySnapshotWithConfirm(session, next.id, "start");
     }),
   );
 
@@ -109,32 +115,34 @@ export function registerCommands(
         void vscode.window.showInformationMessage("This is the first chapter.");
         return;
       }
-      await applyChapterSwitch(session, previous.id);
+      await applySnapshotWithConfirm(session, previous.id, "start");
     }),
   );
 
+  /**
+   * Applies the start snapshot for the chapter row the user clicked.
+   *
+   * @param item - Explorer chapter row
+   */
+  async function onApplyChapterStart(item?: CourseTreeItem): Promise<void> {
+    await applySnapshotFromItem(item, "start");
+  }
+
+  /**
+   * Applies the finish snapshot for the chapter row the user clicked.
+   *
+   * @param item - Explorer chapter row
+   */
+  async function onApplyChapterFinish(item?: CourseTreeItem): Promise<void> {
+    await applySnapshotFromItem(item, "finish");
+  }
+
   context.subscriptions.push(
-    vscode.commands.registerCommand("learnByDiff.goToChapter", async (item?: CourseTreeItem) => {
-      const chapterId = item?.chapterId;
-      if (chapterId === undefined || chapterId === "") {
-        return;
-      }
-      const session = await loadFromRoot();
-      if (session === undefined) {
-        return;
-      }
-      if (session.progress.chapter === chapterId) {
-        await openEntryFile(git, session);
-        await tree.revealCurrentChapter();
-        return;
-      }
-      const exists = session.course.chapters.some((chapter) => chapter.id === chapterId);
-      if (!exists) {
-        void vscode.window.showWarningMessage(`Unknown chapter: ${chapterId}`);
-        return;
-      }
-      await applyChapterSwitch(session, chapterId);
-    }),
+    vscode.commands.registerCommand("learnByDiff.applyChapterStart", onApplyChapterStart),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("learnByDiff.applyChapterFinish", onApplyChapterFinish),
   );
 
   context.subscriptions.push(
@@ -211,43 +219,66 @@ export function registerCommands(
   }
 
   /**
-   * Switches chapter after an optional QuickPick confirmation, then opens the entry file.
+   * Applies a chapter snapshot from a tree item after validating the session.
+   *
+   * @param item - Explorer chapter row
+   * @param side - Start or finish snapshot
    */
-  async function applyChapterSwitch(session: LearningSession, chapterId: string): Promise<void> {
+  async function applySnapshotFromItem(
+    item: CourseTreeItem | undefined,
+    side: ChapterSnapshotSide,
+  ): Promise<void> {
+    const chapterId = item?.chapterId;
+    if (chapterId === undefined || chapterId === "") {
+      return;
+    }
+    const session = await loadFromRoot();
+    if (session === undefined) {
+      return;
+    }
+    const exists = session.course.chapters.some((chapter) => chapter.id === chapterId);
+    if (!exists) {
+      void vscode.window.showWarningMessage(`Unknown chapter: ${chapterId}`);
+      return;
+    }
+    await applySnapshotWithConfirm(session, chapterId, side);
+  }
+
+  /**
+   * Exports a chapter snapshot into the student tree, confirming with a modal when dirty.
+   *
+   * @param session - Active learning session
+   * @param chapterId - Chapter to apply
+   * @param side - Start or finish snapshot
+   */
+  async function applySnapshotWithConfirm(
+    session: LearningSession,
+    chapterId: string,
+    side: ChapterSnapshotSide,
+  ): Promise<void> {
     try {
-      await switchToChapter(git, session, chapterId, false);
+      await applyChapterSnapshot(git, session, chapterId, side, false);
     } catch (error) {
       if (error instanceof DirtyWorkspaceError) {
         const chapter = session.course.chapters.find((item) => item.id === chapterId);
         const label = chapter?.title ?? chapterId;
-        const pick = await vscode.window.showQuickPick(
-          [
-            {
-              label: "Switch Chapter",
-              description: `Replace working files with “${label}” start`,
-            },
-            {
-              label: "Keep Editing",
-              description: "Stay on the current chapter",
-            },
-          ],
-          {
-            title: `Switch to “${label}”?`,
-            placeHolder: "Your edits since this chapter’s start will be discarded",
-            ignoreFocusOut: true,
-          },
+        const sideLabel = chapterSnapshotStatusLabel(side);
+        const applyLabel = `Apply ${sideLabel}`;
+        const confirmed = await vscode.window.showWarningMessage(
+          `Apply “${label}” ${sideLabel}? Your edits since the last applied snapshot will be discarded.`,
+          { modal: true },
+          applyLabel,
         );
-        if (pick?.label !== "Switch Chapter") {
+        if (confirmed !== applyLabel) {
           return;
         }
-        await switchToChapter(git, session, chapterId, true);
+        await applyChapterSnapshot(git, session, chapterId, side, true);
       } else {
         showError(error);
         return;
       }
     }
     setSession(session);
-    await openEntryFile(git, session);
     await tree.revealCurrentChapter();
   }
 

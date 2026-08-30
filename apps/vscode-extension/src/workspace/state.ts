@@ -2,10 +2,22 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { learningPaths } from "./paths.ts";
 
+/** Which chapter snapshot is currently exported into the student tree. */
+export type ChapterSnapshotSide = "start" | "finish";
+
 /** Persisted learning progress stored as JSON (no database). */
 export interface LearningProgress {
   chapter: string;
   completed: boolean;
+  /**
+   * Whether the student tree holds this chapter's `fromDir` (`start`) or `toDir` (`finish`).
+   * Older files omit this; treat as `start`.
+   */
+  appliedSide?: ChapterSnapshotSide;
+  /**
+   * @deprecated Older files recorded the last exported start chapter separately from `chapter`.
+   */
+  appliedStart?: string;
 }
 
 /**
@@ -42,14 +54,44 @@ export async function writeProgress(
 }
 
 /**
+ * Returns whether the tree holds the chapter start or finish snapshot.
+ *
+ * @param progress - Persisted progress
+ */
+export function appliedSnapshotSide(progress: LearningProgress): ChapterSnapshotSide {
+  return progress.appliedSide === "finish" ? "finish" : "start";
+}
+
+/**
+ * Returns the UI status label for an applied snapshot side.
+ *
+ * @param side - Start (`fromDir`) or finish (`toDir`)
+ */
+export function chapterSnapshotStatusLabel(side: ChapterSnapshotSide): string {
+  return side === "finish" ? "Completed" : "Not Started";
+}
+
+/**
  * Type guard for {@link LearningProgress}.
+ *
+ * @param value - Parsed JSON
  */
 function isProgress(value: unknown): value is LearningProgress {
   if (typeof value !== "object" || value === null) {
     return false;
   }
   const record = value as Record<string, unknown>;
-  return typeof record.chapter === "string" && typeof record.completed === "boolean";
+  if (typeof record.chapter !== "string" || typeof record.completed !== "boolean") {
+    return false;
+  }
+  if (
+    record.appliedSide !== undefined &&
+    record.appliedSide !== "start" &&
+    record.appliedSide !== "finish"
+  ) {
+    return false;
+  }
+  return record.appliedStart === undefined || typeof record.appliedStart === "string";
 }
 
 /**

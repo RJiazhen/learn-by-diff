@@ -44,4 +44,17 @@ describe("hasStudentEditsSinceChapterStart", () => {
 
     expect(await hasStudentEditsSinceChapterStart(git, workspace, store, "start")).toBe(true);
   });
+
+  test("ignores README.md present only in the snapshot", async () => {
+    const store = await tempDir("lbd-readme-store-");
+    const workspace = await tempDir("lbd-readme-ws-");
+    await mkdir(path.join(store, "done", "src"), { recursive: true });
+    await writeFile(path.join(store, "done", "src", "index.ts"), "export const v = 1;\n", "utf8");
+    await writeFile(path.join(store, "done", "README.md"), "# snapshot docs\n", "utf8");
+    await mkdir(path.join(workspace, "src"), { recursive: true });
+    await writeFile(path.join(workspace, "src", "index.ts"), "export const v = 1;\n", "utf8");
+    await writeFile(path.join(workspace, "README.md"), "sandbox\n", "utf8");
+
+    expect(await hasStudentEditsSinceChapterStart(git, workspace, store, "done")).toBe(false);
+  });
 });

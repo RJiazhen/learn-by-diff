@@ -4,9 +4,11 @@ import path from "node:path";
 import { afterEach, describe, expect, test } from "vite-plus/test";
 import { GitClient } from "../src/git/client.ts";
 import { createLearningWorkspace, checkoutChapter } from "../src/workspace/creator.ts";
+import { DirtyWorkspaceError } from "../src/workspace/errors.ts";
 import { isInPlaceLearningTarget, loadLearningSession } from "../src/workspace/loader.ts";
 import { learningPaths } from "../src/workspace/paths.ts";
-import { readProgress } from "../src/workspace/state.ts";
+import { applyChapterSnapshot } from "../src/workspace/session.ts";
+import { readProgress, writeProgress } from "../src/workspace/state.ts";
 
 const git = new GitClient();
 const temps: string[] = [];
@@ -52,6 +54,67 @@ async function commitTree(
     ],
     { cwd: dir },
   );
+}
+
+/**
+ * Creates a two-chapter course (`start` → `two`) and a learning workspace seeded with `start`.
+ */
+async function createTwoChapterWorkspace(): Promise<{
+  learningRoot: string;
+  course: Awaited<ReturnType<typeof createLearningWorkspace>>["course"];
+}> {
+  const pair = await tempDir("lbd-two-pair-");
+  const sourceDir = path.join(pair, "demo-source");
+  const courseDir = path.join(pair, "demo-course");
+  await mkdir(path.join(sourceDir, "start", "pkg"), { recursive: true });
+  await mkdir(path.join(sourceDir, "two", "pkg"), { recursive: true });
+  await writeFile(
+    path.join(sourceDir, "start", "pkg", "index.ts"),
+    "export const v = 1;\n",
+    "utf8",
+  );
+  await writeFile(path.join(sourceDir, "two", "pkg", "index.ts"), "export const v = 2;\n", "utf8");
+
+  await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
+  await writeFile(
+    path.join(courseDir, ".course-config", "course.yml"),
+    ["id: twochap", "title: Two", "source:", "  repository: ../demo-source", ""].join("\n"),
+    "utf8",
+  );
+  await writeFile(
+    path.join(courseDir, ".course-config", "chapters", "001.yml"),
+    [
+      "id: one",
+      "title: One",
+      "fromDir: start",
+      "toDir: two",
+      "entryFiles:",
+      "  - pkg/index.ts",
+      "",
+    ].join("\n"),
+    "utf8",
+  );
+  await writeFile(
+    path.join(courseDir, ".course-config", "chapters", "002.yml"),
+    [
+      "id: two",
+      "title: Two",
+      "fromDir: two",
+      "toDir: two",
+      "entryFiles:",
+      "  - pkg/index.ts",
+      "",
+    ].join("\n"),
+    "utf8",
+  );
+
+  const parent = await tempDir("lbd-two-parent-");
+  const created = await createLearningWorkspace({
+    courseRepoUrl: courseDir,
+    parentDir: parent,
+    git,
+  });
+  return { learningRoot: created.learningRoot, course: created.course };
 }
 
 describe("learning workspace", () => {
@@ -119,6 +182,7 @@ describe("learning workspace", () => {
     expect(await readProgress(created.learningRoot)).toEqual({
       chapter: "one",
       completed: false,
+      appliedSide: "start",
     });
     const gitignore = await readFile(path.join(created.learningRoot, ".gitignore"), "utf8");
     expect(gitignore).toContain(".learn/source.git/");
@@ -309,6 +373,79 @@ describe("learning workspace", () => {
     const gitignore = await readFile(path.join(created.learningRoot, ".gitignore"), "utf8");
     expect(gitignore).toContain("custom-keep");
     expect(gitignore).not.toContain("from-chapter");
+  });
+
+  test("applyChapterSnapshot exports fromDir when the tree still matches the last snapshot", async () => {
+    const { learningRoot } = await createTwoChapterWorkspace();
+    const session = await loadLearningSession(learningRoot);
+    expect(session).toBeDefined();
+    if (session === undefined) {
+      return;
+    }
+
+    await applyChapterSnapshot(git, session, "two", "start");
+    expect(await readFile(path.join(learningRoot, "pkg/index.ts"), "utf8")).toBe(
+      "export const v = 2;\n",
+    );
+    expect(await readProgress(learningRoot)).toEqual({
+      chapter: "two",
+      completed: false,
+      appliedSide: "start",
+    });
+  });
+
+  test("applyChapterSnapshot exports toDir for finish", async () => {
+    const { learningRoot } = await createTwoChapterWorkspace();
+    const session = await loadLearningSession(learningRoot);
+    expect(session).toBeDefined();
+    if (session === undefined) {
+      return;
+    }
+
+    await applyChapterSnapshot(git, session, "one", "finish");
+    expect(await readFile(path.join(learningRoot, "pkg/index.ts"), "utf8")).toBe(
+      "export const v = 2;\n",
+    );
+    expect(await readProgress(learningRoot)).toEqual({
+      chapter: "one",
+      completed: false,
+      appliedSide: "finish",
+    });
+  });
+
+  test("applyChapterSnapshot throws when the student tree differs from the last snapshot", async () => {
+    const { learningRoot } = await createTwoChapterWorkspace();
+    await writeFile(
+      path.join(learningRoot, "pkg/index.ts"),
+      "export const v = 1;\n// dirty\n",
+      "utf8",
+    );
+    const session = await loadLearningSession(learningRoot);
+    expect(session).toBeDefined();
+    if (session === undefined) {
+      return;
+    }
+
+    await expect(applyChapterSnapshot(git, session, "two", "start")).rejects.toBeInstanceOf(
+      DirtyWorkspaceError,
+    );
+    expect(await readFile(path.join(learningRoot, "pkg/index.ts"), "utf8")).toContain("dirty");
+
+    await applyChapterSnapshot(git, session, "two", "start", true);
+    expect(await readFile(path.join(learningRoot, "pkg/index.ts"), "utf8")).toBe(
+      "export const v = 2;\n",
+    );
+  });
+
+  test("loadLearningSession defaults appliedSide to start", async () => {
+    const { learningRoot } = await createTwoChapterWorkspace();
+    await writeProgress(learningRoot, { chapter: "one", completed: false });
+    const session = await loadLearningSession(learningRoot);
+    expect(session?.progress).toEqual({
+      chapter: "one",
+      completed: false,
+      appliedSide: "start",
+    });
   });
 
   test("isInPlaceLearningTarget allows README-only folders", async () => {

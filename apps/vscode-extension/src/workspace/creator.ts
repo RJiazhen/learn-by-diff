@@ -11,7 +11,7 @@ import type { GitClient } from "../git/client.ts";
 import { chapterSnapshotPaths, learningPaths } from "./paths.ts";
 import { isRemoteGitUrl, localCourseOrigin, resolveSourceRepository } from "./resolveRepo.ts";
 import { assertSourceSubtree, exportSourceSubtree, materializeSourceStore } from "./sourceStore.ts";
-import { writeProgress } from "./state.ts";
+import { writeProgress, type ChapterSnapshotSide } from "./state.ts";
 
 /** Options for creating a learning workspace from a course repository URL. */
 export interface CreateLearningWorkspaceOptions {
@@ -88,7 +88,11 @@ export async function createLearningWorkspace(
     );
     await replaceStudentTreeFromSource(git, learningRoot, paths.sourceMirror, fromSubtree);
 
-    await writeProgress(learningRoot, { chapter: first.id, completed: false });
+    await writeProgress(learningRoot, {
+      chapter: first.id,
+      completed: false,
+      appliedSide: "start",
+    });
 
     return { course, learningRoot };
   } finally {
@@ -175,7 +179,7 @@ export async function materializeChapterSnapshots(
 }
 
 /**
- * Replaces the student tree with `fromDir` for `chapterId` and updates progress.
+ * Replaces the student tree with a chapter start (`fromDir`) or finish (`toDir`).
  *
  * Preserves the workspace `.gitignore` across the export so regenerable `.learn`
  * paths stay ignored and course config under `.learn/course` remains commit-able.
@@ -184,25 +188,32 @@ export async function materializeChapterSnapshots(
  * @param workspaceRoot - Learning repository root
  * @param course - Loaded course
  * @param chapterId - Target chapter
+ * @param side - Snapshot to export
  */
 export async function checkoutChapter(
   git: GitClient,
   workspaceRoot: string,
   course: Course,
   chapterId: string,
+  side: ChapterSnapshotSide = "start",
 ): Promise<void> {
   const chapter = course.chapters.find((item) => item.id === chapterId);
   if (chapter === undefined) {
     throw new Error(`unknown chapter: ${chapterId}`);
   }
+  const snapshotDir = side === "finish" ? chapter.toDir : chapter.fromDir;
   const { sourceMirror } = learningPaths(workspaceRoot);
   await replaceStudentTreeFromSource(
     git,
     workspaceRoot,
     sourceMirror,
-    resolveSourceSubtreePath(course.config.source, chapter.fromDir),
+    resolveSourceSubtreePath(course.config.source, snapshotDir),
   );
-  await writeProgress(workspaceRoot, { chapter: chapterId, completed: false });
+  await writeProgress(workspaceRoot, {
+    chapter: chapterId,
+    completed: false,
+    appliedSide: side,
+  });
 }
 
 /**

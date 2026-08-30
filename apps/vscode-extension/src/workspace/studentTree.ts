@@ -136,15 +136,26 @@ async function readSourceFile(
 }
 
 /**
- * Returns whether student-visible workspace files differ from the chapter start snapshot.
+ * Returns whether `relative` is a preserved workspace path that must not count as an edit.
  *
- * Ignores `.git`, `.learn`, `README.md`, and `.gitignore` so preserved tooling files do not
- * count as learner edits.
+ * @param relative - Path relative to the student tree or snapshot root
+ */
+function isSkippedComparePath(relative: string): boolean {
+  const top = relative.split("/")[0];
+  return top !== undefined && STUDENT_COMPARE_SKIP.has(top);
+}
+
+/**
+ * Returns whether student-visible workspace files differ from a chapter snapshot.
+ *
+ * Compares against the snapshot for the **current** chapter status (Not Started =
+ * `fromDir`, Completed = `toDir`). Ignores `.git`, `.learn`, `README.md`, and
+ * `.gitignore` on both sides so preserved tooling files do not count as edits.
  *
  * @param git - Git client
  * @param workspaceRoot - Learning workspace root
  * @param storePath - Materialized source store
- * @param fromDir - Resolved chapter start directory, or `undefined` for an empty start
+ * @param fromDir - Resolved snapshot directory for the current chapter status, or `undefined` for empty
  */
 export async function hasStudentEditsSinceChapterStart(
   git: GitClient,
@@ -155,7 +166,11 @@ export async function hasStudentEditsSinceChapterStart(
   if (fromDir === undefined) {
     return (await listStudentWorkspaceFiles(workspaceRoot)).length > 0;
   }
-  const startFiles = new Set(await listSourceSubtreeFiles(git, storePath, fromDir));
+  const startFiles = new Set(
+    (await listSourceSubtreeFiles(git, storePath, fromDir)).filter(
+      (relative) => !isSkippedComparePath(relative),
+    ),
+  );
   const workspaceFiles = new Set(await listStudentWorkspaceFiles(workspaceRoot));
 
   if (startFiles.size !== workspaceFiles.size) {

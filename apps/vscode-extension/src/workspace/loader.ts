@@ -28,6 +28,9 @@ export async function isLearningWorkspace(workspaceRoot: string): Promise<boolea
 /**
  * Loads course config from `.learn/course` and progress from `.learn/progress.json`.
  *
+ * Missing `appliedSide` is treated as `start`. Older `appliedStart` (when it differs
+ * from `chapter`) is used as the applied chapter so the badge matches files on disk.
+ *
  * @param workspaceRoot - Learning repository root
  */
 export async function loadLearningSession(
@@ -41,7 +44,15 @@ export async function loadLearningSession(
     return undefined;
   }
   const course = await loadCourseFromConfigDir(learningPaths(workspaceRoot).courseDir);
-  return { course, progress, workspaceRoot };
+  return {
+    course,
+    progress: {
+      chapter: progress.appliedStart ?? progress.chapter,
+      completed: progress.completed,
+      appliedSide: progress.appliedSide === "finish" ? "finish" : "start",
+    },
+    workspaceRoot,
+  };
 }
 
 /**

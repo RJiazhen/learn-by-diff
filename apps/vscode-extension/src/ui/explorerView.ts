@@ -7,6 +7,11 @@ import { classifyEntryChange, type EntryChangeKind } from "../workspace/entryCha
 import { resolveChapterEntryFiles } from "../workspace/entryFiles.ts";
 import { learningPaths } from "../workspace/paths.ts";
 import { chapterOrdinal, currentChapter, type LearningSession } from "../workspace/session.ts";
+import {
+  appliedSnapshotSide,
+  chapterSnapshotStatusLabel,
+  type ChapterSnapshotSide,
+} from "../workspace/state.ts";
 
 /** URI scheme used to decorate chapter rows. */
 export const CHAPTER_URI_SCHEME = "learnbydiff-chapter";
@@ -37,8 +42,8 @@ interface ChangedEntryFile {
 /**
  * Chapter + entry-file tree in the Explorer LearnByDiff view.
  *
- * Supports SCM-like tree and flat list layouts. Jumping to a chapter is done via
- * the hover inline action or the context menu — not by clicking the title.
+ * Supports SCM-like tree and flat list layouts. Chapter Start / Chapter Finish
+ * export that snapshot into the student tree and mark the row as Not Started or Completed.
  */
 export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeItem> {
   private session: LearningSession | undefined;
@@ -141,7 +146,7 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
       this.chapterElements.get(chapter.id) ??
       this.buildChapterItem(
         chapter,
-        true,
+        appliedSnapshotSide(this.session.progress),
         this.session.course.chapters.findIndex((item) => item.id === chapter.id),
         this.session.course.chapters.length,
       );
@@ -225,9 +230,11 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
     }
     if (element === undefined) {
       const current = currentChapter(this.session);
+      const appliedSide = appliedSnapshotSide(this.session.progress);
       const total = this.session.course.chapters.length;
       return this.session.course.chapters.map((chapter, index) => {
-        const item = this.buildChapterItem(chapter, chapter.id === current.id, index, total);
+        const side = chapter.id === current.id ? appliedSide : undefined;
+        const item = this.buildChapterItem(chapter, side, index, total);
         this.chapterElements.set(chapter.id, item);
         return item;
       });
@@ -325,13 +332,13 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
    * Builds a collapsible chapter row with a zero-padded ordinal prefix.
    *
    * @param chapter - Chapter config
-   * @param isCurrent - Whether this is the active chapter
+   * @param appliedSide - Snapshot side when this chapter is applied to the student tree
    * @param index - Zero-based chapter index
    * @param total - Total number of chapters
    */
   private buildChapterItem(
     chapter: ChapterConfig,
-    isCurrent: boolean,
+    appliedSide: ChapterSnapshotSide | undefined,
     index: number,
     total: number,
   ): CourseTreeItem {
@@ -349,23 +356,21 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
     item.kind = "chapter";
     item.chapterId = chapter.id;
     const hasDocs = chapter.docs !== undefined && chapter.docs.trim() !== "";
-    if (isCurrent && hasDocs) {
-      item.contextValue = "chapter-current-docs";
-    } else if (isCurrent) {
-      item.contextValue = "chapter-current";
-    } else if (hasDocs) {
-      item.contextValue = "chapter-docs";
+    const sideToken = appliedSide === undefined ? "" : `-${appliedSide}`;
+    if (hasDocs) {
+      item.contextValue = `chapter${sideToken}-docs`;
     } else {
-      item.contextValue = "chapter";
+      item.contextValue = `chapter${sideToken}`;
     }
-    item.description = isCurrent ? "current" : undefined;
-    item.tooltip = `${ordinal}-${chapter.title}${isCurrent ? " (current)" : ""}${
-      hasDocs ? `\nDocs: ${chapter.docs}` : ""
-    }`;
+    const status = appliedSide === undefined ? undefined : chapterSnapshotStatusLabel(appliedSide);
+    item.description = status;
+    item.tooltip = `${ordinal}-${chapter.title}${
+      status === undefined ? "" : ` (${status})`
+    }${hasDocs ? `\nDocs: ${chapter.docs}` : ""}`;
     item.resourceUri = vscode.Uri.from({
       scheme: CHAPTER_URI_SCHEME,
       path: `/${chapter.id}`,
-      query: isCurrent ? "current" : "",
+      query: appliedSide ?? "",
     });
     return item;
   }
@@ -434,7 +439,7 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
 }
 
 /**
- * Decorates current chapters (label color) and entry files (U/M/D badges).
+ * Decorates the applied chapter (label color) and entry files (U/M/D badges).
  */
 export class LearnByDiffDecorationProvider implements vscode.FileDecorationProvider {
   private readonly emitter = new vscode.EventEmitter<vscode.Uri | vscode.Uri[] | undefined>();
@@ -456,12 +461,12 @@ export class LearnByDiffDecorationProvider implements vscode.FileDecorationProvi
    */
   provideFileDecoration(uri: vscode.Uri): vscode.FileDecoration | undefined {
     if (uri.scheme === CHAPTER_URI_SCHEME) {
-      if (uri.query !== "current") {
+      if (uri.query !== "start" && uri.query !== "finish") {
         return undefined;
       }
       return {
         color: new vscode.ThemeColor("learnByDiff.currentChapter"),
-        tooltip: "Current chapter",
+        tooltip: uri.query === "finish" ? "Completed" : "Not Started",
       };
     }
     if (uri.scheme !== FILE_URI_SCHEME) {

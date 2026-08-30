@@ -5,12 +5,13 @@ import { checkoutChapter, materializeChapterSnapshots } from "./creator.ts";
 import { DirtyWorkspaceError } from "./errors.ts";
 import type { LearningSession } from "./loader.ts";
 import { learningPaths } from "./paths.ts";
+import { appliedSnapshotSide, type ChapterSnapshotSide } from "./state.ts";
 import { hasStudentEditsSinceChapterStart } from "./studentTree.ts";
 
-export type { LearningSession };
+export type { LearningSession, ChapterSnapshotSide };
 
 /**
- * Returns the chapter currently selected in progress, or the first chapter.
+ * Returns the chapter currently applied to the student tree, or the first chapter.
  *
  * @param session - Loaded session
  */
@@ -49,41 +50,43 @@ export function previousChapter(session: LearningSession): ChapterConfig | undef
 }
 
 /**
- * Checks for learner edits vs the current chapter start, then exports the target chapter.
+ * Exports a chapter Not Started (`fromDir`) or Completed (`toDir`) into the student tree.
  *
- * Confirmation is only required when student-visible files differ from the current
- * chapter's `fromDir` snapshot. Matching the start tree switches immediately.
+ * Confirmation is only required when student-visible files differ from the snapshot
+ * that matches the **current** chapter’s status (Not Started → that chapter’s `fromDir`,
+ * Completed → `toDir`). Matching that snapshot switches immediately.
  *
  * @param git - Git client
  * @param session - Session to mutate via checkout
- * @param chapterId - Target chapter
+ * @param chapterId - Chapter to apply
+ * @param side - Start or finish snapshot
  * @param force - Skip edit check when the user already confirmed
  */
-export async function switchToChapter(
+export async function applyChapterSnapshot(
   git: GitClient,
   session: LearningSession,
   chapterId: string,
+  side: ChapterSnapshotSide,
   force = false,
 ): Promise<void> {
+  const chapter = session.course.chapters.find((item) => item.id === chapterId);
+  if (chapter === undefined) {
+    throw new Error(`unknown chapter: ${chapterId}`);
+  }
   if (!force) {
-    const current = currentChapter(session);
     const { sourceMirror } = learningPaths(session.workspaceRoot);
     const hasEdits = await hasStudentEditsSinceChapterStart(
       git,
       session.workspaceRoot,
       sourceMirror,
-      resolveSourceSubtreePath(session.course.config.source, current.fromDir),
+      currentChapterSnapshotSubtree(session),
     );
     if (hasEdits) {
       throw new DirtyWorkspaceError(session.workspaceRoot);
     }
   }
-  await checkoutChapter(git, session.workspaceRoot, session.course, chapterId);
-  session.progress = { chapter: chapterId, completed: false };
-  const chapter = session.course.chapters.find((item) => item.id === chapterId);
-  if (chapter === undefined) {
-    return;
-  }
+  await checkoutChapter(git, session.workspaceRoot, session.course, chapterId, side);
+  session.progress = { chapter: chapterId, completed: false, appliedSide: side };
   await materializeChapterSnapshots(
     git,
     session.workspaceRoot,
@@ -92,6 +95,17 @@ export async function switchToChapter(
     chapter.toDir,
     session.course.config.source,
   );
+}
+
+/**
+ * Resolves the source subdirectory for the current chapter’s Not Started or Completed snapshot.
+ *
+ * @param session - Active session
+ */
+function currentChapterSnapshotSubtree(session: LearningSession): string | undefined {
+  const current = currentChapter(session);
+  const dir = appliedSnapshotSide(session.progress) === "finish" ? current.toDir : current.fromDir;
+  return resolveSourceSubtreePath(session.course.config.source, dir);
 }
 
 /**
