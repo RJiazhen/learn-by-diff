@@ -6,61 +6,91 @@ import type { ChapterConfig, Course } from "./types.ts";
 import { CHAPTERS_DIR_NAME, COURSE_CONFIG_DIR, COURSE_FILE_NAME, ProtocolError } from "./types.ts";
 import { validateCourse } from "./validate.ts";
 
+const MISSING_COURSE_FILE_MESSAGE =
+  "course config file was not found (looked in course.yml, then .course-config/course.yml)";
+
 /**
- * Returns whether `rootDir` looks like a course repository (has `.course-config/course.yml`).
+ * Returns the directory that contains `course.yml` for `rootDir`.
+ *
+ * Prefers `{rootDir}/course.yml`, then `{rootDir}/.course-config/course.yml`.
+ *
+ * @param rootDir - Directory or repository root the user specified
+ * @returns Config directory, or `undefined` when neither file exists
+ */
+export async function findCourseConfigDir(rootDir: string): Promise<string | undefined> {
+  if (await isFile(path.join(rootDir, COURSE_FILE_NAME))) {
+    return rootDir;
+  }
+  const nested = path.join(rootDir, COURSE_CONFIG_DIR);
+  if (await isFile(path.join(nested, COURSE_FILE_NAME))) {
+    return nested;
+  }
+  return undefined;
+}
+
+/**
+ * Returns whether `rootDir` looks like a course repository.
+ *
+ * True when `{rootDir}/course.yml` or `{rootDir}/.course-config/course.yml` exists.
  *
  * @param rootDir - Repository root to inspect
  */
 export async function isCourseRepository(rootDir: string): Promise<boolean> {
-  try {
-    const info = await stat(courseFilePath(rootDir));
-    return info.isFile();
-  } catch {
-    return false;
-  }
+  return (await findCourseConfigDir(rootDir)) !== undefined;
 }
 
 /**
- * Loads and validates a course from a repository root that contains `.course-config`.
+ * Loads and validates a course from a specified directory or repository root.
  *
- * @param rootDir - Course repository root
+ * @param rootDir - Directory that contains `course.yml` or `.course-config/course.yml`
  * @returns Validated course
  */
 export async function loadCourse(rootDir: string): Promise<Course> {
-  return loadCourseFromConfigDir(path.join(rootDir, COURSE_CONFIG_DIR));
+  const configDir = await findCourseConfigDir(rootDir);
+  if (configDir === undefined) {
+    throw new ProtocolError([
+      {
+        path: COURSE_FILE_NAME,
+        message: MISSING_COURSE_FILE_MESSAGE,
+      },
+    ]);
+  }
+  return loadCourseFromConfigDir(configDir);
 }
 
 /**
  * Loads and validates a course from a config directory (`course.yml` + `chapters/`).
  *
- * Used for both `.course-config/` in a course repo and `.learn/course/` in a learning repo.
+ * Used for a course-home `course.yml`, `.course-config/` in a course repo, and
+ * `.learn/course/` in a learning repo.
  *
  * @param configDir - Directory that contains `course.yml`
  */
 export async function loadCourseFromConfigDir(configDir: string): Promise<Course> {
   const filePath = path.join(configDir, COURSE_FILE_NAME);
+  const courseRel = protocolPath(configDir, COURSE_FILE_NAME);
   let courseText: string;
   try {
     courseText = await readFile(filePath, "utf8");
   } catch {
     throw new ProtocolError([
       {
-        path: `${COURSE_CONFIG_DIR}/${COURSE_FILE_NAME}`,
+        path: courseRel,
         message: "course config file was not found",
       },
     ]);
   }
 
-  const parsed = parseCourseYaml(courseText, `${COURSE_CONFIG_DIR}/${COURSE_FILE_NAME}`);
+  const parsed = parseCourseYaml(courseText, courseRel);
   const config = applyCourseDefaults(parsed, configDir);
   const chapters = await loadChapters(configDir);
   return validateCourse(config, chapters, configDir);
 }
 
 /**
- * Reads chapter yaml files from `.course-config/chapters`, sorted by file name.
+ * Reads chapter yaml files from `chapters/` under the config directory, sorted by file name.
  *
- * @param configDir - Absolute `.course-config` directory
+ * @param configDir - Directory that contains `course.yml`
  */
 async function loadChapters(configDir: string): Promise<ChapterConfig[]> {
   const chaptersDir = path.join(configDir, CHAPTERS_DIR_NAME);
@@ -70,7 +100,7 @@ async function loadChapters(configDir: string): Promise<ChapterConfig[]> {
   } catch {
     throw new ProtocolError([
       {
-        path: `${COURSE_CONFIG_DIR}/${CHAPTERS_DIR_NAME}/`,
+        path: `${protocolPath(configDir, CHAPTERS_DIR_NAME)}/`,
         message: "chapters directory was not found",
       },
     ]);
@@ -82,7 +112,7 @@ async function loadChapters(configDir: string): Promise<ChapterConfig[]> {
 
   const chapters: ChapterConfig[] = [];
   for (const name of yamlNames) {
-    const relativePath = `${COURSE_CONFIG_DIR}/${CHAPTERS_DIR_NAME}/${name}`;
+    const relativePath = protocolPath(configDir, CHAPTERS_DIR_NAME, name);
     const text = await readFile(path.join(chaptersDir, name), "utf8");
     chapters.push(parseChapterYaml(text, relativePath, name));
   }
@@ -90,8 +120,29 @@ async function loadChapters(configDir: string): Promise<ChapterConfig[]> {
 }
 
 /**
- * Returns the absolute path of `course.yml` under a repository root.
+ * Returns a protocol error path relative to the course home (POSIX slashes).
+ *
+ * Nested `.course-config` keeps that prefix; a root-level `course.yml` does not.
+ *
+ * @param configDir - Directory that contains `course.yml`
+ * @param segments - Path segments under the config directory
  */
-function courseFilePath(rootDir: string): string {
-  return path.join(rootDir, COURSE_CONFIG_DIR, COURSE_FILE_NAME);
+function protocolPath(configDir: string, ...segments: string[]): string {
+  if (path.basename(configDir) === COURSE_CONFIG_DIR) {
+    return [COURSE_CONFIG_DIR, ...segments].join("/");
+  }
+  return segments.join("/");
+}
+
+/**
+ * Returns whether `filePath` exists and is a regular file.
+ *
+ * @param filePath - Absolute path
+ */
+async function isFile(filePath: string): Promise<boolean> {
+  try {
+    return (await stat(filePath)).isFile();
+  } catch {
+    return false;
+  }
 }

@@ -22,9 +22,9 @@ export interface CourseSource {
  * Parsed `course.yml` document (after load-time defaults).
  *
  * No field is required in the YAML file. Defaults:
- * - `id` ← parent dir of `.course-config`, or `{repoName}-learn` when that parent is a git root
+ * - `id` ← course home folder, or `{repoName}-learn` when that home is a git root
  * - `title` ← `id`
- * - `source.repository` ← `.` (course home directory containing `.course-config`)
+ * - `source.repository` ← `.` (course home)
  *
  * Protocol evolves by adding optional fields only; there is no `protocolVersion` gate.
  */
@@ -73,7 +73,7 @@ export interface ChapterConfig {
 export interface Course {
   config: CourseConfig;
   chapters: ChapterConfig[];
-  /** Absolute path to the `.course-config` directory that was loaded. */
+  /** Absolute path to the directory that contains the loaded `course.yml`. */
   configDir: string;
 }
 

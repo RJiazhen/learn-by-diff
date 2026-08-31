@@ -36,9 +36,10 @@ describe("chapterIdFromFileName", () => {
 });
 
 describe("course defaults", () => {
-  test("courseHomeDir resolves .course-config and .learn/course layouts", () => {
+  test("courseHomeDir resolves .course-config, .learn/course, and root-level layouts", () => {
     expect(courseHomeDir("/repo/demo/.course-config")).toBe("/repo/demo");
     expect(courseHomeDir("/tmp/learn/.learn/course")).toBe("/tmp/learn");
+    expect(courseHomeDir("/repo/demo")).toBe("/repo/demo");
   });
 
   test("defaultCourseId uses parent folder name when not a git root", () => {
@@ -53,6 +54,16 @@ describe("course defaults", () => {
       expect(defaultCourseId(path.join(root, ".course-config"))).toBe(
         `${path.basename(root)}-learn`,
       );
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  test("defaultCourseId appends -learn when course.yml is at a git root", () => {
+    const root = path.join(os.tmpdir(), `lbd-git-root-yml-${String(process.pid)}`);
+    fs.mkdirSync(path.join(root, ".git"), { recursive: true });
+    try {
+      expect(defaultCourseId(root)).toBe(`${path.basename(root)}-learn`);
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
     }

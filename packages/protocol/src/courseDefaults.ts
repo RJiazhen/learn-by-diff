@@ -11,7 +11,10 @@ export interface ParsedCourseFields {
 }
 
 /**
- * Returns the course home directory for a config dir (`.course-config` parent, or learning workspace root for `.learn/course`).
+ * Returns the course home directory for a config dir.
+ *
+ * `.course-config` → its parent; `.learn/course` → learning workspace root;
+ * otherwise the config dir itself (root-level `course.yml`).
  *
  * @param configDir - Absolute path to the directory that contains `course.yml`
  */
@@ -24,21 +27,21 @@ export function courseHomeDir(configDir: string): string {
   if (base === "course" && path.basename(parent) === ".learn") {
     return path.dirname(parent);
   }
-  return parent;
+  return configDir;
 }
 
 /**
  * Derives a default course id from where the config directory sits.
  *
- * Uses the parent folder name of `.course-config`. When that parent is a git repository root,
- * returns `{repoName}-learn` instead.
+ * Uses the course home folder name. When that home is a git repository root and the
+ * config is `.course-config` or a root-level `course.yml`, returns `{repoName}-learn`.
  *
  * @param configDir - Absolute path to the directory that contains `course.yml`
  */
 export function defaultCourseId(configDir: string): string {
   const home = courseHomeDir(configDir);
   const name = path.basename(home).trim() || "course";
-  if (path.basename(configDir) === COURSE_CONFIG_DIR && isGitRepositoryRoot(home)) {
+  if (isGitRepositoryRoot(home) && isCourseRootConfig(configDir, home)) {
     return `${name}-learn`;
   }
   return name;
@@ -47,9 +50,9 @@ export function defaultCourseId(configDir: string): string {
 /**
  * Applies course.yml defaults after parse.
  *
- * - `id` ← parent of `.course-config` (or `{repo}-learn` at a git root); for `.learn/course`, learning folder name
+ * - `id` ← course home folder (or `{repo}-learn` at a git root); for `.learn/course`, learning folder name
  * - `title` ← `id`
- * - `source.repository` ← `.` (course home / sibling context of `.course-config`)
+ * - `source.repository` ← `.` (course home)
  *
  * @param partial - Parsed fields (empty strings mean omitted)
  * @param configDir - Absolute config directory used for path-based defaults
@@ -67,6 +70,21 @@ export function applyCourseDefaults(partial: ParsedCourseFields, configDir: stri
       ...(root !== undefined && root !== "" ? { root } : {}),
     },
   };
+}
+
+/**
+ * Returns whether `configDir` is the course-root layout (`.course-config` or home-level `course.yml`).
+ *
+ * `.learn/course` is not a course-root layout.
+ *
+ * @param configDir - Directory that contains `course.yml`
+ * @param home - {@link courseHomeDir} for `configDir`
+ */
+function isCourseRootConfig(configDir: string, home: string): boolean {
+  if (path.basename(configDir) === COURSE_CONFIG_DIR) {
+    return true;
+  }
+  return path.resolve(configDir) === path.resolve(home);
 }
 
 /**

@@ -1,0 +1,4 @@
+id: from-root
+title: From Root
+source:
+  repository: https://example.com/prefer-root.git

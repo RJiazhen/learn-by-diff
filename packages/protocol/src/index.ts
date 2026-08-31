@@ -15,4 +15,9 @@ export {
   resolveSourceSubtreePath,
 } from "./sourcePath.ts";
 export { validateCourse } from "./validate.ts";
-export { isCourseRepository, loadCourse, loadCourseFromConfigDir } from "./load.ts";
+export {
+  findCourseConfigDir,
+  isCourseRepository,
+  loadCourse,
+  loadCourseFromConfigDir,
+} from "./load.ts";
