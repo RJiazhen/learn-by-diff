@@ -1,6 +1,6 @@
 import { access, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { learningPaths } from "./paths.ts";
+import { isSameFolder, learningPaths } from "./paths.ts";
 
 /** One folder entry in a `.code-workspace` file. */
 interface WorkspaceFolderSpec {
@@ -159,10 +159,10 @@ function rewriteLegacyFolder(
   const resolved = path.isAbsolute(folder.path)
     ? path.resolve(folder.path)
     : path.resolve(learnDir, folder.path);
-  if (sameFsPath(resolved, path.join(learnDir, "refs"))) {
+  if (isSameFolder(resolved, path.join(learnDir, "refs"))) {
     return undefined;
   }
-  if (sameFsPath(resolved, workspaceRoot)) {
+  if (isSameFolder(resolved, workspaceRoot)) {
     return { name: rootName, path: "." };
   }
   const relative = path.relative(workspaceRoot, resolved).split(path.sep).join("/");
@@ -204,19 +204,4 @@ async function removeIfPresent(filePath: string): Promise<void> {
   } catch {
     // Already gone.
   }
-}
-
-/**
- * Returns whether two filesystem paths refer to the same location.
- *
- * @param left - First path
- * @param right - Second path
- */
-function sameFsPath(left: string, right: string): boolean {
-  const resolvedLeft = path.resolve(left);
-  const resolvedRight = path.resolve(right);
-  if (process.platform === "win32") {
-    return resolvedLeft.toLowerCase() === resolvedRight.toLowerCase();
-  }
-  return resolvedLeft === resolvedRight;
 }

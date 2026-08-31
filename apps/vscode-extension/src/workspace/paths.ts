@@ -1,10 +1,10 @@
 import path from "node:path";
 
 /** Hidden runtime directory at the learning workspace root. */
-export const LEARN_DIR_NAME = ".learn";
+const LEARN_DIR_NAME = ".learn";
 
 /** Pre-root-location workspace file under `.learn/` (migrated on open). */
-export const LEGACY_LEARN_WORKSPACE_FILE_NAME = "learn-by-diff.code-workspace";
+const LEGACY_LEARN_WORKSPACE_FILE_NAME = "learn-by-diff.code-workspace";
 
 /**
  * Returns whether `fileName` is a VS Code / Cursor `.code-workspace` file.
@@ -74,4 +74,19 @@ export function chapterSnapshotPaths(workspaceRoot: string, chapterId: string) {
 export function chapterRefPath(workspaceRoot: string, folderName: string): string {
   const { refsDir } = learningPaths(workspaceRoot);
   return path.join(refsDir, folderName);
+}
+
+/**
+ * Returns whether two filesystem paths refer to the same location.
+ *
+ * @param left - First path
+ * @param right - Second path
+ */
+export function isSameFolder(left: string, right: string): boolean {
+  const resolvedLeft = path.resolve(left);
+  const resolvedRight = path.resolve(right);
+  if (process.platform === "win32") {
+    return resolvedLeft.toLowerCase() === resolvedRight.toLowerCase();
+  }
+  return resolvedLeft === resolvedRight;
 }

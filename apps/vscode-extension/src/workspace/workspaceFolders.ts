@@ -1,6 +1,6 @@
-import path from "node:path";
 import * as vscode from "vscode";
 import { ensureLearningWorkspaceFile } from "./multiRoot.ts";
+import { isSameFolder } from "./paths.ts";
 
 /**
  * Adds `folderPath` as a named Explorer workspace folder, or opens a new window if that fails.
@@ -68,19 +68,4 @@ async function revealExplorerFolder(uri: vscode.Uri): Promise<void> {
   } catch {
     // Command may be missing in some hosts; the folder is still in the workspace.
   }
-}
-
-/**
- * Returns whether two filesystem paths refer to the same directory.
- *
- * @param left - First path
- * @param right - Second path
- */
-export function isSameFolder(left: string, right: string): boolean {
-  const resolvedLeft = path.resolve(left);
-  const resolvedRight = path.resolve(right);
-  if (process.platform === "win32") {
-    return resolvedLeft.toLowerCase() === resolvedRight.toLowerCase();
-  }
-  return resolvedLeft === resolvedRight;
 }
