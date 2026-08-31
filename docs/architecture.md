@@ -85,9 +85,10 @@ Activation today: `onUri` + `onView:learnByDiff.courseView` + `workspaceContains
 | ---------------------------- | -------------------------------------------------------------------- |
 | `workspace/openCourse.ts`    | Shared open-course flow (command + deep link)                        |
 | `workspace/creator.ts`       | Create learning root, copy config, materialize source, first chapter |
-| `workspace/session.ts`       | Chapter navigation helpers                                           |
+| `workspace/sourceStore.ts`   | Source mirror (git or tree copy); list/read/export chapter subtrees  |
+| `workspace/session.ts`       | Chapter navigation and snapshot apply                                |
 | `ui/explorerView.ts`         | SCM-like chapter/file tree, contextValues, inline actions            |
-| `ui/diff.ts` / `openDocs.ts` | File diffs; docs URL / Markdown preview / open file                  |
+| `ui/diff.ts` / `openDocs.ts` | File diffs (lazy `.learn/snapshots`); docs URL / Markdown / file     |
 | `uri/*`                      | `vscode://rjiazhen.learn-by-diff/open?url=…` (also `cursor://`)      |
 
 Deep link authority = `publisher.name` → `rjiazhen.learn-by-diff`.
