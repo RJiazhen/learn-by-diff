@@ -1,0 +1,18 @@
+{
+  "learnByDiff.extension.description": "GitHub のソースと段階的なチュートリアルを、実際に編集できるローカル学習ワークスペースにします。",
+  "learnByDiff.openCourse.title": "LearnByDiff: コースを開く",
+  "learnByDiff.nextChapter.title": "LearnByDiff: 次の章",
+  "learnByDiff.previousChapter.title": "LearnByDiff: 前の章",
+  "learnByDiff.openFileDiff.title": "LearnByDiff: ファイルの差分を開く",
+  "learnByDiff.applyChapterStart.title": "未開始",
+  "learnByDiff.applyChapterFinish.title": "完了",
+  "learnByDiff.openChapterDocs.title": "章のドキュメントを開く",
+  "learnByDiff.openChapterStartFolder.title": "未開始フォルダーを開く",
+  "learnByDiff.openChapterFinishFolder.title": "完了フォルダーを開く",
+  "learnByDiff.viewAsTree.title": "ツリー表示",
+  "learnByDiff.viewAsList.title": "リスト表示",
+  "learnByDiff.courseView.name": "Learn By Diff",
+  "learnByDiff.viewsWelcome.loading": "読み込み中…",
+  "learnByDiff.viewsWelcome.openCourse": "LearnByDiff のコースを開いて学習を始めましょう。\n[コースを開く](command:learnByDiff.openCourse)",
+  "learnByDiff.currentChapter.colorDescription": "Learn By Diff ビューで現在の章を強調表示する色"
+}

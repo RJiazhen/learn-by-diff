@@ -1,0 +1,18 @@
+{
+  "learnByDiff.extension.description": "把 GitHub 原始碼與增量教學變成真正可編輯的本機學習工作區。",
+  "learnByDiff.openCourse.title": "LearnByDiff: 開啟課程",
+  "learnByDiff.nextChapter.title": "LearnByDiff: 下一章",
+  "learnByDiff.previousChapter.title": "LearnByDiff: 上一章",
+  "learnByDiff.openFileDiff.title": "LearnByDiff: 開啟檔案比較",
+  "learnByDiff.applyChapterStart.title": "未開始",
+  "learnByDiff.applyChapterFinish.title": "已完成",
+  "learnByDiff.openChapterDocs.title": "開啟章節文件",
+  "learnByDiff.openChapterStartFolder.title": "開啟未開始資料夾",
+  "learnByDiff.openChapterFinishFolder.title": "開啟已完成資料夾",
+  "learnByDiff.viewAsTree.title": "樹狀檢視",
+  "learnByDiff.viewAsList.title": "清單檢視",
+  "learnByDiff.courseView.name": "Learn By Diff",
+  "learnByDiff.viewsWelcome.loading": "正在載入…",
+  "learnByDiff.viewsWelcome.openCourse": "開啟 LearnByDiff 課程開始學習。\n[開啟課程](command:learnByDiff.openCourse)",
+  "learnByDiff.currentChapter.colorDescription": "Learn By Diff 檢視中目前章節的醒目提示色彩"
+}
