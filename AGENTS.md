@@ -4,7 +4,7 @@ Guidance for AI agents working in this repository. Read this first; follow linke
 
 ## What this is
 
-VS Code / Cursor extension that turns a **course repo** (Learning Course Protocol under `.course-config/`) plus a **source repo** (directory snapshots per chapter) into a local **learning workspace**. Students learn by implementing increments and comparing diffs—not by checking out git history.
+VS Code / Cursor extension that turns a **course repo** (Learning Course Protocol: `course.yml` at the specified root, or under `.course-config/`) plus a **source repo** (directory snapshots per chapter) into a local **learning workspace**. Students learn by implementing increments and comparing diffs—not by checking out git history.
 
 Not in scope: course hosting, accounts, AI explanations of code.
 

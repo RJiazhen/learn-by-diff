@@ -55,11 +55,16 @@ The IDE must already have LearnByDiff installed; the OS may ask to allow the `vs
 Course repos need:
 
 ```text
+course.yml                 # preferred, at the specified directory or repo root
+chapters/*.yml
+
+# or
+
 .course-config/course.yml
 .course-config/chapters/*.yml
 ```
 
-`course.yml` fields are all optional: `id` defaults from the `.course-config` parent (or `{repo}-learn` at a git root), `title` defaults to `id`, `source.repository` defaults to `.` (the course home). Optional `source.root` prefixes chapter dirs. Chapter YAML fields are all optional: `id`/`title` default from the filename, empty `fromDir`/`toDir` mean empty trees, omitted `entryFiles` auto-discovers all files under `toDir`, optional `docs` is an http(s) URL or a relative doc path under the chapter snapshot. Nested paths and unrelated parents in the same repo are supported; separate remotes per chapter are not.
+`course.yml` fields are all optional: `id` defaults from the course home folder (or `{repo}-learn` at a git root), `title` defaults to `id`, `source.repository` defaults to `.` (the course home). Optional `source.root` prefixes chapter dirs. Chapter YAML fields are all optional: `id`/`title` default from the filename, empty `fromDir`/`toDir` mean empty trees, omitted `entryFiles` auto-discovers all files under `toDir`, optional `docs` is an http(s) URL or a relative doc path under the chapter snapshot. Nested paths and unrelated parents in the same repo are supported; separate remotes per chapter are not.
 
 Authoring: JSON Schema lives at [`packages/protocol/schema.json`](packages/protocol/schema.json). Point YAML files at it with a top comment, e.g. `# yaml-language-server: $schema=../../../packages/protocol/schema.json#/$defs/course`. Runtime validation still uses `@learn-by-diff/protocol`.
 

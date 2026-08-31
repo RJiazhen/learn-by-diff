@@ -4,7 +4,7 @@ Companion to [`AGENTS.md`](../AGENTS.md). Describes how LearnByDiff is structure
 
 ## Problem model
 
-1. **Course repository** — declares pedagogy in `.course-config/` (not the student’s full solution tree).
+1. **Course repository** — declares pedagogy in `course.yml` at the specified root, or under `.course-config/` (not the student’s full solution tree).
 2. **Source repository** — holds **directory snapshots** (`fromDir` → `toDir` per chapter), optionally under `source.root`.
 3. **Learning workspace** — student folder created by the extension; owns `.learn/` runtime state and the editable working tree.
 
@@ -31,18 +31,23 @@ learn-by-diff extension   clone/mirror source → export trees → UI / URI
 ### On disk
 
 ```text
+course.yml                      # preferred, at the specified root
+chapters/*.yml
+
+# or
+
 .course-config/course.yml
-.course-config/chapters/001-*.yml   # sort order = course order
+.course-config/chapters/*.yml   # sort order = course order
 ```
 
 ### `course.yml` (all optional)
 
-| Field               | Default                                                                 |
-| ------------------- | ----------------------------------------------------------------------- |
-| `id`                | Parent of `.course-config`; `{repo}-learn` if that parent is a git root |
-| `title`             | `id`                                                                    |
-| `source.repository` | `.` (course home)                                                       |
-| `source.root`       | none                                                                    |
+| Field               | Default                                                       |
+| ------------------- | ------------------------------------------------------------- |
+| `id`                | Course home folder; `{repo}-learn` if that home is a git root |
+| `title`             | `id`                                                          |
+| `source.repository` | `.` (course home)                                             |
+| `source.root`       | none                                                          |
 
 No `protocolVersion`, no `workspace` block.
 
