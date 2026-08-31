@@ -1,7 +1,7 @@
 {
   "LearnByDiff: Open Course": "LearnByDiff: 打开课程",
   "Course repository URL (prefilled with local examples/demo-course)": "课程仓库 URL（已预填本地 examples/demo-course）",
-  "Course repository URL (must contain .course-config/course.yml)": "课程仓库 URL（须包含 .course-config/course.yml）",
+  "Course repository URL (must contain course.yml or .course-config/course.yml)": "课程仓库 URL（须包含 course.yml 或 .course-config/course.yml）",
   "This is the last chapter.": "已经是最后一章。",
   "This is the first chapter.": "已经是第一章。",
   "Unknown chapter: {0}": "未知章节：{0}",

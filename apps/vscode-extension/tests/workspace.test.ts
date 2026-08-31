@@ -216,6 +216,58 @@ describe("learning workspace", () => {
     ).resolves.toBe(false);
   });
 
+  test("prefers root course.yml and copies only config files into .learn/course", async () => {
+    const pair = await tempDir("lbd-root-cfg-");
+    const sourceDir = path.join(pair, "demo-source");
+    const courseDir = path.join(pair, "demo-course");
+    await mkdir(path.join(sourceDir, "start"), { recursive: true });
+    await mkdir(path.join(sourceDir, "done"), { recursive: true });
+    await writeFile(path.join(sourceDir, "start", "a.ts"), "export const a = 1;\n", "utf8");
+    await writeFile(path.join(sourceDir, "done", "a.ts"), "export const a = 2;\n", "utf8");
+
+    await mkdir(path.join(courseDir, "chapters"), { recursive: true });
+    await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
+    await writeFile(
+      path.join(courseDir, "course.yml"),
+      ["id: from-root", "title: Root", "source:", "  repository: ../demo-source", ""].join("\n"),
+      "utf8",
+    );
+    await writeFile(
+      path.join(courseDir, "chapters", "001.yml"),
+      ["id: one", "title: One", "fromDir: start", "toDir: done", ""].join("\n"),
+      "utf8",
+    );
+    await writeFile(
+      path.join(courseDir, ".course-config", "course.yml"),
+      ["id: from-nested", "title: Nested", "source:", "  repository: ../demo-source", ""].join(
+        "\n",
+      ),
+      "utf8",
+    );
+    await writeFile(
+      path.join(courseDir, ".course-config", "chapters", "001.yml"),
+      ["id: nested", "title: Nested", "fromDir: start", "toDir: done", ""].join("\n"),
+      "utf8",
+    );
+    await writeFile(path.join(courseDir, "stale.ts"), "should not be copied\n", "utf8");
+
+    const parent = await tempDir("lbd-root-parent-");
+    const created = await createLearningWorkspace({
+      courseRepoUrl: courseDir,
+      parentDir: parent,
+      git,
+    });
+
+    expect(created.course.config.id).toBe("from-root");
+    expect(created.course.chapters.map((chapter) => chapter.id)).toEqual(["one"]);
+    const copied = learningPaths(created.learningRoot).courseDir;
+    expect(await readFile(path.join(copied, "course.yml"), "utf8")).toContain("from-root");
+    await expect(access(path.join(copied, "stale.ts"))).rejects.toMatchObject({ code: "ENOENT" });
+    await expect(access(path.join(copied, ".course-config"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+  });
+
   test("ensureLearningWorkspaceFile does not overwrite an existing workspace file", async () => {
     const root = await tempDir("lbd-ws-keep-");
     const paths = learningPaths(root);

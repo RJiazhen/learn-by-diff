@@ -2,8 +2,11 @@ import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/pr
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
-  COURSE_CONFIG_DIR,
+  CHAPTERS_DIR_NAME,
+  COURSE_FILE_NAME,
+  findCourseConfigDir,
   loadCourseFromConfigDir,
+  ProtocolError,
   resolveSourceSubtreePath,
   type Course,
 } from "@learn-by-diff/protocol";
@@ -66,7 +69,7 @@ export async function createLearningWorkspace(
     const paths = learningPaths(learningRoot);
     await mkdir(paths.learnDir, { recursive: true });
     await rm(paths.courseDir, { recursive: true, force: true });
-    await cp(courseConfigSource.configDir, paths.courseDir, { recursive: true });
+    await copyCourseConfigFiles(courseConfigSource.configDir, paths.courseDir);
 
     const course = await loadCourseFromConfigDir(paths.courseDir);
 
@@ -115,7 +118,9 @@ interface CourseConfigSource {
 }
 
 /**
- * Resolves `.course-config` from a local path or by cloning a git course repository.
+ * Resolves course config from a local path or by cloning a git course repository.
+ *
+ * Looks for `course.yml` in the specified directory, then `.course-config/course.yml`.
  *
  * @param git - Git client
  * @param courseRepoUrl - User-supplied course URL or path
@@ -128,10 +133,13 @@ async function resolveCourseConfigDir(
 ): Promise<CourseConfigSource> {
   const local = localCourseOrigin(courseRepoUrl);
   if (local !== undefined) {
-    const configDir = path.join(local, COURSE_CONFIG_DIR);
-    if (await directoryExists(configDir)) {
+    const configDir = await findCourseConfigDir(local);
+    if (configDir !== undefined) {
       onLog?.(`Using local course config… (${local})`);
       return { configDir, cleanup: async () => {} };
+    }
+    if (!isRemoteGitUrl(courseRepoUrl)) {
+      throw new Error(`course repository not found: ${courseRepoUrl}`);
     }
   }
 
@@ -141,13 +149,45 @@ async function resolveCourseConfigDir(
 
   onLog?.("Cloning course repository…");
   const courseCloneDir = await mkdtemp(path.join(tmpdir(), "learn-by-diff-course-"));
-  await git.clone(courseRepoUrl, courseCloneDir);
-  return {
-    configDir: path.join(courseCloneDir, COURSE_CONFIG_DIR),
-    cleanup: async () => {
-      await rm(courseCloneDir, { recursive: true, force: true });
-    },
-  };
+  try {
+    await git.clone(courseRepoUrl, courseCloneDir);
+    const configDir = await findCourseConfigDir(courseCloneDir);
+    if (configDir === undefined) {
+      throw new ProtocolError([
+        {
+          path: COURSE_FILE_NAME,
+          message:
+            "course config file was not found (looked in course.yml, then .course-config/course.yml)",
+        },
+      ]);
+    }
+    return {
+      configDir,
+      cleanup: async () => {
+        await rm(courseCloneDir, { recursive: true, force: true });
+      },
+    };
+  } catch (error) {
+    await rm(courseCloneDir, { recursive: true, force: true });
+    throw error;
+  }
+}
+
+/**
+ * Copies `course.yml` and `chapters/` into the learning workspace config dir.
+ *
+ * Does not copy the rest of a course-home tree (source files, git metadata).
+ *
+ * @param fromConfigDir - Directory that contains `course.yml`
+ * @param toConfigDir - `.learn/course` destination
+ */
+async function copyCourseConfigFiles(fromConfigDir: string, toConfigDir: string): Promise<void> {
+  await mkdir(toConfigDir, { recursive: true });
+  await cp(path.join(fromConfigDir, COURSE_FILE_NAME), path.join(toConfigDir, COURSE_FILE_NAME));
+  const fromChapters = path.join(fromConfigDir, CHAPTERS_DIR_NAME);
+  if (await directoryExists(fromChapters)) {
+    await cp(fromChapters, path.join(toConfigDir, CHAPTERS_DIR_NAME), { recursive: true });
+  }
 }
 
 /**

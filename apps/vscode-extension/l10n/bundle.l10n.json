@@ -1,7 +1,7 @@
 {
   "LearnByDiff: Open Course": "LearnByDiff: Open Course",
   "Course repository URL (prefilled with local examples/demo-course)": "Course repository URL (prefilled with local examples/demo-course)",
-  "Course repository URL (must contain .course-config/course.yml)": "Course repository URL (must contain .course-config/course.yml)",
+  "Course repository URL (must contain course.yml or .course-config/course.yml)": "Course repository URL (must contain course.yml or .course-config/course.yml)",
   "This is the last chapter.": "This is the last chapter.",
   "This is the first chapter.": "This is the first chapter.",
   "Unknown chapter: {0}": "Unknown chapter: {0}",

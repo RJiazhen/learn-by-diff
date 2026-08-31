@@ -13,7 +13,7 @@ export interface LearningSession {
 /**
  * Returns whether `workspaceRoot` is a learning workspace (has `.learn/progress.json`).
  *
- * Course repositories with only `.course-config` are not treated as learning sessions.
+ * Course repositories with only `course.yml` / `.course-config` are not treated as learning sessions.
  *
  * @param workspaceRoot - Folder currently open
  */

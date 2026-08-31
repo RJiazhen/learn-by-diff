@@ -93,7 +93,9 @@ export function registerCommands(
         title: vscode.l10n.t("LearnByDiff: Open Course"),
         prompt: isDevHost
           ? vscode.l10n.t("Course repository URL (prefilled with local examples/demo-course)")
-          : vscode.l10n.t("Course repository URL (must contain .course-config/course.yml)"),
+          : vscode.l10n.t(
+              "Course repository URL (must contain course.yml or .course-config/course.yml)",
+            ),
         placeHolder: "https://github.com/org/course.git",
         value: defaultCourseUrl,
         ignoreFocusOut: true,
