@@ -11,7 +11,7 @@ import { ProtocolError } from "./types.ts";
  * @param path - Path used in error messages
  * @returns Parsed value
  */
-export function parseYamlDocument(text: string, path: string): unknown {
+function parseYamlDocument(text: string, path: string): unknown {
   try {
     return parse(text);
   } catch (error) {

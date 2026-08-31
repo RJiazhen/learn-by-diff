@@ -7,7 +7,7 @@ export {
   defaultCourseId,
   type ParsedCourseFields,
 } from "./courseDefaults.ts";
-export { parseChapterYaml, parseCourseYaml, parseYamlDocument } from "./parse.ts";
+export { parseChapterYaml, parseCourseYaml } from "./parse.ts";
 export {
   isHttpUrl,
   normalizeRelativeFilePath,
