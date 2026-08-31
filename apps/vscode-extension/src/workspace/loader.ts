@@ -91,3 +91,21 @@ export async function isInPlaceLearningTarget(dir: string): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Returns the first folder that is a LearnByDiff learning workspace.
+ *
+ * Used when Explorer is multi-root (student tree plus chapter reference folders).
+ *
+ * @param folderPaths - Open workspace folder paths, typically in Explorer order
+ */
+export async function findLearningWorkspaceRoot(
+  folderPaths: readonly string[],
+): Promise<string | undefined> {
+  for (const folder of folderPaths) {
+    if (await isLearningWorkspace(folder)) {
+      return folder;
+    }
+  }
+  return undefined;
+}

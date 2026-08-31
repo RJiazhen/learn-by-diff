@@ -44,6 +44,7 @@ interface ChangedEntryFile {
  *
  * Supports SCM-like tree and flat list layouts. Chapter Start / Chapter Finish
  * export that snapshot into the student tree and mark the row as Not Started or Completed.
+ * Open Not Started / Completed Folder mounts a runnable copy in Explorer.
  */
 export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeItem> {
   private session: LearningSession | undefined;

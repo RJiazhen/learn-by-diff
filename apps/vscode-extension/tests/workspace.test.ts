@@ -5,7 +5,11 @@ import { afterEach, describe, expect, test } from "vite-plus/test";
 import { GitClient } from "../src/git/client.ts";
 import { createLearningWorkspace, checkoutChapter } from "../src/workspace/creator.ts";
 import { DirtyWorkspaceError } from "../src/workspace/errors.ts";
-import { isInPlaceLearningTarget, loadLearningSession } from "../src/workspace/loader.ts";
+import {
+  findLearningWorkspaceRoot,
+  isInPlaceLearningTarget,
+  loadLearningSession,
+} from "../src/workspace/loader.ts";
 import { learningPaths } from "../src/workspace/paths.ts";
 import { applyChapterSnapshot } from "../src/workspace/session.ts";
 import { readProgress, writeProgress } from "../src/workspace/state.ts";
@@ -187,6 +191,7 @@ describe("learning workspace", () => {
     const gitignore = await readFile(path.join(created.learningRoot, ".gitignore"), "utf8");
     expect(gitignore).toContain(".learn/source.git/");
     expect(gitignore).toContain(".learn/snapshots/");
+    expect(gitignore).toContain(".learn/refs/");
     expect(gitignore).not.toMatch(/^\.learn\/$/m);
     const session = await loadLearningSession(created.learningRoot);
     expect(session?.course.config.id).toBe("demo");
@@ -302,6 +307,7 @@ describe("learning workspace", () => {
     expect(gitignore).toContain("dist/");
     expect(gitignore).toContain(".learn/source.git/");
     expect(gitignore).toContain(".learn/snapshots/");
+    expect(gitignore).toContain(".learn/refs/");
     expect(gitignore).not.toContain("from-chapter");
   });
 
@@ -372,6 +378,7 @@ describe("learning workspace", () => {
     await checkoutChapter(git, created.learningRoot, created.course, "two");
     const gitignore = await readFile(path.join(created.learningRoot, ".gitignore"), "utf8");
     expect(gitignore).toContain("custom-keep");
+    expect(gitignore).toContain(".learn/refs/");
     expect(gitignore).not.toContain("from-chapter");
   });
 
@@ -534,5 +541,13 @@ describe("learning workspace", () => {
     const dir = await tempDir("lbd-empty-");
     await writeFile(path.join(dir, "README.md"), "sandbox\n", "utf8");
     expect(await isInPlaceLearningTarget(dir)).toBe(true);
+  });
+
+  test("findLearningWorkspaceRoot picks the folder that has progress.json", async () => {
+    const { learningRoot } = await createTwoChapterWorkspace();
+    const decoy = await tempDir("lbd-decoy-");
+    await writeFile(path.join(decoy, "README.md"), "not a learning workspace\n", "utf8");
+    expect(await findLearningWorkspaceRoot([decoy, learningRoot])).toBe(learningRoot);
+    expect(await findLearningWorkspaceRoot([decoy])).toBeUndefined();
   });
 });

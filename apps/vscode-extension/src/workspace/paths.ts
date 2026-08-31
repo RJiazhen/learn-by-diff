@@ -17,6 +17,7 @@ export function learningPaths(workspaceRoot: string) {
     sourceMirror: path.join(learnDir, "source.git"),
     courseDir: path.join(learnDir, "course"),
     snapshotsDir: path.join(learnDir, "snapshots"),
+    refsDir: path.join(learnDir, "refs"),
   };
 }
 
@@ -34,4 +35,17 @@ export function chapterSnapshotPaths(workspaceRoot: string, chapterId: string) {
     fromDir: path.join(chapterDir, "from"),
     toDir: path.join(chapterDir, "to"),
   };
+}
+
+/**
+ * Returns the runnable reference copy directory under `.learn/refs/`.
+ *
+ * `folderName` must match the Explorer workspace folder name (ordinal, title, status).
+ *
+ * @param workspaceRoot - Learning repository root
+ * @param folderName - Same string as {@link chapterRefWorkspaceName}
+ */
+export function chapterRefPath(workspaceRoot: string, folderName: string): string {
+  const { refsDir } = learningPaths(workspaceRoot);
+  return path.join(refsDir, folderName);
 }

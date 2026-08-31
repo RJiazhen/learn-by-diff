@@ -73,6 +73,16 @@
         "icon": "$(book)"
       },
       {
+        "command": "learnByDiff.openChapterStartFolder",
+        "title": "Open Not Started Folder",
+        "icon": "$(folder)"
+      },
+      {
+        "command": "learnByDiff.openChapterFinishFolder",
+        "title": "Open Completed Folder",
+        "icon": "$(folder-opened)"
+      },
+      {
         "command": "learnByDiff.viewAsTree",
         "title": "View as Tree",
         "icon": "$(list-tree)"
@@ -154,6 +164,16 @@
           "group": "inline@3"
         },
         {
+          "command": "learnByDiff.openChapterStartFolder",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
+          "group": "inline@4"
+        },
+        {
+          "command": "learnByDiff.openChapterFinishFolder",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
+          "group": "inline@5"
+        },
+        {
           "command": "learnByDiff.applyChapterStart",
           "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
           "group": "navigation@1"
@@ -167,6 +187,16 @@
           "command": "learnByDiff.openChapterDocs",
           "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?-docs$/",
           "group": "navigation@3"
+        },
+        {
+          "command": "learnByDiff.openChapterStartFolder",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
+          "group": "navigation@4"
+        },
+        {
+          "command": "learnByDiff.openChapterFinishFolder",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
+          "group": "navigation@5"
         }
       ],
       "commandPalette": [
@@ -184,6 +214,14 @@
         },
         {
           "command": "learnByDiff.openChapterDocs",
+          "when": "false"
+        },
+        {
+          "command": "learnByDiff.openChapterStartFolder",
+          "when": "false"
+        },
+        {
+          "command": "learnByDiff.openChapterFinishFolder",
           "when": "false"
         },
         {

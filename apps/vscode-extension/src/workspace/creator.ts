@@ -289,7 +289,12 @@ async function readGitignore(workspaceRoot: string): Promise<string | undefined>
 }
 
 /** Ignore rules for regenerable `.learn` data; course config and progress stay trackable. */
-const LEARN_GITIGNORE_RULES = [".learn/source.git/", ".learn/snapshots/", "node_modules/"];
+const LEARN_GITIGNORE_RULES = [
+  ".learn/source.git/",
+  ".learn/snapshots/",
+  ".learn/refs/",
+  "node_modules/",
+];
 
 /**
  * Ensures regenerable `.learn` paths and `node_modules/` are ignored.
@@ -300,7 +305,7 @@ const LEARN_GITIGNORE_RULES = [".learn/source.git/", ".learn/snapshots/", "node_
  *
  * @param workspaceRoot - Learning repository root
  */
-async function ensureLearnGitignore(workspaceRoot: string): Promise<void> {
+export async function ensureLearnGitignore(workspaceRoot: string): Promise<void> {
   const gitignorePath = path.join(workspaceRoot, ".gitignore");
   let lines: string[];
   try {

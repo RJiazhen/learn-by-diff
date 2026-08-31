@@ -2,9 +2,13 @@ import { ProtocolError } from "@learn-by-diff/protocol";
 import path from "node:path";
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
-import { createLearningWorkspace } from "../workspace/creator.ts";
-import { isInPlaceLearningTarget, loadLearningSession } from "../workspace/loader.ts";
-import type { LearningSession } from "../workspace/loader.ts";
+import { createLearningWorkspace } from "./creator.ts";
+import {
+  findLearningWorkspaceRoot,
+  isInPlaceLearningTarget,
+  loadLearningSession,
+  type LearningSession,
+} from "./loader.ts";
 import { showError } from "../commands/showError.ts";
 
 /** Options for opening a course into a learning workspace. */
@@ -35,7 +39,10 @@ export async function openCourse(options: OpenCourseOptions): Promise<string | u
     return undefined;
   }
 
-  const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  const folderPaths = (vscode.workspace.workspaceFolders ?? []).map((folder) => folder.uri.fsPath);
+  const root =
+    (await findLearningWorkspaceRoot(folderPaths)) ??
+    (folderPaths.length > 0 ? folderPaths[0] : undefined);
   let inPlaceRoot: string | undefined;
   let parentDir = options.parentDir;
 
@@ -89,8 +96,8 @@ export async function openCourse(options: OpenCourseOptions): Promise<string | u
     return undefined;
   }
 
-  const current = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-  if (current !== undefined && path.resolve(current) === path.resolve(learningRoot)) {
+  const alreadyOpen = await findLearningWorkspaceRoot(folderPaths);
+  if (alreadyOpen !== undefined && path.resolve(alreadyOpen) === path.resolve(learningRoot)) {
     try {
       const session = await loadLearningSession(learningRoot);
       onSession?.(session);
