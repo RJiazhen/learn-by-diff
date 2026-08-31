@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
+import type { LearningSession } from "../workspace/loader.ts";
+import { chapterPosition, currentChapter } from "../workspace/session.ts";
 import { appliedSnapshotSide, chapterSnapshotStatusLabel } from "../workspace/state.ts";
-import { chapterPosition, currentChapter, type LearningSession } from "../workspace/session.ts";
 
 /**
  * Status bar item showing the current course chapter; click runs Next Chapter.

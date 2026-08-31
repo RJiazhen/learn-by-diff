@@ -3,10 +3,14 @@ import { resolveSourceSubtreePath } from "@learn-by-diff/protocol";
 import path from "node:path";
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
-import { classifyEntryChange, type EntryChangeKind } from "../workspace/entryChange.ts";
-import { resolveChapterEntryFiles } from "../workspace/entryFiles.ts";
+import {
+  classifyEntryChange,
+  resolveChapterEntryFiles,
+  type EntryChangeKind,
+} from "../workspace/entryChange.ts";
+import type { LearningSession } from "../workspace/loader.ts";
 import { learningPaths } from "../workspace/paths.ts";
-import { chapterOrdinal, currentChapter, type LearningSession } from "../workspace/session.ts";
+import { chapterOrdinal, currentChapter } from "../workspace/session.ts";
 import {
   appliedSnapshotSide,
   chapterSnapshotStatusLabel,
@@ -14,10 +18,10 @@ import {
 } from "../workspace/state.ts";
 
 /** URI scheme used to decorate chapter rows. */
-export const CHAPTER_URI_SCHEME = "learnbydiff-chapter";
+const CHAPTER_URI_SCHEME = "learnbydiff-chapter";
 
 /** URI scheme used to decorate entry-file rows with U/M/D badges. */
-export const FILE_URI_SCHEME = "learnbydiff-file";
+const FILE_URI_SCHEME = "learnbydiff-file";
 
 /** How chapter entry files are nested under each chapter row. */
 export type CourseViewMode = "tree" | "list";
@@ -69,13 +73,6 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
 
   /** VS Code subscription hook for tree refresh. */
   readonly onDidChangeTreeData = this.emitter.event;
-
-  /**
-   * Returns the current tree/list view mode.
-   */
-  getViewMode(): CourseViewMode {
-    return this.viewMode;
-  }
 
   /**
    * Sets tree/list view mode, persists it, and refreshes the view.

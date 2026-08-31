@@ -1,14 +1,12 @@
 import type { ChapterConfig, Course } from "@learn-by-diff/protocol";
 import { resolveSourceSubtreePath } from "@learn-by-diff/protocol";
 import type { GitClient } from "../git/client.ts";
-import { checkoutChapter, materializeChapterSnapshots } from "./creator.ts";
+import { checkoutChapter } from "./creator.ts";
 import { DirtyWorkspaceError } from "./errors.ts";
 import type { LearningSession } from "./loader.ts";
 import { learningPaths } from "./paths.ts";
 import { appliedSnapshotSide, type ChapterSnapshotSide } from "./state.ts";
 import { hasStudentEditsSinceChapterStart } from "./studentTree.ts";
-
-export type { LearningSession, ChapterSnapshotSide };
 
 /**
  * Returns the chapter currently applied to the student tree, or the first chapter.
@@ -87,14 +85,6 @@ export async function applyChapterSnapshot(
   }
   await checkoutChapter(git, session.workspaceRoot, session.course, chapterId, side);
   session.progress = { chapter: chapterId, completed: false, appliedSide: side };
-  await materializeChapterSnapshots(
-    git,
-    session.workspaceRoot,
-    chapter.id,
-    chapter.fromDir,
-    chapter.toDir,
-    session.course.config.source,
-  );
 }
 
 /**

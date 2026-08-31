@@ -1,4 +1,4 @@
-import { access, cp, mkdir, mkdtemp, readdir, rm, stat } from "node:fs/promises";
+import { access, cp, mkdir, mkdtemp, readFile, readdir, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import type { GitClient } from "../git/client.ts";
@@ -10,7 +10,7 @@ import { isRemoteGitUrl } from "./resolveRepo.ts";
  *
  * @param dir - Absolute path
  */
-async function directoryExists(dir: string): Promise<boolean> {
+export async function directoryExists(dir: string): Promise<boolean> {
   try {
     return (await stat(dir)).isDirectory();
   } catch {
@@ -23,7 +23,7 @@ async function directoryExists(dir: string): Promise<boolean> {
  *
  * @param root - Absolute filesystem path
  */
-export async function isGitRepository(root: string): Promise<boolean> {
+async function isGitRepository(root: string): Promise<boolean> {
   if (!(await directoryExists(root))) {
     return false;
   }
@@ -54,6 +54,127 @@ async function isGitSourceStore(storePath: string): Promise<boolean> {
     return true;
   } catch {
     return false;
+  }
+}
+
+/**
+ * Recursively lists relative file paths under `absDir`.
+ *
+ * @param absDir - Absolute directory to walk
+ * @param relativePrefix - Relative prefix for returned paths
+ */
+async function walkFiles(absDir: string, relativePrefix: string): Promise<string[]> {
+  let entries;
+  try {
+    entries = await readdir(absDir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  const files: string[] = [];
+  for (const entry of entries) {
+    const relative = relativePrefix === "" ? entry.name : `${relativePrefix}/${entry.name}`;
+    const absolute = path.join(absDir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...(await walkFiles(absolute, relative)));
+    } else if (entry.isFile()) {
+      files.push(relative.split(/[/\\]/).join("/"));
+    }
+  }
+  return files;
+}
+
+/**
+ * Lists file paths under a source-store subdirectory (relative to that subdirectory).
+ *
+ * @param git - Git client
+ * @param storePath - Materialized source store
+ * @param subdir - Chapter directory at the source root
+ */
+export async function listSourceSubtreeFiles(
+  git: GitClient,
+  storePath: string,
+  subdir: string,
+): Promise<string[]> {
+  const normalizedSubdir = subdir.split(/[/\\]/).join("/");
+  if (await isGitSourceStore(storePath)) {
+    const result = await git.run([
+      "--git-dir",
+      storePath,
+      "ls-tree",
+      "-r",
+      "--name-only",
+      "HEAD",
+      "--",
+      normalizedSubdir,
+    ]);
+    const prefix = `${normalizedSubdir}/`;
+    return result.stdout
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.startsWith(prefix))
+      .map((line) => line.slice(prefix.length));
+  }
+  return walkFiles(path.join(storePath, ...normalizedSubdir.split("/")), "");
+}
+
+/**
+ * Returns whether a path exists as a file under the source store.
+ *
+ * @param git - Git client
+ * @param storePath - Materialized source store
+ * @param repoRelativePath - Path from the source root
+ */
+export async function sourceFileExists(
+  git: GitClient,
+  storePath: string,
+  repoRelativePath: string,
+): Promise<boolean> {
+  const normalized = repoRelativePath.split(/[/\\]/).join("/");
+  if (await isGitSourceStore(storePath)) {
+    const result = await git.run([
+      "--git-dir",
+      storePath,
+      "ls-tree",
+      "--name-only",
+      "HEAD",
+      "--",
+      normalized,
+    ]);
+    return result.stdout.trim() !== "";
+  }
+  try {
+    const full = path.join(storePath, ...normalized.split("/"));
+    return (await stat(full)).isFile();
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Reads a UTF-8 file from the source store, or `undefined` when missing.
+ *
+ * @param git - Git client
+ * @param storePath - Materialized source store
+ * @param repoRelativePath - Path from the source root
+ */
+export async function readSourceFile(
+  git: GitClient,
+  storePath: string,
+  repoRelativePath: string,
+): Promise<string | undefined> {
+  const normalized = repoRelativePath.split(/[/\\]/).join("/");
+  if (await isGitSourceStore(storePath)) {
+    try {
+      const result = await git.run(["--git-dir", storePath, "show", `HEAD:${normalized}`]);
+      return result.stdout;
+    } catch {
+      return undefined;
+    }
+  }
+  try {
+    return await readFile(path.join(storePath, ...normalized.split("/")), "utf8");
+  } catch {
+    return undefined;
   }
 }
 

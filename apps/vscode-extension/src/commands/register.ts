@@ -12,13 +12,8 @@ import {
 import { openCourse } from "../workspace/openCourse.ts";
 import { materializeChapterRef, chapterRefWorkspaceName } from "../workspace/refs.ts";
 import { demoCoursePath } from "../workspace/resolveRepo.ts";
-import {
-  applyChapterSnapshot,
-  nextChapter,
-  previousChapter,
-  type ChapterSnapshotSide,
-} from "../workspace/session.ts";
-import { chapterSnapshotStatusLabel } from "../workspace/state.ts";
+import { applyChapterSnapshot, nextChapter, previousChapter } from "../workspace/session.ts";
+import { chapterSnapshotStatusLabel, type ChapterSnapshotSide } from "../workspace/state.ts";
 import {
   addOrOpenWorkspaceFolder,
   openLearningWorkspaceIfNeeded,
@@ -172,6 +167,30 @@ export function registerCommands(
   );
 
   /**
+   * Loads the session for a chapter tree item, or returns undefined after a warning.
+   *
+   * @param item - Explorer chapter row
+   */
+  async function sessionForChapterItem(
+    item: CourseTreeItem | undefined,
+  ): Promise<{ session: LearningSession; chapterId: string } | undefined> {
+    const chapterId = item?.chapterId;
+    if (chapterId === undefined || chapterId === "") {
+      return undefined;
+    }
+    const session = await loadFromRoot();
+    if (session === undefined) {
+      return undefined;
+    }
+    const exists = session.course.chapters.some((chapter) => chapter.id === chapterId);
+    if (!exists) {
+      void vscode.window.showWarningMessage(`Unknown chapter: ${chapterId}`);
+      return undefined;
+    }
+    return { session, chapterId };
+  }
+
+  /**
    * Copies a chapter snapshot into `.learn/refs` and mounts it in Explorer.
    *
    * @param item - Explorer chapter row
@@ -181,22 +200,13 @@ export function registerCommands(
     item: CourseTreeItem | undefined,
     side: ChapterSnapshotSide,
   ): Promise<void> {
-    const chapterId = item?.chapterId;
-    if (chapterId === undefined || chapterId === "") {
-      return;
-    }
-    const session = await loadFromRoot();
-    if (session === undefined) {
-      return;
-    }
-    const exists = session.course.chapters.some((chapter) => chapter.id === chapterId);
-    if (!exists) {
-      void vscode.window.showWarningMessage(`Unknown chapter: ${chapterId}`);
+    const loaded = await sessionForChapterItem(item);
+    if (loaded === undefined) {
       return;
     }
     try {
-      const dest = await materializeChapterRef(git, session, chapterId, side);
-      const name = chapterRefWorkspaceName(session.course, chapterId, side);
+      const dest = await materializeChapterRef(git, loaded.session, loaded.chapterId, side);
+      const name = chapterRefWorkspaceName(loaded.session.course, loaded.chapterId, side);
       await addOrOpenWorkspaceFolder(dest, name);
     } catch (error) {
       showError(error);
@@ -320,20 +330,11 @@ export function registerCommands(
     item: CourseTreeItem | undefined,
     side: ChapterSnapshotSide,
   ): Promise<void> {
-    const chapterId = item?.chapterId;
-    if (chapterId === undefined || chapterId === "") {
+    const loaded = await sessionForChapterItem(item);
+    if (loaded === undefined) {
       return;
     }
-    const session = await loadFromRoot();
-    if (session === undefined) {
-      return;
-    }
-    const exists = session.course.chapters.some((chapter) => chapter.id === chapterId);
-    if (!exists) {
-      void vscode.window.showWarningMessage(`Unknown chapter: ${chapterId}`);
-      return;
-    }
-    await applySnapshotWithConfirm(session, chapterId, side);
+    await applySnapshotWithConfirm(loaded.session, loaded.chapterId, side);
   }
 
   /**

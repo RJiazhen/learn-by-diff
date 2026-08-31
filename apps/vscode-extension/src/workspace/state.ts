@@ -1,5 +1,4 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
-import path from "node:path";
 import { learningPaths } from "./paths.ts";
 
 /** Which chapter snapshot is currently exported into the student tree. */
@@ -92,13 +91,4 @@ function isProgress(value: unknown): value is LearningProgress {
     return false;
   }
   return record.appliedStart === undefined || typeof record.appliedStart === "string";
-}
-
-/**
- * Returns the progress file path for tests and loaders.
- *
- * @param workspaceRoot - Learning repository root
- */
-export function progressFilePath(workspaceRoot: string): string {
-  return path.join(learningPaths(workspaceRoot).progressFile);
 }

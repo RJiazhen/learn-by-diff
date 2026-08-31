@@ -1,84 +1,36 @@
-import { access, readFile, stat } from "node:fs/promises";
+import type { ChapterConfig, CourseSource } from "@learn-by-diff/protocol";
+import { resolveSourceSubtreePath } from "@learn-by-diff/protocol";
 import path from "node:path";
 import type { GitClient } from "../git/client.ts";
+import { listSourceSubtreeFiles, readSourceFile, sourceFileExists } from "./sourceStore.ts";
 
 /** SCM-style change letter for a chapter entry file. */
 export type EntryChangeKind = "U" | "M" | "D";
 
 /**
- * Returns whether `storePath` is a bare/git-dir source mirror.
- *
- * @param storePath - Materialized source store
- */
-async function isGitSourceStore(storePath: string): Promise<boolean> {
-  try {
-    await access(path.join(storePath, "HEAD"));
-    await access(path.join(storePath, "objects"));
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Returns whether a path exists as a file under the source store.
+ * Returns the entry-file list for a chapter: explicit `entryFiles`, or all files
+ * under `toDir` when omitted (empty `toDir` → no files).
  *
  * @param git - Git client
  * @param storePath - Materialized source store
- * @param repoRelativePath - Path from the source root (e.g. `hello/src/a.ts`)
+ * @param source - Course source block
+ * @param chapter - Chapter config
  */
-async function sourceFileExists(
+export async function resolveChapterEntryFiles(
   git: GitClient,
   storePath: string,
-  repoRelativePath: string,
-): Promise<boolean> {
-  const normalized = repoRelativePath.split(/[/\\]/).join("/");
-  if (await isGitSourceStore(storePath)) {
-    const result = await git.run([
-      "--git-dir",
-      storePath,
-      "ls-tree",
-      "--name-only",
-      "HEAD",
-      "--",
-      normalized,
-    ]);
-    return result.stdout.trim() !== "";
+  source: CourseSource,
+  chapter: ChapterConfig,
+): Promise<string[]> {
+  if (chapter.entryFiles !== undefined) {
+    return chapter.entryFiles;
   }
-  try {
-    const full = path.join(storePath, ...normalized.split("/"));
-    return (await stat(full)).isFile();
-  } catch {
-    return false;
+  const toSubtree = resolveSourceSubtreePath(source, chapter.toDir);
+  if (toSubtree === undefined) {
+    return [];
   }
-}
-
-/**
- * Reads file contents from the source store, or `undefined` when missing.
- *
- * @param git - Git client
- * @param storePath - Materialized source store
- * @param repoRelativePath - Path from the source root
- */
-async function readSourceFile(
-  git: GitClient,
-  storePath: string,
-  repoRelativePath: string,
-): Promise<string | undefined> {
-  const normalized = repoRelativePath.split(/[/\\]/).join("/");
-  if (await isGitSourceStore(storePath)) {
-    try {
-      const result = await git.run(["--git-dir", storePath, "show", `HEAD:${normalized}`]);
-      return result.stdout;
-    } catch {
-      return undefined;
-    }
-  }
-  try {
-    return await readFile(path.join(storePath, ...normalized.split("/")), "utf8");
-  } catch {
-    return undefined;
-  }
+  const files = await listSourceSubtreeFiles(git, storePath, toSubtree);
+  return [...files].sort((left, right) => left.localeCompare(right));
 }
 
 /**

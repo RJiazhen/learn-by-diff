@@ -3,9 +3,10 @@ import path from "node:path";
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
 import { snapshotFile, writeChapterArchives } from "../snapshot/archive.ts";
-import { resolveChapterEntryFiles } from "../workspace/entryFiles.ts";
+import { resolveChapterEntryFiles } from "../workspace/entryChange.ts";
+import type { LearningSession } from "../workspace/loader.ts";
 import { learningPaths } from "../workspace/paths.ts";
-import { chapterOrdinal, type LearningSession } from "../workspace/session.ts";
+import { chapterOrdinal } from "../workspace/session.ts";
 import { decodeSnapshotUriPath, encodeSnapshotUriPath } from "./snapshotUri.ts";
 
 /**
@@ -38,7 +39,7 @@ export class SnapshotDiffContentProvider implements vscode.TextDocumentContentPr
  *
  * @param fsPath - Absolute snapshot file path (file may be missing)
  */
-export function uriForDiffSide(fsPath: string): vscode.Uri {
+function uriForDiffSide(fsPath: string): vscode.Uri {
   return vscode.Uri.from({
     scheme: SNAPSHOT_DIFF_SCHEME,
     path: encodeSnapshotUriPath(fsPath),
