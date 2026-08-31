@@ -454,45 +454,12 @@ async function detectGroup(root) {
 }
 
 /**
- * Diffs two file lists for entryFiles suggestion (union of changed paths).
- *
- * @param {string[]} fromFiles
- * @param {string[]} toFiles
- */
-function changedEntryFiles(fromFiles, toFiles) {
-  const fromSet = new Set(fromFiles);
-  const toSet = new Set(toFiles);
-  const changed = new Set();
-  for (const file of fromSet) {
-    if (!toSet.has(file)) {
-      changed.add(file);
-    }
-  }
-  for (const file of toSet) {
-    if (!fromSet.has(file)) {
-      changed.add(file);
-    }
-  }
-  const ranked = [...changed].sort((left, right) => left.localeCompare(right));
-  const sourceLike = ranked.filter((file) =>
-    /\.(ts|tsx|js|jsx|mjs|cjs|vue|svelte|py|go|rs|java|kt)$/i.test(file),
-  );
-  const pick = (sourceLike.length > 0 ? sourceLike : ranked).slice(0, 12);
-  if (pick.length > 0) {
-    return pick;
-  }
-  const fallback = [...toSet].sort((left, right) => left.localeCompare(right)).slice(0, 3);
-  return fallback.length > 0 ? fallback : ["README.md"];
-}
-
-/**
  * Builds chapter descriptors from ordered snapshot paths.
  *
- * @param {string} root
  * @param {string[]} snapshots
  */
-async function buildChapters(root, snapshots) {
-  /** @type {{ id: string, title: string, fromDir: string, toDir: string, entryFiles?: string[] }[]} */
+function buildChapters(snapshots) {
+  /** @type {{ id: string, title: string, fromDir: string, toDir: string }[]} */
   const chapters = [];
   for (let i = 0; i < snapshots.length - 1; i += 1) {
     const fromDir = snapshots[i];
@@ -590,7 +557,7 @@ async function main() {
     snapshots = detected.snapshots;
   }
 
-  const chapters = await buildChapters(root, snapshots);
+  const chapters = buildChapters(snapshots);
   if (chapters.length === 0) {
     console.log(
       JSON.stringify({ ok: false, root, reason: "could not build chapters from snapshots" }),
