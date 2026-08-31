@@ -42,9 +42,9 @@ export class GitClient {
   /**
    * Clones `url` into `dest` (creates parent directories as needed).
    */
-  async clone(url: string, dest: string, extraArgs: string[] = []): Promise<void> {
+  async clone(url: string, dest: string): Promise<void> {
     await mkdir(path.dirname(dest), { recursive: true });
-    await this.run(["clone", ...extraArgs, "--", url, dest]);
+    await this.run(["clone", "--", url, dest]);
   }
 
   /**
@@ -95,21 +95,6 @@ export class GitClient {
   }
 
   /**
-   * Returns unified diff text between two refs on a git directory.
-   */
-  async diff(gitDir: string, fromRef: string, toRef: string): Promise<string> {
-    const result = await this.run(["--git-dir", gitDir, "diff", fromRef, toRef]);
-    return result.stdout;
-  }
-
-  /**
-   * Resolves a ref in a git directory; throws if it does not exist.
-   */
-  async assertRef(gitDir: string, ref: string): Promise<void> {
-    await this.run(["--git-dir", gitDir, "rev-parse", "--verify", `${ref}^{commit}`]);
-  }
-
-  /**
    * Asserts that `subdir` exists as a tree under `HEAD`.
    *
    * @param gitDir - Absolute path to a `.git` dir or bare repo
@@ -128,23 +113,6 @@ export class GitClient {
     ]);
     if (result.stdout.trim() === "") {
       throw new GitError(`source subdirectory not found on HEAD: ${subdir}`);
-    }
-  }
-
-  /**
-   * Returns whether `cwd` is a git work tree with uncommitted changes (including untracked).
-   *
-   * Returns `false` when `cwd` is not a git repository so chapter switches work before the
-   * learner manually runs `git init`.
-   *
-   * @param cwd - Learning workspace root
-   */
-  async isWorkTreeDirty(cwd: string): Promise<boolean> {
-    try {
-      const result = await this.run(["status", "--porcelain"], { cwd });
-      return result.stdout.trim() !== "";
-    } catch {
-      return false;
     }
   }
 

@@ -50,37 +50,22 @@ async function seedRepo(dir: string, files: Record<string, string>, branch: stri
 }
 
 describe("GitClient", () => {
-  test("archives a ref from a mirror and diffs two branches", async () => {
+  test("archives a subdirectory from a mirror HEAD", async () => {
     const source = await tempDir("lbd-src-");
-    await seedRepo(source, { "src/a.ts": "export const a = 1;\n" }, "from");
-    await git.run(["checkout", "-b", "to"], { cwd: source });
-    await writeFile(path.join(source, "src/a.ts"), "export const a = 2;\n", "utf8");
-    await writeFile(path.join(source, "src/b.ts"), "export const b = 1;\n", "utf8");
-    await git.run(["add", "-A"], { cwd: source });
-    await git.run(
-      [
-        "-c",
-        "user.email=test@local",
-        "-c",
-        "user.name=Test",
-        "-c",
-        "commit.gpgsign=false",
-        "commit",
-        "-m",
-        "to",
-      ],
-      { cwd: source },
+    await seedRepo(
+      source,
+      {
+        "start/a.ts": "export const a = 1;\n",
+        "done/a.ts": "export const a = 2;\n",
+      },
+      "main",
     );
 
     const mirror = path.join(await tempDir("lbd-mirror-"), "source.git");
     await git.cloneMirror(source, mirror);
 
     const out = await tempDir("lbd-out-");
-    await git.archive(mirror, "from", out);
-    expect(await readFile(path.join(out, "src/a.ts"), "utf8")).toBe("export const a = 1;\n");
-
-    const diff = await git.diff(mirror, "from", "to");
-    expect(diff).toMatch(/export const a = 2/);
-    expect(diff).toMatch(/src\/b\.ts/);
+    await git.archiveSubtree(mirror, "start", out);
+    expect(await readFile(path.join(out, "a.ts"), "utf8")).toBe("export const a = 1;\n");
   });
 });
