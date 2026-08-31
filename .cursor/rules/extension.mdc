@@ -11,5 +11,6 @@ alwaysApply: false
 - Open-course flow is shared: `workspace/openCourse.ts` (command palette + URI handler). Parse links in `uri/parseOpenCourseUri.ts`.
 - Explorer: chapter `contextValue` encodes applied side/docs (`chapter`, `chapter-start`, `chapter-finish`, `*-docs`). Inline menus in `package.json`.
 - Commands: register in `commands/register.ts`; keep errors via `showError`. Prefer small modules under `workspace/` and `ui/`.
+- User-facing strings: `package.nls*.json` for contributes; `vscode.l10n.t` + `l10n/bundle.l10n.zh-cn.json` at runtime. Keep `.learn/refs/` folder names English.
 - Activation: `onUri` + `onView:learnByDiff.courseView` + learning-workspace detect. Chapter Start / Finish export `fromDir` / `toDir` with dirty confirm vs last applied snapshot.
 - Tests: `apps/vscode-extension/tests` with vite-plus; no real VS Code host required for pure helpers.

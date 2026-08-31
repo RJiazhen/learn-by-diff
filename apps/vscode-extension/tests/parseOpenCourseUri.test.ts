@@ -27,11 +27,25 @@ describe("parseOpenCourseUri", () => {
 
   test("rejects missing url", () => {
     const result = parseOpenCourseUri({ path: "/open", query: "" });
-    expect(result.ok).toBe(false);
+    expect(result).toEqual({ ok: false, error: { kind: "missingUrl" } });
   });
 
   test("rejects unknown paths", () => {
     const result = parseOpenCourseUri({ path: "/clone", query: "url=x" });
-    expect(result.ok).toBe(false);
+    expect(result).toEqual({
+      ok: false,
+      error: { kind: "unknownPath", path: "/clone" },
+    });
+  });
+
+  test("rejects invalid file parent", () => {
+    const result = parseOpenCourseUri({
+      path: "/open",
+      query: "url=https://example.com/c.git&parent=file://[",
+    });
+    expect(result).toEqual({
+      ok: false,
+      error: { kind: "invalidParent", parentRaw: "file://[" },
+    });
   });
 });

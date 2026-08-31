@@ -1,3 +1,14 @@
+/** Why a deep-link URI cannot be turned into an open-course request. */
+export type OpenCourseUriError =
+  | { kind: "unknownPath"; path: string }
+  | { kind: "missingUrl" }
+  | { kind: "invalidParent"; parentRaw: string };
+
+/** Result of {@link parseOpenCourseUri}. */
+export type ParsedOpenCourseUri =
+  | { ok: true; courseRepoUrl: string; parentDir?: string }
+  | { ok: false; error: OpenCourseUriError };
+
 /**
  * Parses a LearnByDiff deep-link URI into an open-course request.
  *
@@ -6,17 +17,14 @@
  * - optional `parent=<absolute-or-file-uri>` for the learning workspace parent folder
  *
  * @param uri - Incoming URI from {@link vscode.window.registerUriHandler}
- * @returns Parsed request, or an error message when the URI is not usable
+ * @returns Parsed request, or a structured error when the URI is not usable
  */
-export function parseOpenCourseUri(uri: {
-  path: string;
-  query: string;
-}): { ok: true; courseRepoUrl: string; parentDir?: string } | { ok: false; message: string } {
+export function parseOpenCourseUri(uri: { path: string; query: string }): ParsedOpenCourseUri {
   const path = uri.path.replace(/\/+$/, "") || "/";
   if (path !== "/open" && path !== "open") {
     return {
       ok: false,
-      message: `Unknown LearnByDiff link path “${uri.path || "/"}”. Use /open?url=<course-repo>.`,
+      error: { kind: "unknownPath", path: uri.path || "/" },
     };
   }
 
@@ -25,7 +33,7 @@ export function parseOpenCourseUri(uri: {
   if (courseRepoUrl === "") {
     return {
       ok: false,
-      message: "LearnByDiff open link is missing a url query parameter.",
+      error: { kind: "missingUrl" },
     };
   }
 
@@ -38,7 +46,7 @@ export function parseOpenCourseUri(uri: {
   if (parentDir === undefined || parentDir === "") {
     return {
       ok: false,
-      message: `Invalid parent folder in LearnByDiff link: ${parentRaw}`,
+      error: { kind: "invalidParent", parentRaw },
     };
   }
   return { ok: true, courseRepoUrl, parentDir };

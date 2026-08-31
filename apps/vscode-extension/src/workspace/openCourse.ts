@@ -54,8 +54,8 @@ export async function openCourse(options: OpenCourseOptions): Promise<string | u
       canSelectFiles: false,
       canSelectFolders: true,
       canSelectMany: false,
-      openLabel: "Create learning workspace here",
-      title: "Parent folder for the learning workspace",
+      openLabel: vscode.l10n.t("Create learning workspace here"),
+      title: vscode.l10n.t("Parent folder for the learning workspace"),
     });
     parentDir = picked?.[0]?.fsPath;
     if (parentDir === undefined) {
@@ -67,7 +67,7 @@ export async function openCourse(options: OpenCourseOptions): Promise<string | u
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: "LearnByDiff: opening course",
+      title: vscode.l10n.t("LearnByDiff: opening course"),
       cancellable: false,
     },
     async () => {
@@ -83,7 +83,10 @@ export async function openCourse(options: OpenCourseOptions): Promise<string | u
       } catch (error) {
         if (error instanceof ProtocolError) {
           void vscode.window.showErrorMessage(
-            `This repository has no valid Learning Course Protocol config.\n${error.message}`,
+            vscode.l10n.t(
+              "This repository has no valid Learning Course Protocol config.\n{0}",
+              error.message,
+            ),
           );
           return;
         }

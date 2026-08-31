@@ -62,7 +62,10 @@ export function appliedSnapshotSide(progress: LearningProgress): ChapterSnapshot
 }
 
 /**
- * Returns the UI status label for an applied snapshot side.
+ * Returns the English UI status label for an applied snapshot side.
+ *
+ * Used for `.learn/refs/` folder names so paths stay stable across locales.
+ * Explorer and status bar use localized strings instead.
  *
  * @param side - Start (`fromDir`) or finish (`toDir`)
  */

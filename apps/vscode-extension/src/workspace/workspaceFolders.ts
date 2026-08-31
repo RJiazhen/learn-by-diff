@@ -25,11 +25,12 @@ export async function addOrOpenWorkspaceFolder(folderPath: string, name: string)
     return;
   }
 
+  const openInNewWindow = vscode.l10n.t("Open in New Window");
   const openInWindow = await vscode.window.showWarningMessage(
-    `Could not add “${name}” to this window. Open it in a new window?`,
-    "Open in New Window",
+    vscode.l10n.t("Could not add “{0}” to this window. Open it in a new window?", name),
+    openInNewWindow,
   );
-  if (openInWindow === "Open in New Window") {
+  if (openInWindow === openInNewWindow) {
     await vscode.commands.executeCommand("vscode.openFolder", uri, true);
   }
 }

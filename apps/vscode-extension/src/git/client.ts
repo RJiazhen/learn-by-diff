@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
-import { GitError } from "./errors.ts";
+import { GIT_NOT_FOUND_MESSAGE, GitError } from "./errors.ts";
 
 const execFileAsync = promisify(execFile);
 
@@ -31,7 +31,7 @@ export class GitClient {
       await this.run(["--version"]);
     } catch (error) {
       if (isMissingBinary(error)) {
-        throw new GitError("git was not found on PATH. Install Git and reopen the window.", {
+        throw new GitError(GIT_NOT_FOUND_MESSAGE, {
           cause: error,
         });
       }
@@ -153,7 +153,7 @@ function wrapGitError(error: unknown, fallback: string): GitError {
     return error;
   }
   if (isMissingBinary(error)) {
-    return new GitError("git was not found on PATH. Install Git and reopen the window.", {
+    return new GitError(GIT_NOT_FOUND_MESSAGE, {
       cause: error,
     });
   }

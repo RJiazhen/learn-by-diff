@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
 import { openCourse } from "../workspace/openCourse.ts";
 import type { LearningSession } from "../workspace/loader.ts";
-import { parseOpenCourseUri } from "./parseOpenCourseUri.ts";
+import { parseOpenCourseUri, type OpenCourseUriError } from "./parseOpenCourseUri.ts";
 
 /**
  * Handles `vscode://` / `cursor://` deep links for this extension.
@@ -38,11 +38,11 @@ export class LearnByDiffUriHandler implements vscode.UriHandler {
   private async handleUriAsync(uri: vscode.Uri): Promise<void> {
     const parsed = parseOpenCourseUri(uri);
     if (!parsed.ok) {
-      void vscode.window.showErrorMessage(parsed.message);
+      void vscode.window.showErrorMessage(openCourseUriErrorMessage(parsed.error));
       return;
     }
 
-    this.output.appendLine(`Deep link: open course ${parsed.courseRepoUrl}`);
+    this.output.appendLine(vscode.l10n.t("Deep link: open course {0}", parsed.courseRepoUrl));
     this.output.show(true);
     await openCourse({
       courseRepoUrl: parsed.courseRepoUrl,
@@ -71,4 +71,22 @@ export function registerUriHandler(
   context.subscriptions.push(
     vscode.window.registerUriHandler(new LearnByDiffUriHandler(git, output, onSession)),
   );
+}
+
+/**
+ * Returns a localized error for a deep-link parse failure.
+ *
+ * @param error - Structured failure from {@link parseOpenCourseUri}
+ */
+function openCourseUriErrorMessage(error: OpenCourseUriError): string {
+  if (error.kind === "unknownPath") {
+    return vscode.l10n.t(
+      "Unknown LearnByDiff link path “{0}”. Use /open?url=<course-repo>.",
+      error.path,
+    );
+  }
+  if (error.kind === "missingUrl") {
+    return vscode.l10n.t("LearnByDiff open link is missing a url query parameter.");
+  }
+  return vscode.l10n.t("Invalid parent folder in LearnByDiff link: {0}", error.parentRaw);
 }

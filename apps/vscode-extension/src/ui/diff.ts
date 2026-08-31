@@ -68,7 +68,7 @@ export async function openChapterFileDiff(
   const chapterIndex = session.course.chapters.findIndex((item) => item.id === chapterId);
   const chapter = chapterIndex >= 0 ? session.course.chapters[chapterIndex] : undefined;
   if (chapter === undefined) {
-    void vscode.window.showWarningMessage(`Unknown chapter: ${chapterId}`);
+    void vscode.window.showWarningMessage(vscode.l10n.t("Unknown chapter: {0}", chapterId));
     return;
   }
   const { sourceMirror } = learningPaths(session.workspaceRoot);
@@ -80,7 +80,7 @@ export async function openChapterFileDiff(
   );
   if (!entryFiles.includes(relativePath)) {
     void vscode.window.showWarningMessage(
-      `File ${relativePath} is not an entry file for chapter ${chapter.title}.`,
+      vscode.l10n.t("File {0} is not an entry file for chapter {1}.", relativePath, chapter.title),
     );
     return;
   }

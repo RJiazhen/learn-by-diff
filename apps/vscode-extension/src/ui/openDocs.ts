@@ -20,11 +20,11 @@ import type { LearningSession } from "../workspace/loader.ts";
 export async function openChapterDocs(session: LearningSession, chapterId: string): Promise<void> {
   const chapter = session.course.chapters.find((item) => item.id === chapterId);
   if (chapter === undefined) {
-    throw new Error(`Unknown chapter: ${chapterId}`);
+    throw new Error(vscode.l10n.t("Unknown chapter: {0}", chapterId));
   }
   const docs = chapter.docs?.trim();
   if (docs === undefined || docs === "") {
-    throw new Error(`Chapter ${chapterId} has no docs`);
+    throw new Error(vscode.l10n.t("Chapter {0} has no docs", chapterId));
   }
 
   if (isHttpUrl(docs)) {
@@ -80,7 +80,7 @@ async function resolveChapterDocsFileUri(
 ): Promise<vscode.Uri> {
   const relative = normalizeRelativeFilePath(docs);
   if (relative === undefined) {
-    throw new Error(`Invalid docs path: ${docs}`);
+    throw new Error(vscode.l10n.t("Invalid docs path: {0}", docs));
   }
 
   const { sourceMirror } = learningPaths(session.workspaceRoot);
@@ -102,6 +102,14 @@ async function resolveChapterDocsFileUri(
     }
   }
 
-  const searched = candidates.length > 0 ? candidates.join(", ") : "(no chapter snapshot dirs)";
-  throw new Error(`Docs file not found for chapter ${chapter.id}: ${docs} (looked in ${searched})`);
+  const searched =
+    candidates.length > 0 ? candidates.join(", ") : vscode.l10n.t("(no chapter snapshot dirs)");
+  throw new Error(
+    vscode.l10n.t(
+      "Docs file not found for chapter {0}: {1} (looked in {2})",
+      chapter.id,
+      docs,
+      searched,
+    ),
+  );
 }

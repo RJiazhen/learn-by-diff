@@ -1,0 +1,18 @@
+{
+  "learnByDiff.extension.description": "把 GitHub 源码与增量教程变成真正可编辑的本地学习工作区。",
+  "learnByDiff.openCourse.title": "LearnByDiff: 打开课程",
+  "learnByDiff.nextChapter.title": "LearnByDiff: 下一章",
+  "learnByDiff.previousChapter.title": "LearnByDiff: 上一章",
+  "learnByDiff.openFileDiff.title": "LearnByDiff: 打开文件对比",
+  "learnByDiff.applyChapterStart.title": "未开始",
+  "learnByDiff.applyChapterFinish.title": "已完成",
+  "learnByDiff.openChapterDocs.title": "打开章节文档",
+  "learnByDiff.openChapterStartFolder.title": "打开未开始文件夹",
+  "learnByDiff.openChapterFinishFolder.title": "打开已完成文件夹",
+  "learnByDiff.viewAsTree.title": "树状视图",
+  "learnByDiff.viewAsList.title": "列表视图",
+  "learnByDiff.courseView.name": "Learn By Diff",
+  "learnByDiff.viewsWelcome.loading": "正在加载…",
+  "learnByDiff.viewsWelcome.openCourse": "打开 LearnByDiff 课程开始学习。\n[打开课程](command:learnByDiff.openCourse)",
+  "learnByDiff.currentChapter.colorDescription": "Learn By Diff 视图中当前章节的高亮颜色"
+}

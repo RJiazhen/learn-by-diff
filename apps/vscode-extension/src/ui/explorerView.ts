@@ -11,11 +11,8 @@ import {
 import type { LearningSession } from "../workspace/loader.ts";
 import { learningPaths } from "../workspace/paths.ts";
 import { chapterOrdinal, currentChapter } from "../workspace/session.ts";
-import {
-  appliedSnapshotSide,
-  chapterSnapshotStatusLabel,
-  type ChapterSnapshotSide,
-} from "../workspace/state.ts";
+import { appliedSnapshotSide, type ChapterSnapshotSide } from "../workspace/state.ts";
+import { localizedSnapshotStatus } from "./labels.ts";
 
 /** URI scheme used to decorate chapter rows. */
 const CHAPTER_URI_SCHEME = "learnbydiff-chapter";
@@ -360,11 +357,11 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
     } else {
       item.contextValue = `chapter${sideToken}`;
     }
-    const status = appliedSide === undefined ? undefined : chapterSnapshotStatusLabel(appliedSide);
+    const status = appliedSide === undefined ? undefined : localizedSnapshotStatus(appliedSide);
     item.description = status;
     item.tooltip = `${ordinal}-${chapter.title}${
       status === undefined ? "" : ` (${status})`
-    }${hasDocs ? `\nDocs: ${chapter.docs}` : ""}`;
+    }${hasDocs ? `\n${vscode.l10n.t("Docs: {0}", chapter.docs ?? "")}` : ""}`;
     item.resourceUri = vscode.Uri.from({
       scheme: CHAPTER_URI_SCHEME,
       path: `/${chapter.id}`,
@@ -429,7 +426,7 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
     });
     item.command = {
       command: "learnByDiff.openFileDiff",
-      title: "Open File Diff",
+      title: vscode.l10n.t("Open File Diff"),
       arguments: [item],
     };
     return item;
@@ -464,7 +461,7 @@ export class LearnByDiffDecorationProvider implements vscode.FileDecorationProvi
       }
       return {
         color: new vscode.ThemeColor("learnByDiff.currentChapter"),
-        tooltip: uri.query === "finish" ? "Completed" : "Not Started",
+        tooltip: localizedSnapshotStatus(uri.query === "finish" ? "finish" : "start"),
       };
     }
     if (uri.scheme !== FILE_URI_SCHEME) {
@@ -475,21 +472,21 @@ export class LearnByDiffDecorationProvider implements vscode.FileDecorationProvi
       return {
         badge: "U",
         color: new vscode.ThemeColor("gitDecoration.untrackedResourceForeground"),
-        tooltip: "Added in chapter goal",
+        tooltip: vscode.l10n.t("Added in chapter goal"),
       };
     }
     if (kind === "M") {
       return {
         badge: "M",
         color: new vscode.ThemeColor("gitDecoration.modifiedResourceForeground"),
-        tooltip: "Modified between start and goal",
+        tooltip: vscode.l10n.t("Modified between start and goal"),
       };
     }
     if (kind === "D") {
       return {
         badge: "D",
         color: new vscode.ThemeColor("gitDecoration.deletedResourceForeground"),
-        tooltip: "Deleted in chapter goal",
+        tooltip: vscode.l10n.t("Deleted in chapter goal"),
       };
     }
     return undefined;

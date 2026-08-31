@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
 import { openChapterFileDiff } from "../ui/diff.ts";
 import type { CourseTreeItem, CourseTreeProvider } from "../ui/explorerView.ts";
+import { localizedSnapshotStatus } from "../ui/labels.ts";
 import { openChapterDocs } from "../ui/openDocs.ts";
 import { DirtyWorkspaceError } from "../workspace/errors.ts";
 import {
@@ -13,7 +14,7 @@ import { openCourse } from "../workspace/openCourse.ts";
 import { materializeChapterRef, chapterRefWorkspaceName } from "../workspace/refs.ts";
 import { demoCoursePath } from "../workspace/resolveRepo.ts";
 import { applyChapterSnapshot, nextChapter, previousChapter } from "../workspace/session.ts";
-import { chapterSnapshotStatusLabel, type ChapterSnapshotSide } from "../workspace/state.ts";
+import type { ChapterSnapshotSide } from "../workspace/state.ts";
 import {
   addOrOpenWorkspaceFolder,
   openLearningWorkspaceIfNeeded,
@@ -89,10 +90,10 @@ export function registerCommands(
   context.subscriptions.push(
     vscode.commands.registerCommand("learnByDiff.openCourse", async () => {
       const url = await vscode.window.showInputBox({
-        title: "LearnByDiff: Open Course",
+        title: vscode.l10n.t("LearnByDiff: Open Course"),
         prompt: isDevHost
-          ? "Course repository URL (prefilled with local examples/demo-course)"
-          : "Course repository URL (must contain .course-config/course.yml)",
+          ? vscode.l10n.t("Course repository URL (prefilled with local examples/demo-course)")
+          : vscode.l10n.t("Course repository URL (must contain .course-config/course.yml)"),
         placeHolder: "https://github.com/org/course.git",
         value: defaultCourseUrl,
         ignoreFocusOut: true,
@@ -118,7 +119,7 @@ export function registerCommands(
       }
       const next = nextChapter(session);
       if (next === undefined) {
-        void vscode.window.showInformationMessage("This is the last chapter.");
+        void vscode.window.showInformationMessage(vscode.l10n.t("This is the last chapter."));
         return;
       }
       await applySnapshotWithConfirm(session, next.id, "start");
@@ -133,7 +134,7 @@ export function registerCommands(
       }
       const previous = previousChapter(session);
       if (previous === undefined) {
-        void vscode.window.showInformationMessage("This is the first chapter.");
+        void vscode.window.showInformationMessage(vscode.l10n.t("This is the first chapter."));
         return;
       }
       await applySnapshotWithConfirm(session, previous.id, "start");
@@ -184,7 +185,7 @@ export function registerCommands(
     }
     const exists = session.course.chapters.some((chapter) => chapter.id === chapterId);
     if (!exists) {
-      void vscode.window.showWarningMessage(`Unknown chapter: ${chapterId}`);
+      void vscode.window.showWarningMessage(vscode.l10n.t("Unknown chapter: {0}", chapterId));
       return undefined;
     }
     return { session, chapterId };
@@ -305,17 +306,21 @@ export function registerCommands(
   async function loadFromRoot(): Promise<LearningSession | undefined> {
     const folders = vscode.workspace.workspaceFolders ?? [];
     if (folders.length === 0) {
-      void vscode.window.showWarningMessage("Open a folder first.");
+      void vscode.window.showWarningMessage(vscode.l10n.t("Open a folder first."));
       return undefined;
     }
     const root = await workspaceRoot();
     if (root === undefined) {
-      void vscode.window.showWarningMessage("This folder is not a LearnByDiff learning workspace.");
+      void vscode.window.showWarningMessage(
+        vscode.l10n.t("This folder is not a LearnByDiff learning workspace."),
+      );
       return undefined;
     }
     const session = await loadLearningSession(root);
     if (session === undefined) {
-      void vscode.window.showWarningMessage("This folder is not a LearnByDiff learning workspace.");
+      void vscode.window.showWarningMessage(
+        vscode.l10n.t("This folder is not a LearnByDiff learning workspace."),
+      );
     }
     return session;
   }
@@ -355,10 +360,14 @@ export function registerCommands(
       if (error instanceof DirtyWorkspaceError) {
         const chapter = session.course.chapters.find((item) => item.id === chapterId);
         const label = chapter?.title ?? chapterId;
-        const sideLabel = chapterSnapshotStatusLabel(side);
-        const applyLabel = `Apply ${sideLabel}`;
+        const sideLabel = localizedSnapshotStatus(side);
+        const applyLabel = vscode.l10n.t("Apply {0}", sideLabel);
         const confirmed = await vscode.window.showWarningMessage(
-          `Apply “${label}” ${sideLabel}? Your edits since the last applied snapshot will be discarded.`,
+          vscode.l10n.t(
+            "Apply “{0}” {1}? Your edits since the last applied snapshot will be discarded.",
+            label,
+            sideLabel,
+          ),
           { modal: true },
           applyLabel,
         );

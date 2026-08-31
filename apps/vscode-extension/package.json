@@ -3,7 +3,7 @@
   "displayName": "LearnByDiff",
   "version": "0.1.0",
   "private": true,
-  "description": "Turn GitHub source and increment tutorials into a real local learning workspace.",
+  "description": "%learnByDiff.extension.description%",
   "categories": [
     "Education",
     "Other"
@@ -36,67 +36,68 @@
     "vite": "catalog:",
     "vite-plus": "catalog:"
   },
+  "l10n": "./l10n",
   "contributes": {
     "commands": [
       {
         "command": "learnByDiff.openCourse",
-        "title": "LearnByDiff: Open Course",
+        "title": "%learnByDiff.openCourse.title%",
         "icon": "$(folder-opened)"
       },
       {
         "command": "learnByDiff.nextChapter",
-        "title": "LearnByDiff: Next Chapter",
+        "title": "%learnByDiff.nextChapter.title%",
         "icon": "$(arrow-right)"
       },
       {
         "command": "learnByDiff.previousChapter",
-        "title": "LearnByDiff: Previous Chapter",
+        "title": "%learnByDiff.previousChapter.title%",
         "icon": "$(arrow-left)"
       },
       {
         "command": "learnByDiff.openFileDiff",
-        "title": "LearnByDiff: Open File Diff"
+        "title": "%learnByDiff.openFileDiff.title%"
       },
       {
         "command": "learnByDiff.applyChapterStart",
-        "title": "Not Started",
+        "title": "%learnByDiff.applyChapterStart.title%",
         "icon": "$(circle-outline)"
       },
       {
         "command": "learnByDiff.applyChapterFinish",
-        "title": "Completed",
+        "title": "%learnByDiff.applyChapterFinish.title%",
         "icon": "$(check)"
       },
       {
         "command": "learnByDiff.openChapterDocs",
-        "title": "Open Chapter Docs",
+        "title": "%learnByDiff.openChapterDocs.title%",
         "icon": "$(book)"
       },
       {
         "command": "learnByDiff.openChapterStartFolder",
-        "title": "Open Not Started Folder",
+        "title": "%learnByDiff.openChapterStartFolder.title%",
         "icon": "$(folder)"
       },
       {
         "command": "learnByDiff.openChapterFinishFolder",
-        "title": "Open Completed Folder",
+        "title": "%learnByDiff.openChapterFinishFolder.title%",
         "icon": "$(folder-opened)"
       },
       {
         "command": "learnByDiff.viewAsTree",
-        "title": "View as Tree",
+        "title": "%learnByDiff.viewAsTree.title%",
         "icon": "$(list-tree)"
       },
       {
         "command": "learnByDiff.viewAsList",
-        "title": "View as List",
+        "title": "%learnByDiff.viewAsList.title%",
         "icon": "$(list-flat)"
       }
     ],
     "colors": [
       {
         "id": "learnByDiff.currentChapter",
-        "description": "Highlight color for the active chapter in the Learn By Diff view",
+        "description": "%learnByDiff.currentChapter.colorDescription%",
         "defaults": {
           "dark": "#4FC1FF",
           "light": "#0078D4",
@@ -108,19 +109,19 @@
       "explorer": [
         {
           "id": "learnByDiff.courseView",
-          "name": "Learn By Diff"
+          "name": "%learnByDiff.courseView.name%"
         }
       ]
     },
     "viewsWelcome": [
       {
         "view": "learnByDiff.courseView",
-        "contents": "Loading…",
+        "contents": "%learnByDiff.viewsWelcome.loading%",
         "when": "!learnByDiff.ready"
       },
       {
         "view": "learnByDiff.courseView",
-        "contents": "Open a LearnByDiff course to start learning.\n[Open Course](command:learnByDiff.openCourse)",
+        "contents": "%learnByDiff.viewsWelcome.openCourse%",
         "when": "learnByDiff.ready && !learnByDiff.isLearningWorkspace"
       }
     ],

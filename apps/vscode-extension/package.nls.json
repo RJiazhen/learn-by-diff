@@ -1,0 +1,18 @@
+{
+  "learnByDiff.extension.description": "Turn GitHub source and increment tutorials into a real local learning workspace.",
+  "learnByDiff.openCourse.title": "LearnByDiff: Open Course",
+  "learnByDiff.nextChapter.title": "LearnByDiff: Next Chapter",
+  "learnByDiff.previousChapter.title": "LearnByDiff: Previous Chapter",
+  "learnByDiff.openFileDiff.title": "LearnByDiff: Open File Diff",
+  "learnByDiff.applyChapterStart.title": "Not Started",
+  "learnByDiff.applyChapterFinish.title": "Completed",
+  "learnByDiff.openChapterDocs.title": "Open Chapter Docs",
+  "learnByDiff.openChapterStartFolder.title": "Open Not Started Folder",
+  "learnByDiff.openChapterFinishFolder.title": "Open Completed Folder",
+  "learnByDiff.viewAsTree.title": "View as Tree",
+  "learnByDiff.viewAsList.title": "View as List",
+  "learnByDiff.courseView.name": "Learn By Diff",
+  "learnByDiff.viewsWelcome.loading": "Loading…",
+  "learnByDiff.viewsWelcome.openCourse": "Open a LearnByDiff course to start learning.\n[Open Course](command:learnByDiff.openCourse)",
+  "learnByDiff.currentChapter.colorDescription": "Highlight color for the active chapter in the Learn By Diff view"
+}
