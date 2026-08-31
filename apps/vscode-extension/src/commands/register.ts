@@ -57,24 +57,35 @@ export function registerCommands(
 
   /**
    * Reloads `.learn` state for the open folder into the UI.
+   *
+   * Leaves `learnByDiff.ready` unset when the host is about to reload into the
+   * learning workspace file, so Open Course does not flash during the switch.
    */
   async function restore(): Promise<LearningSession | undefined> {
-    const root = await workspaceRoot();
-    if (root === undefined) {
-      setSession(undefined);
-      return undefined;
-    }
+    let awaitingHostReload = false;
     try {
-      if (await openLearningWorkspaceIfNeeded(root)) {
+      const root = await workspaceRoot();
+      if (root === undefined) {
+        setSession(undefined);
         return undefined;
       }
-      const session = await loadLearningSession(root);
-      setSession(session);
-      return session;
-    } catch (error) {
-      setSession(undefined);
-      showError(error);
-      return undefined;
+      try {
+        if (await openLearningWorkspaceIfNeeded(root)) {
+          awaitingHostReload = true;
+          return undefined;
+        }
+        const session = await loadLearningSession(root);
+        setSession(session);
+        return session;
+      } catch (error) {
+        setSession(undefined);
+        showError(error);
+        return undefined;
+      }
+    } finally {
+      if (!awaitingHostReload) {
+        await vscode.commands.executeCommand("setContext", "learnByDiff.ready", true);
+      }
     }
   }
 

@@ -115,15 +115,20 @@
     "viewsWelcome": [
       {
         "view": "learnByDiff.courseView",
+        "contents": "Loading…",
+        "when": "!learnByDiff.ready"
+      },
+      {
+        "view": "learnByDiff.courseView",
         "contents": "Open a LearnByDiff course to start learning.\n[Open Course](command:learnByDiff.openCourse)",
-        "when": "!learnByDiff.isLearningWorkspace"
+        "when": "learnByDiff.ready && !learnByDiff.isLearningWorkspace"
       }
     ],
     "menus": {
       "view/title": [
         {
           "command": "learnByDiff.openCourse",
-          "when": "view == learnByDiff.courseView",
+          "when": "view == learnByDiff.courseView && learnByDiff.ready",
           "group": "navigation@0"
         },
         {
