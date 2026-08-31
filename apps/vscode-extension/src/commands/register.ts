@@ -364,7 +364,7 @@ export function registerCommands(
         const applyLabel = vscode.l10n.t("Apply {0}", sideLabel);
         const confirmed = await vscode.window.showWarningMessage(
           vscode.l10n.t(
-            "Apply “{0}” {1}? Your edits since the last applied snapshot will be discarded.",
+            "Overwrite local files with the {1} state of “{0}”? Existing changes cannot be recovered.",
             label,
             sideLabel,
           ),

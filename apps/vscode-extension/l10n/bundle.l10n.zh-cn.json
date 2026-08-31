@@ -8,7 +8,7 @@
   "Open a folder first.": "请先打开一个文件夹。",
   "This folder is not a LearnByDiff learning workspace.": "当前文件夹不是 LearnByDiff 学习工作区。",
   "Apply {0}": "应用{0}",
-  "Apply “{0}” {1}? Your edits since the last applied snapshot will be discarded.": "要应用「{0}」的{1}吗？自上次应用快照以来的修改将被丢弃。",
+  "Overwrite local files with the {1} state of “{0}”? Existing changes cannot be recovered.": "要将「{0}」的{1}状态覆盖到本地吗？已有的变更将无法恢复",
   "Not Started": "未开始",
   "Completed": "已完成",
   "Parent folder for the learning workspace": "选择学习工作区的父文件夹",

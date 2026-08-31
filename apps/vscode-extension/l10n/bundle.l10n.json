@@ -8,7 +8,7 @@
   "Open a folder first.": "Open a folder first.",
   "This folder is not a LearnByDiff learning workspace.": "This folder is not a LearnByDiff learning workspace.",
   "Apply {0}": "Apply {0}",
-  "Apply “{0}” {1}? Your edits since the last applied snapshot will be discarded.": "Apply “{0}” {1}? Your edits since the last applied snapshot will be discarded.",
+  "Overwrite local files with the {1} state of “{0}”? Existing changes cannot be recovered.": "Overwrite local files with the {1} state of “{0}”? Existing changes cannot be recovered.",
   "Not Started": "Not Started",
   "Completed": "Completed",
   "Parent folder for the learning workspace": "Parent folder for the learning workspace",
