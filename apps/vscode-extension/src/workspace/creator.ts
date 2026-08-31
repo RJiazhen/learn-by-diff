@@ -8,7 +8,8 @@ import {
   type Course,
 } from "@learn-by-diff/protocol";
 import type { GitClient } from "../git/client.ts";
-import { chapterSnapshotPaths, learningPaths } from "./paths.ts";
+import { chapterSnapshotPaths, isCodeWorkspaceFileName, learningPaths } from "./paths.ts";
+import { ensureLearningWorkspaceFile } from "./multiRoot.ts";
 import { isRemoteGitUrl, localCourseOrigin, resolveSourceRepository } from "./resolveRepo.ts";
 import { assertSourceSubtree, exportSourceSubtree, materializeSourceStore } from "./sourceStore.ts";
 import { writeProgress, type ChapterSnapshotSide } from "./state.ts";
@@ -93,6 +94,8 @@ export async function createLearningWorkspace(
       completed: false,
       appliedSide: "start",
     });
+
+    await ensureLearningWorkspaceFile(learningRoot);
 
     return { course, learningRoot };
   } finally {
@@ -244,17 +247,23 @@ async function replaceStudentTreeFromSource(
 }
 
 /**
- * Deletes workspace files except `.git`, `.learn`, and `.gitignore`.
+ * Deletes workspace files except `.git`, `.learn`, `.gitignore`, and `.code-workspace`.
  *
  * Chapter docs such as `README.md` are snapshot content and must be removed so
- * the next export is a replace, not a merge with the previous chapter.
+ * the next export is a replace, not a merge with the previous chapter. The
+ * multi-root workspace file must stay so Open Recent can restore extra folders.
  *
  * @param workspaceRoot - Learning repository root
  */
 export async function clearStudentTree(workspaceRoot: string): Promise<void> {
   const entries = await readdir(workspaceRoot, { withFileTypes: true });
   for (const entry of entries) {
-    if (entry.name === ".git" || entry.name === ".learn" || entry.name === ".gitignore") {
+    if (
+      entry.name === ".git" ||
+      entry.name === ".learn" ||
+      entry.name === ".gitignore" ||
+      isCodeWorkspaceFileName(entry.name)
+    ) {
       continue;
     }
     await rm(path.join(workspaceRoot, entry.name), {
@@ -293,6 +302,7 @@ const LEARN_GITIGNORE_RULES = [
   ".learn/source.git/",
   ".learn/snapshots/",
   ".learn/refs/",
+  "*.code-workspace",
   "node_modules/",
 ];
 
@@ -301,7 +311,7 @@ const LEARN_GITIGNORE_RULES = [
  *
  * Does not ignore `.learn/course` or `.learn/progress.json`, so learners can commit
  * course config (and progress) and reopen the same repo later. Removes a legacy
- * blanket `.learn/` rule when present.
+ * blanket `.learn/` rule and `.learn/*.code-workspace` when present.
  *
  * @param workspaceRoot - Learning repository root
  */
@@ -317,7 +327,7 @@ export async function ensureLearnGitignore(workspaceRoot: string): Promise<void>
 
   const withoutObsolete = lines.filter((line) => {
     const trimmed = line.trim();
-    return trimmed !== ".learn/" && trimmed !== ".learn";
+    return trimmed !== ".learn/" && trimmed !== ".learn" && trimmed !== ".learn/*.code-workspace";
   });
   const missing = LEARN_GITIGNORE_RULES.filter(
     (rule) => !withoutObsolete.some((line) => line.trim() === rule),

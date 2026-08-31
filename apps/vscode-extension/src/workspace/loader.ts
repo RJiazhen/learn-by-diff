@@ -1,6 +1,6 @@
 import { readdir, stat } from "node:fs/promises";
 import { isCourseRepository, loadCourseFromConfigDir, type Course } from "@learn-by-diff/protocol";
-import { learningPaths } from "./paths.ts";
+import { isCodeWorkspaceFileName, learningPaths } from "./paths.ts";
 import { readProgress, type LearningProgress } from "./state.ts";
 
 /** Loaded learning session: course copy plus progress. */
@@ -77,7 +77,7 @@ export async function isInPlaceLearningTarget(dir: string): Promise<boolean> {
     if (name.startsWith(".")) {
       continue;
     }
-    if (name === "README.md") {
+    if (name === "README.md" || isCodeWorkspaceFileName(name)) {
       continue;
     }
     meaningful.push(name);

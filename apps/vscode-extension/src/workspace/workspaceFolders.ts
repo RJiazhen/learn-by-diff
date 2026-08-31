@@ -1,5 +1,6 @@
 import path from "node:path";
 import * as vscode from "vscode";
+import { ensureLearningWorkspaceFile } from "./multiRoot.ts";
 
 /**
  * Adds `folderPath` as a named Explorer workspace folder, or opens a new window if that fails.
@@ -31,6 +32,29 @@ export async function addOrOpenWorkspaceFolder(folderPath: string, name: string)
   if (openInWindow === "Open in New Window") {
     await vscode.commands.executeCommand("vscode.openFolder", uri, true);
   }
+}
+
+/**
+ * Opens the learning `.code-workspace` when the window is not already that file.
+ *
+ * Folder-mode Recents / F5 open the directory; this switches to the named
+ * workspace file so extra roots persist and Open Recent can restore them.
+ *
+ * @param workspaceRoot - Learning repository root
+ * @returns `true` when this call asked the host to reload into the workspace file
+ */
+export async function openLearningWorkspaceIfNeeded(workspaceRoot: string): Promise<boolean> {
+  const workspaceFile = await ensureLearningWorkspaceFile(workspaceRoot);
+  const current = vscode.workspace.workspaceFile;
+  if (
+    current !== undefined &&
+    current.scheme === "file" &&
+    isSameFolder(current.fsPath, workspaceFile)
+  ) {
+    return false;
+  }
+  await vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(workspaceFile), false);
+  return true;
 }
 
 /**

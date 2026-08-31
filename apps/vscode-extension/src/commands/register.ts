@@ -19,7 +19,10 @@ import {
   type ChapterSnapshotSide,
 } from "../workspace/session.ts";
 import { chapterSnapshotStatusLabel } from "../workspace/state.ts";
-import { addOrOpenWorkspaceFolder } from "../workspace/workspaceFolders.ts";
+import {
+  addOrOpenWorkspaceFolder,
+  openLearningWorkspaceIfNeeded,
+} from "../workspace/workspaceFolders.ts";
 import { registerUriHandler } from "../uri/registerUriHandler.ts";
 import { showError } from "./showError.ts";
 
@@ -62,6 +65,9 @@ export function registerCommands(
       return undefined;
     }
     try {
+      if (await openLearningWorkspaceIfNeeded(root)) {
+        return undefined;
+      }
       const session = await loadLearningSession(root);
       setSession(session);
       return session;

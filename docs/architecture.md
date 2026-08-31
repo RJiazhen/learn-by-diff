@@ -66,17 +66,18 @@ Wire editors with:
 
 Under a learning workspace root:
 
-| Path                                     | Purpose                                       |
-| ---------------------------------------- | --------------------------------------------- |
-| `.learn/progress.json`                   | Applied chapter id / start or finish snapshot |
-| `.learn/course/`                         | Copy of course config                         |
-| `.learn/source.git/`                     | Materialized source store (mirror)            |
-| `.learn/snapshots/<chapter>/`            | Cached from/to trees when needed              |
-| `.learn/refs/<ordinal>-<title> (status)` | Runnable copy; folder name matches Explorer   |
+| Path                                     | Purpose                                        |
+| ---------------------------------------- | ---------------------------------------------- |
+| `.learn/progress.json`                   | Applied chapter id / start or finish snapshot  |
+| `.learn/course/`                         | Copy of course config                          |
+| `.learn/source.git/`                     | Materialized source store (mirror)             |
+| `.learn/snapshots/<chapter>/`            | Cached from/to trees when needed               |
+| `.learn/refs/<ordinal>-<title> (status)` | Runnable copy; folder name matches Explorer    |
+| `{root}.code-workspace`                  | Multi-root window (named after the course dir) |
 
 Activation today: `onUri` + `onView:learnByDiff.courseView` + `workspaceContains:.learn/progress.json`. Explorer view **Learn By Diff** is always shown; `viewsWelcome` + Open Course in the view title when the folder is not a learning workspace.
 
-**Not Started** / **Completed** export that chapter’s `fromDir` or `toDir` into the student tree and mark the row with that status (QuickPick only when the tree differs from the last applied snapshot). Title-bar prev/next apply the adjacent chapter’s start. First open still exports chapter one’s `fromDir`. **Open Not Started Folder** / **Open Completed Folder** copy the same snapshots into `.learn/refs/` as `01-Title (Not Started)` / `01-Title (Completed)` (gitignored, same name as the Explorer folder) and add each copy as an Explorer workspace folder.
+**Not Started** / **Completed** export that chapter’s `fromDir` or `toDir` into the student tree and mark the row with that status (QuickPick only when the tree differs from the last applied snapshot). Title-bar prev/next apply the adjacent chapter’s start. First open still exports chapter one’s `fromDir`. Opening a course loads `{course-dir}.code-workspace` at the learning root (student tree only at first) so later **Open Not Started Folder** / **Open Completed Folder** append chapter copies as extra roots without restarting the host, and File → Open Recent can reopen that workspace with those folders. Copies live under `.learn/refs/` as `01-Title (Not Started)` (gitignored).
 
 ## Major surfaces
 

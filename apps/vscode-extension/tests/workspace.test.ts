@@ -10,6 +10,7 @@ import {
   isInPlaceLearningTarget,
   loadLearningSession,
 } from "../src/workspace/loader.ts";
+import { ensureLearningWorkspaceFile } from "../src/workspace/multiRoot.ts";
 import { learningPaths } from "../src/workspace/paths.ts";
 import { applyChapterSnapshot } from "../src/workspace/session.ts";
 import { readProgress, writeProgress } from "../src/workspace/state.ts";
@@ -192,7 +193,18 @@ describe("learning workspace", () => {
     expect(gitignore).toContain(".learn/source.git/");
     expect(gitignore).toContain(".learn/snapshots/");
     expect(gitignore).toContain(".learn/refs/");
+    expect(gitignore).toContain("*.code-workspace");
     expect(gitignore).not.toMatch(/^\.learn\/$/m);
+    const createdPaths = learningPaths(created.learningRoot);
+    const workspaceJson = JSON.parse(await readFile(createdPaths.workspaceFile, "utf8")) as {
+      folders: { name: string; path: string }[];
+    };
+    expect(path.basename(createdPaths.workspaceFile)).toBe(
+      `${path.basename(created.learningRoot)}.code-workspace`,
+    );
+    expect(workspaceJson.folders).toEqual([
+      { name: path.basename(created.learningRoot), path: "." },
+    ]);
     const session = await loadLearningSession(created.learningRoot);
     expect(session?.course.config.id).toBe("demo");
     expect(learningPaths(created.learningRoot).sourceMirror.length).toBeGreaterThan(0);
@@ -202,6 +214,41 @@ describe("learning workspace", () => {
         () => false,
       ),
     ).resolves.toBe(false);
+  });
+
+  test("ensureLearningWorkspaceFile does not overwrite an existing workspace file", async () => {
+    const root = await tempDir("lbd-ws-keep-");
+    const paths = learningPaths(root);
+    const existing = '{"folders":[{"path":"."}]}\n';
+    await writeFile(paths.workspaceFile, existing, "utf8");
+    const result = await ensureLearningWorkspaceFile(root);
+    expect(result).toBe(paths.workspaceFile);
+    expect(await readFile(paths.workspaceFile, "utf8")).toBe(existing);
+  });
+
+  test("ensureLearningWorkspaceFile migrates a legacy .learn workspace file", async () => {
+    const root = await tempDir("lbd-ws-mig-");
+    const paths = learningPaths(root);
+    await mkdir(paths.learnDir, { recursive: true });
+    const legacy = {
+      folders: [
+        { name: "old", path: ".." },
+        { name: "refs", path: "refs" },
+        { name: "2-Particles (Completed)", path: "refs/2-Particles (Completed)" },
+      ],
+    };
+    await writeFile(paths.legacyWorkspaceFile, `${JSON.stringify(legacy)}\n`, "utf8");
+    await ensureLearningWorkspaceFile(root);
+    const body = JSON.parse(await readFile(paths.workspaceFile, "utf8")) as {
+      folders: { name: string; path: string }[];
+    };
+    expect(body.folders).toEqual([
+      { name: path.basename(root), path: "." },
+      { name: "2-Particles (Completed)", path: ".learn/refs/2-Particles (Completed)" },
+    ]);
+    await expect(access(paths.legacyWorkspaceFile)).resolves.toBeUndefined();
+    await ensureLearningWorkspaceFile(root);
+    await expect(access(paths.legacyWorkspaceFile)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
   test("createLearningWorkspace accepts plain local directories without nested git", async () => {
@@ -308,6 +355,7 @@ describe("learning workspace", () => {
     expect(gitignore).toContain(".learn/source.git/");
     expect(gitignore).toContain(".learn/snapshots/");
     expect(gitignore).toContain(".learn/refs/");
+    expect(gitignore).toContain("*.code-workspace");
     expect(gitignore).not.toContain("from-chapter");
   });
 
@@ -379,6 +427,7 @@ describe("learning workspace", () => {
     const gitignore = await readFile(path.join(created.learningRoot, ".gitignore"), "utf8");
     expect(gitignore).toContain("custom-keep");
     expect(gitignore).toContain(".learn/refs/");
+    expect(gitignore).toContain("*.code-workspace");
     expect(gitignore).not.toContain("from-chapter");
   });
 
@@ -394,6 +443,7 @@ describe("learning workspace", () => {
     expect(await readFile(path.join(learningRoot, "pkg/index.ts"), "utf8")).toBe(
       "export const v = 2;\n",
     );
+    await expect(access(learningPaths(learningRoot).workspaceFile)).resolves.toBeUndefined();
     expect(await readProgress(learningRoot)).toEqual({
       chapter: "two",
       completed: false,
@@ -540,6 +590,13 @@ describe("learning workspace", () => {
   test("isInPlaceLearningTarget allows README-only folders", async () => {
     const dir = await tempDir("lbd-empty-");
     await writeFile(path.join(dir, "README.md"), "sandbox\n", "utf8");
+    expect(await isInPlaceLearningTarget(dir)).toBe(true);
+  });
+
+  test("isInPlaceLearningTarget ignores a generated .code-workspace file", async () => {
+    const dir = await tempDir("lbd-ws-empty-");
+    await writeFile(path.join(dir, "README.md"), "sandbox\n", "utf8");
+    await writeFile(path.join(dir, `${path.basename(dir)}.code-workspace`), "{}\n", "utf8");
     expect(await isInPlaceLearningTarget(dir)).toBe(true);
   });
 

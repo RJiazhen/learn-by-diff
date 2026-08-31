@@ -3,6 +3,30 @@ import path from "node:path";
 /** Hidden runtime directory at the learning workspace root. */
 export const LEARN_DIR_NAME = ".learn";
 
+/** Pre-root-location workspace file under `.learn/` (migrated on open). */
+export const LEGACY_LEARN_WORKSPACE_FILE_NAME = "learn-by-diff.code-workspace";
+
+/**
+ * Returns whether `fileName` is a VS Code / Cursor `.code-workspace` file.
+ *
+ * @param fileName - Basename only
+ */
+export function isCodeWorkspaceFileName(fileName: string): boolean {
+  return fileName.endsWith(".code-workspace");
+}
+
+/**
+ * Returns the learning `.code-workspace` filename, matching the directory name.
+ *
+ * Open Recent labels a workspace from this filename, so it stays aligned with
+ * the course folder the student created.
+ *
+ * @param workspaceRoot - Learning repository root
+ */
+export function learningWorkspaceFileName(workspaceRoot: string): string {
+  return `${path.basename(path.resolve(workspaceRoot))}.code-workspace`;
+}
+
 /**
  * Returns well-known paths under a learning workspace root.
  *
@@ -18,6 +42,8 @@ export function learningPaths(workspaceRoot: string) {
     courseDir: path.join(learnDir, "course"),
     snapshotsDir: path.join(learnDir, "snapshots"),
     refsDir: path.join(learnDir, "refs"),
+    workspaceFile: path.join(workspaceRoot, learningWorkspaceFileName(workspaceRoot)),
+    legacyWorkspaceFile: path.join(learnDir, LEGACY_LEARN_WORKSPACE_FILE_NAME),
   };
 }
 

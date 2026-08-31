@@ -1,5 +1,4 @@
 import { ProtocolError } from "@learn-by-diff/protocol";
-import path from "node:path";
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
 import { createLearningWorkspace } from "./creator.ts";
@@ -10,6 +9,7 @@ import {
   type LearningSession,
 } from "./loader.ts";
 import { showError } from "../commands/showError.ts";
+import { openLearningWorkspaceIfNeeded } from "./workspaceFolders.ts";
 
 /** Options for opening a course into a learning workspace. */
 export interface OpenCourseOptions {
@@ -96,18 +96,17 @@ export async function openCourse(options: OpenCourseOptions): Promise<string | u
     return undefined;
   }
 
-  const alreadyOpen = await findLearningWorkspaceRoot(folderPaths);
-  if (alreadyOpen !== undefined && path.resolve(alreadyOpen) === path.resolve(learningRoot)) {
-    try {
-      const session = await loadLearningSession(learningRoot);
-      onSession?.(session);
-    } catch (error) {
-      onSession?.(undefined);
-      showError(error);
-    }
+  const switched = await openLearningWorkspaceIfNeeded(learningRoot);
+  if (switched) {
     return learningRoot;
   }
 
-  await vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(learningRoot));
+  try {
+    const session = await loadLearningSession(learningRoot);
+    onSession?.(session);
+  } catch (error) {
+    onSession?.(undefined);
+    showError(error);
+  }
   return learningRoot;
 }

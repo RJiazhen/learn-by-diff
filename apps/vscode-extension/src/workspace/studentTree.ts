@@ -1,6 +1,7 @@
 import { access, readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { GitClient } from "../git/client.ts";
+import { isCodeWorkspaceFileName } from "./paths.ts";
 
 /** Paths ignored when comparing the student workspace to a chapter start. */
 const STUDENT_COMPARE_SKIP = new Set([".git", ".learn", "README.md", ".gitignore"]);
@@ -94,7 +95,7 @@ export async function listStudentWorkspaceFiles(workspaceRoot: string): Promise<
   }
   const files: string[] = [];
   for (const entry of entries) {
-    if (STUDENT_COMPARE_SKIP.has(entry.name)) {
+    if (STUDENT_COMPARE_SKIP.has(entry.name) || isCodeWorkspaceFileName(entry.name)) {
       continue;
     }
     const absolute = path.join(workspaceRoot, entry.name);
@@ -142,15 +143,19 @@ async function readSourceFile(
  */
 function isSkippedComparePath(relative: string): boolean {
   const top = relative.split("/")[0];
-  return top !== undefined && STUDENT_COMPARE_SKIP.has(top);
+  if (top !== undefined && STUDENT_COMPARE_SKIP.has(top)) {
+    return true;
+  }
+  return isCodeWorkspaceFileName(path.posix.basename(relative));
 }
 
 /**
  * Returns whether student-visible workspace files differ from a chapter snapshot.
  *
  * Compares against the snapshot for the **current** chapter status (Not Started =
- * `fromDir`, Completed = `toDir`). Ignores `.git`, `.learn`, `README.md`, and
- * `.gitignore` on both sides so preserved tooling files do not count as edits.
+ * `fromDir`, Completed = `toDir`). Ignores `.git`, `.learn`, `README.md`,
+ * `.gitignore`, and `.code-workspace` on both sides so preserved tooling files
+ * do not count as edits.
  *
  * @param git - Git client
  * @param workspaceRoot - Learning workspace root
