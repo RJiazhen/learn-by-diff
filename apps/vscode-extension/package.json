@@ -109,7 +109,8 @@
       "explorer": [
         {
           "id": "learnByDiff.courseView",
-          "name": "%learnByDiff.courseView.name%"
+          "name": "%learnByDiff.courseView.name%",
+          "icon": "icon.png"
         }
       ]
     },
@@ -246,6 +247,7 @@
     "onView:learnByDiff.courseView",
     "workspaceContains:.learn/progress.json"
   ],
+  "icon": "icon.png",
   "engines": {
     "vscode": "^1.90.0"
   }
