@@ -1,7 +1,7 @@
 {
   "LearnByDiff: Open Course": "LearnByDiff: Open Course",
-  "Course repository URL (prefilled with local examples/demo-course)": "Course repository URL (prefilled with local examples/demo-course)",
-  "Course repository URL (must contain course.yml or .course-config/course.yml)": "Course repository URL (must contain course.yml or .course-config/course.yml)",
+  "Path to course.yml (prefilled with local examples/demo-course/.course-config/course.yml)": "Path to course.yml (prefilled with local examples/demo-course/.course-config/course.yml)",
+  "Path to course.yml, or a git URL to a course repository": "Path to course.yml, or a git URL to a course repository",
   "This is the last chapter.": "This is the last chapter.",
   "This is the first chapter.": "This is the first chapter.",
   "Unknown chapter: {0}": "Unknown chapter: {0}",
@@ -24,7 +24,7 @@
   "Added in chapter goal": "Added in chapter goal",
   "Modified between start and goal": "Modified between start and goal",
   "Deleted in chapter goal": "Deleted in chapter goal",
-  "Unknown LearnByDiff link path “{0}”. Use /open?url=<course-repo>.": "Unknown LearnByDiff link path “{0}”. Use /open?url=<course-repo>.",
+  "Unknown LearnByDiff link path “{0}”. Use /open?url=<course.yml-or-repo>.": "Unknown LearnByDiff link path “{0}”. Use /open?url=<course.yml-or-repo>.",
   "LearnByDiff open link is missing a url query parameter.": "LearnByDiff open link is missing a url query parameter.",
   "Invalid parent folder in LearnByDiff link: {0}": "Invalid parent folder in LearnByDiff link: {0}",
   "Chapter {0} has no docs": "Chapter {0} has no docs",

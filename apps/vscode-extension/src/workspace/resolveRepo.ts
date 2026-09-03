@@ -13,8 +13,8 @@ export function isRemoteGitUrl(value: string): boolean {
 /**
  * Resolves a course origin path for local clones (`file:` URLs or filesystem paths).
  *
- * @param courseRepoUrl - User-supplied course repository URL or path
- * @returns Absolute directory when local; otherwise `undefined`
+ * @param courseRepoUrl - User-supplied `course.yml` path or git URL
+ * @returns Absolute path when local; otherwise `undefined`
  */
 export function localCourseOrigin(courseRepoUrl: string): string | undefined {
   const trimmed = courseRepoUrl.trim();
@@ -30,13 +30,14 @@ export function localCourseOrigin(courseRepoUrl: string): string | undefined {
 /**
  * Resolves `source.repository` for clone/mirror.
  *
- * Relative paths are resolved against the original local course directory so
- * fixtures can use `../demo-source` without baking machine-specific absolutes.
+ * Relative paths are resolved against the course home (parent of `.course-config`,
+ * or the directory that contains a root-level `course.yml`) so fixtures can use
+ * `../demo-source` without baking machine-specific absolutes.
  *
  * @param declared - Value from `course.yml`
- * @param courseRepoUrl - Original course URL/path supplied by the user
+ * @param courseHome - Course home directory for the original `course.yml`
  */
-export function resolveSourceRepository(declared: string, courseRepoUrl: string): string {
+export function resolveSourceRepository(declared: string, courseHome: string): string {
   const trimmed = declared.trim();
   if (trimmed === "") {
     return trimmed;
@@ -44,18 +45,14 @@ export function resolveSourceRepository(declared: string, courseRepoUrl: string)
   if (isRemoteGitUrl(trimmed) || path.isAbsolute(trimmed)) {
     return trimmed;
   }
-  const origin = localCourseOrigin(courseRepoUrl);
-  if (origin === undefined) {
-    return trimmed;
-  }
-  return path.resolve(origin, trimmed);
+  return path.resolve(courseHome, trimmed);
 }
 
 /**
- * Absolute path to the local demo course when running under Extension Development Host.
+ * Absolute path to the local demo `course.yml` when running under Extension Development Host.
  *
  * @param extensionPath - `context.extensionPath` (`apps/vscode-extension`)
  */
 export function demoCoursePath(extensionPath: string): string {
-  return path.resolve(extensionPath, "../../examples/demo-course");
+  return path.resolve(extensionPath, "../../examples/demo-course/.course-config/course.yml");
 }

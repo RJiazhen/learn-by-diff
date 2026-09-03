@@ -92,11 +92,11 @@ export function registerCommands(
       const url = await vscode.window.showInputBox({
         title: vscode.l10n.t("LearnByDiff: Open Course"),
         prompt: isDevHost
-          ? vscode.l10n.t("Course repository URL (prefilled with local examples/demo-course)")
-          : vscode.l10n.t(
-              "Course repository URL (must contain course.yml or .course-config/course.yml)",
-            ),
-        placeHolder: "https://github.com/org/course.git",
+          ? vscode.l10n.t(
+              "Path to course.yml (prefilled with local examples/demo-course/.course-config/course.yml)",
+            )
+          : vscode.l10n.t("Path to course.yml, or a git URL to a course repository"),
+        placeHolder: "/path/to/course.yml",
         value: defaultCourseUrl,
         ignoreFocusOut: true,
       });

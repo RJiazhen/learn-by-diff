@@ -28,7 +28,7 @@ describe("chapterRefWorkspaceName", () => {
   test("includes ordinal, title, and status", () => {
     const course = {
       configDir: "/tmp/course",
-      config: { id: "demo", title: "Demo", source: { repository: "." } },
+      config: { id: "demo", title: "Demo", source: { repository: "." }, chaptersDir: "chapters" },
       chapters: [
         { id: "skeleton", title: "Canvas skeleton", fromDir: "start", toDir: "skeleton" },
         { id: "particles", title: "Particles", fromDir: "skeleton", toDir: "particles" },
@@ -82,7 +82,7 @@ describe("materializeChapterRef", () => {
 
     const parent = await tempDir("lbd-ref-parent-");
     const created = await createLearningWorkspace({
-      courseRepoUrl: courseDir,
+      courseRepoUrl: path.join(courseDir, ".course-config", "course.yml"),
       parentDir: parent,
       git,
     });

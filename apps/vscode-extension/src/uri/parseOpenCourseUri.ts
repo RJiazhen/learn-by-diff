@@ -13,7 +13,7 @@ export type ParsedOpenCourseUri =
  * Parses a LearnByDiff deep-link URI into an open-course request.
  *
  * Supported shapes:
- * - `…://rjiazhen.learn-by-diff/open?url=<encoded-course-repo>`
+ * - `…://rjiazhen.learn-by-diff/open?url=<encoded-course.yml-or-repo>`
  * - optional `parent=<absolute-or-file-uri>` for the learning workspace parent folder
  *
  * @param uri - Incoming URI from {@link vscode.window.registerUriHandler}

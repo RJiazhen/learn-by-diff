@@ -1,9 +1,9 @@
-import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
-  CHAPTERS_DIR_NAME,
   COURSE_FILE_NAME,
+  courseHomeDir,
   findCourseConfigDir,
   loadCourseFromConfigDir,
   ProtocolError,
@@ -22,8 +22,9 @@ import {
 } from "./sourceStore.ts";
 import { writeProgress, type ChapterSnapshotSide } from "./state.ts";
 
-/** Options for creating a learning workspace from a course repository URL. */
+/** Options for creating a learning workspace from a `course.yml` path or git URL. */
 export interface CreateLearningWorkspaceOptions {
+  /** Local path to `course.yml` (`file:` URLs allowed) or a git URL to clone. */
   courseRepoUrl: string;
   git: GitClient;
   /** Initialize this folder in place (debug sandbox). */
@@ -58,6 +59,7 @@ export async function createLearningWorkspace(
   const courseConfigSource = await resolveCourseConfigDir(git, courseRepoUrl, onLog);
   try {
     const preview = await loadCourseFromConfigDir(courseConfigSource.configDir);
+    const courseHome = courseHomeDir(courseConfigSource.configDir);
     const learningRoot =
       inPlaceRoot ??
       (parentDir !== undefined ? path.join(parentDir, preview.config.id) : undefined);
@@ -69,14 +71,15 @@ export async function createLearningWorkspace(
     const paths = learningPaths(learningRoot);
     await mkdir(paths.learnDir, { recursive: true });
     await rm(paths.courseDir, { recursive: true, force: true });
-    await copyCourseConfigFiles(courseConfigSource.configDir, paths.courseDir);
+    await copyCourseConfigFiles(
+      courseConfigSource.configDir,
+      paths.courseDir,
+      preview.config.chaptersDir,
+    );
 
     const course = await loadCourseFromConfigDir(paths.courseDir);
 
-    const sourceRepository = resolveSourceRepository(
-      course.config.source.repository,
-      courseRepoUrl,
-    );
+    const sourceRepository = resolveSourceRepository(course.config.source.repository, courseHome);
     await materializeSourceStore(git, sourceRepository, paths.sourceMirror, onLog);
 
     const first = course.chapters[0];
@@ -118,12 +121,13 @@ interface CourseConfigSource {
 }
 
 /**
- * Resolves course config from a local path or by cloning a git course repository.
+ * Resolves course config from a local `course.yml` path or by cloning a git course repository.
  *
- * Looks for `course.yml` in the specified directory, then `.course-config/course.yml`.
+ * Local inputs must be the `course.yml` file (or a `file:` URL to it), not a directory.
+ * Remote git URLs are cloned, then `course.yml` is found at the clone root or under `.course-config/`.
  *
  * @param git - Git client
- * @param courseRepoUrl - User-supplied course URL or path
+ * @param courseRepoUrl - User-supplied `course.yml` path or git URL
  * @param onLog - Optional progress logger
  */
 async function resolveCourseConfigDir(
@@ -133,18 +137,18 @@ async function resolveCourseConfigDir(
 ): Promise<CourseConfigSource> {
   const local = localCourseOrigin(courseRepoUrl);
   if (local !== undefined) {
-    const configDir = await findCourseConfigDir(local);
-    if (configDir !== undefined) {
+    const localConfig = await resolveLocalCourseYml(local);
+    if (localConfig !== undefined) {
       onLog?.(`Using local course config… (${local})`);
-      return { configDir, cleanup: async () => {} };
+      return localConfig;
     }
     if (!isRemoteGitUrl(courseRepoUrl)) {
-      throw new Error(`course repository not found: ${courseRepoUrl}`);
+      throw new Error(`course.yml not found: ${courseRepoUrl}`);
     }
   }
 
   if (!isRemoteGitUrl(courseRepoUrl) && local === undefined) {
-    throw new Error(`course repository not found: ${courseRepoUrl}`);
+    throw new Error(`course.yml not found: ${courseRepoUrl}`);
   }
 
   onLog?.("Cloning course repository…");
@@ -174,20 +178,64 @@ async function resolveCourseConfigDir(
 }
 
 /**
- * Copies `course.yml` and `chapters/` into the learning workspace config dir.
+ * Resolves a local filesystem path to the directory that contains `course.yml`.
+ *
+ * Directories are rejected so Open Course always takes an explicit file.
+ *
+ * @param local - Absolute filesystem path from {@link localCourseOrigin}
+ * @returns Config source, or `undefined` when the path does not exist
+ */
+async function resolveLocalCourseYml(local: string): Promise<CourseConfigSource | undefined> {
+  let info: Awaited<ReturnType<typeof stat>>;
+  try {
+    info = await stat(local);
+  } catch {
+    return undefined;
+  }
+  if (info.isFile()) {
+    if (path.basename(local) !== COURSE_FILE_NAME) {
+      throw new Error(`expected ${COURSE_FILE_NAME} file: ${local}`);
+    }
+    return { configDir: path.dirname(local), cleanup: async () => {} };
+  }
+  if (info.isDirectory()) {
+    throw new Error(`provide the ${COURSE_FILE_NAME} file path, not a directory: ${local}`);
+  }
+  return undefined;
+}
+
+/**
+ * Copies `course.yml` and the configured chapters directory into the learning workspace.
  *
  * Does not copy the rest of a course-home tree (source files, git metadata).
  *
  * @param fromConfigDir - Directory that contains `course.yml`
  * @param toConfigDir - `.learn/course` destination
+ * @param chaptersDir - Posix-relative chapters directory from `course.yml`
  */
-async function copyCourseConfigFiles(fromConfigDir: string, toConfigDir: string): Promise<void> {
+async function copyCourseConfigFiles(
+  fromConfigDir: string,
+  toConfigDir: string,
+  chaptersDir: string,
+): Promise<void> {
   await mkdir(toConfigDir, { recursive: true });
   await cp(path.join(fromConfigDir, COURSE_FILE_NAME), path.join(toConfigDir, COURSE_FILE_NAME));
-  const fromChapters = path.join(fromConfigDir, CHAPTERS_DIR_NAME);
+  const fromChapters = joinConfigRelative(fromConfigDir, chaptersDir);
   if (await directoryExists(fromChapters)) {
-    await cp(fromChapters, path.join(toConfigDir, CHAPTERS_DIR_NAME), { recursive: true });
+    const toChapters = joinConfigRelative(toConfigDir, chaptersDir);
+    await mkdir(path.dirname(toChapters), { recursive: true });
+    await cp(fromChapters, toChapters, { recursive: true });
   }
+}
+
+/**
+ * Joins a posix-relative path onto a config directory as a filesystem path.
+ *
+ * @param configDir - Directory that contains `course.yml`
+ * @param relativePosix - Slash-separated path under the config directory
+ */
+function joinConfigRelative(configDir: string, relativePosix: string): string {
+  return path.join(configDir, ...relativePosix.split("/").filter((segment) => segment !== ""));
 }
 
 /**

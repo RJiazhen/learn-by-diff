@@ -26,9 +26,9 @@ describe("resolveSourceRepository", () => {
     expect(isRemoteGitUrl("/tmp/course")).toBe(false);
   });
 
-  test("demoCoursePath points at examples/demo-course", () => {
+  test("demoCoursePath points at examples/demo-course/.course-config/course.yml", () => {
     expect(demoCoursePath("/repo/apps/vscode-extension")).toBe(
-      path.resolve("/repo/examples/demo-course"),
+      path.resolve("/repo/examples/demo-course/.course-config/course.yml"),
     );
   });
 });

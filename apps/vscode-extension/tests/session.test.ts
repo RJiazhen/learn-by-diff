@@ -18,6 +18,7 @@ const session: LearningSession = {
       id: "demo",
       title: "Demo",
       source: { repository: "https://example.com/src.git" },
+      chaptersDir: "chapters",
     },
     chapters: [
       {

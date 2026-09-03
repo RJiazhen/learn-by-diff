@@ -25,7 +25,7 @@ export interface OpenCourseOptions {
 }
 
 /**
- * Creates a learning workspace from a course URL and opens the folder when needed.
+ * Creates a learning workspace from a `course.yml` path or git URL and opens the folder when needed.
  *
  * Shared by the command palette flow and browser / OS deep links.
  *

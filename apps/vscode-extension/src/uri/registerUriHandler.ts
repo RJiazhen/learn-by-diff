@@ -81,7 +81,7 @@ export function registerUriHandler(
 function openCourseUriErrorMessage(error: OpenCourseUriError): string {
   if (error.kind === "unknownPath") {
     return vscode.l10n.t(
-      "Unknown LearnByDiff link path “{0}”. Use /open?url=<course-repo>.",
+      "Unknown LearnByDiff link path “{0}”. Use /open?url=<course.yml-or-repo>.",
       error.path,
     );
   }
