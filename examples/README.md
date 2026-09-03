@@ -12,6 +12,6 @@ Chapter snapshots live as directories **inside one source repository**. Each cha
 
 The demo is a small visual course (`start/` → `skeleton/` → `particles/` → `follow/` → `glow/`): a canvas particle field that ends up following the cursor. Snapshot trees nest under `src/scene`, `src/particle`, and `src/pointer` so chapter diffs include new folders, not only a single `main.js`. A fifth course chapter reuses `glow` as both `fromDir` and `toDir` (no new snapshot) so `docs` can be an https URL.
 
-**LearnByDiff: Open Course** prefills `examples/demo-course` in Development mode.
+**LearnByDiff: Open Course** prefills `examples/demo-course/.course-config/course.yml` in Development mode.
 
 Protocol unit tests still use `packages/protocol/fixtures/`.

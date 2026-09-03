@@ -27,7 +27,7 @@ pnpm exec vp run @learn-by-diff/protocol#pack
 pnpm exec vp run learn-by-diff#pack
 ```
 
-Press **F5** (`Run Extension`). The prelaunch task runs `vp pack --watch`, then the Extension Development Host opens [`sandbox/`](sandbox) in a temporary empty profile (no other user extensions). After code changes, reload the Extension Development Host window to pick up the rebuilt bundle. **LearnByDiff: Open Course** prefills [`examples/demo-course`](examples/demo-course).
+Press **F5** (`Run Extension`). The prelaunch task runs `vp pack --watch`, then the Extension Development Host opens [`sandbox/`](sandbox) in a temporary empty profile (no other user extensions). After code changes, reload the Extension Development Host window to pick up the rebuilt bundle. **LearnByDiff: Open Course** prefills [`examples/demo-course/.course-config/course.yml`](examples/demo-course/.course-config/course.yml).
 
 Real users pick a parent folder; the workspace is created as `{parent}/{course.id}/`.
 
@@ -36,8 +36,8 @@ Real users pick a parent folder; the workspace is created as `{parent}/{course.i
 With the extension installed, a link can launch VS Code or Cursor and run **Open Course**:
 
 ```text
-vscode://rjiazhen.learn-by-diff/open?url=<urlencoded-course-repo>
-cursor://rjiazhen.learn-by-diff/open?url=<urlencoded-course-repo>
+vscode://rjiazhen.learn-by-diff/open?url=<urlencoded-course.yml-or-repo>
+cursor://rjiazhen.learn-by-diff/open?url=<urlencoded-course.yml-or-repo>
 ```
 
 Optional `parent=<urlencoded-absolute-folder>` skips the folder picker. Example:
@@ -52,11 +52,11 @@ The IDE must already have LearnByDiff installed; the OS may ask to allow the `vs
 
 ## Course protocol (LCP)
 
-Course repos need:
+Course authors typically keep:
 
 ```text
-course.yml                 # preferred, at the specified directory or repo root
-chapters/*.yml
+course.yml                 # Open Course takes this file
+chapters/*.yml             # default chaptersDir
 
 # or
 
@@ -64,7 +64,7 @@ chapters/*.yml
 .course-config/chapters/*.yml
 ```
 
-`course.yml` fields are all optional: `id` defaults from the course home folder (or `{repo}-learn` at a git root), `title` defaults to `id`, `source.repository` defaults to `.` (the course home). Optional `source.root` prefixes chapter dirs. Chapter YAML fields are all optional: `id`/`title` default from the filename, empty `fromDir`/`toDir` mean empty trees, omitted `entryFiles` auto-discovers all files under `toDir`, optional `docs` is an http(s) URL or a relative doc path under the chapter snapshot. Nested paths and unrelated parents in the same repo are supported; separate remotes per chapter are not.
+`course.yml` fields are all optional: `id` defaults from the course home folder (or `{repo}-learn` at a git root), `title` defaults to `id`, `source.repository` defaults to `.` (the course home), `chaptersDir` defaults to `chapters` next to `course.yml`. Optional `source.root` prefixes chapter dirs. Chapter YAML fields are all optional: `id`/`title` default from the filename, empty `fromDir`/`toDir` mean empty trees, omitted `entryFiles` auto-discovers all files under `toDir`, optional `docs` is an http(s) URL or a relative doc path under the chapter snapshot. Nested paths and unrelated parents in the same repo are supported; separate remotes per chapter are not.
 
 Authoring: JSON Schema lives at [`packages/protocol/schema.json`](packages/protocol/schema.json). Point YAML files at it with a top comment, e.g. `# yaml-language-server: $schema=../../../packages/protocol/schema.json#/$defs/course`. Runtime validation still uses `@learn-by-diff/protocol`.
 

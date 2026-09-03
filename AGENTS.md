@@ -4,7 +4,7 @@ Guidance for AI agents working in this repository. Read this first; follow linke
 
 ## What this is
 
-VS Code / Cursor extension that turns a **course repo** (Learning Course Protocol: `course.yml` at the specified root, or under `.course-config/`) plus a **source repo** (directory snapshots per chapter) into a local **learning workspace**. Students learn by implementing increments and comparing diffs—not by checking out git history.
+VS Code / Cursor extension that turns a **course repo** (Learning Course Protocol: a `course.yml` file plus chapter YAML) plus a **source repo** (directory snapshots per chapter) into a local **learning workspace**. Students learn by implementing increments and comparing diffs—not by checking out git history.
 
 Not in scope: course hosting, accounts, AI explanations of code.
 
@@ -34,9 +34,10 @@ F5 → packs with watch → opens `sandbox/`. Reload Extension Host after code c
 ## Hard product rules (current + direction)
 
 - Protocol evolves **additively** (optional fields only). No `protocolVersion` gate. No `workspace.*` / chapter `tests` yet.
-- Course + chapter YAML: **all fields optional** with path/filename defaults (see protocol types / `docs/architecture.md`).
+- Course + chapter YAML: **all fields optional** with path/filename defaults (see protocol types / `docs/architecture.md`). Optional `chaptersDir` defaults to `chapters` next to `course.yml`.
 - Prefer **reference via diff** for learning; workspace overwrite is explicit **Chapter Start** / **Chapter Finish** (dirty confirm vs last applied snapshot).
 - One `source.repository` per course; optional `source.root`. No per-chapter remotes.
+- Open Course takes a **`course.yml` file path** (or a git URL to clone). Do not pass a directory that might contain config.
 - Schema for authors: `# yaml-language-server: $schema=…/schema.json#/$defs/course|chapter` (relative path). Do not rely on workspace `yaml.schemas`.
 
 ## Code norms

@@ -10,5 +10,5 @@ alwaysApply: false
 - Generate minimal YAML; omit fields that defaults cover. Always add `# yaml-language-server: $schema=…#/$defs/…` with a correct relative path.
 - One `source.repository` only; optional `source.root`. Chapter `fromDir`/`toDir` are repo-relative (no `..`).
 - Optional `docs`: `http(s)` URL or file under the chapter snapshot. Do not invent snapshot dirs—ask if detection fails.
-- After generate, print a try-open deep link (`vscode://` / `cursor://…/open?url=`) and the absolute course path.
+- After generate, print a try-open deep link (`vscode://` / `cursor://…/open?url=`) and the absolute `course.yml` path.
 - Demo pair: `examples/demo-course` + `examples/demo-source`. Update both when changing demo pedagogy.

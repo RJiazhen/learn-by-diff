@@ -4,7 +4,7 @@ Companion to [`AGENTS.md`](../AGENTS.md). Describes how LearnByDiff is structure
 
 ## Problem model
 
-1. **Course repository** — declares pedagogy in `course.yml` at the specified root, or under `.course-config/` (not the student’s full solution tree).
+1. **Course repository** — declares pedagogy in a `course.yml` file (often at the repo root or under `.course-config/`; not the student’s full solution tree).
 2. **Source repository** — holds **directory snapshots** (`fromDir` → `toDir` per chapter), optionally under `source.root`.
 3. **Learning workspace** — student folder created by the extension; owns `.learn/` runtime state and the editable working tree.
 
@@ -31,14 +31,16 @@ learn-by-diff extension   clone/mirror source → export trees → UI / URI
 ### On disk
 
 ```text
-course.yml                      # preferred, at the specified root
-chapters/*.yml
+course.yml                      # Open Course takes this file
+chapters/*.yml                  # default chaptersDir
 
 # or
 
 .course-config/course.yml
 .course-config/chapters/*.yml   # sort order = course order
 ```
+
+`chaptersDir` in `course.yml` may point at another directory next to `course.yml` (nested paths allowed; no `..`).
 
 ### `course.yml` (all optional)
 
@@ -48,6 +50,7 @@ chapters/*.yml
 | `title`             | `id`                                                          |
 | `source.repository` | `.` (course home)                                             |
 | `source.root`       | none                                                          |
+| `chaptersDir`       | `chapters` (directory next to `course.yml`)                   |
 
 No `protocolVersion`, no `workspace` block.
 
@@ -108,7 +111,7 @@ Deep link authority = `publisher.name` → `rjiazhen.learn-by-diff`.
 
 ## Author skills
 
-`skills/generate-course-config` scaffolds `.course-config` from snapshot dirs. Not part of pnpm. After generate, print a local try-open deep link and the absolute course path.
+`skills/generate-course-config` scaffolds `.course-config` from snapshot dirs. Not part of pnpm. After generate, print a local try-open deep link and the absolute `course.yml` path.
 
 ## Examples
 

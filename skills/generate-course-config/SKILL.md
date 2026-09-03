@@ -99,6 +99,7 @@ Layout:
 source:
   repository: <url-or-relative-path> # default: .
   # root: <optional prefix under repository>
+# chaptersDir: chapters   # optional; default is `chapters` next to this file
 ```
 
 Only set `source.repository` when it is not the course home (`.`). Do not emit `protocolVersion` or `workspace`.
@@ -132,12 +133,12 @@ Do **not** overwrite existing `.course-config` without asking.
 
 Summarize generated chapters (`fromDir` → `toDir`). Then give the author a way to **try the course immediately**:
 
-1. Print the **absolute path** of the course root (the directory that contains `.course-config`). They can paste it into **Open Course**.
-2. Print clickable local deep links (URL-encode the same absolute path, or a `file:` URL, as `url=`):
+1. Print the **absolute path** of `course.yml` (for example `.course-config/course.yml`). They can paste it into **Open Course**.
+2. Print clickable local deep links (URL-encode the same absolute file path, or a `file:` URL, as `url=`):
 
 ```text
-vscode://rjiazhen.learn-by-diff/open?url=<urlencoded-absolute-course-root>
-cursor://rjiazhen.learn-by-diff/open?url=<urlencoded-absolute-course-root>
+vscode://rjiazhen.learn-by-diff/open?url=<urlencoded-absolute-course.yml>
+cursor://rjiazhen.learn-by-diff/open?url=<urlencoded-absolute-course.yml>
 ```
 
 Also point authors at:
