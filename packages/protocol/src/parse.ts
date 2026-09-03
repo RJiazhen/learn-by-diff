@@ -31,7 +31,7 @@ function parseYamlDocument(text: string, path: string): unknown {
 export function parseCourseYaml(text: string, path: string): ParsedCourseFields {
   const value = parseYamlDocument(text, path);
   if (value === null || value === undefined) {
-    return { id: "", title: "", source: { repository: "" } };
+    return { id: "", title: "", source: { repository: "" }, chaptersDir: "" };
   }
   if (!isRecord(value)) {
     throw new ProtocolError([{ path, message: "document must be a mapping" }]);
@@ -45,6 +45,7 @@ export function parseCourseYaml(text: string, path: string): ParsedCourseFields 
       repository: asString(source.repository),
       ...(root !== "" ? { root } : {}),
     },
+    chaptersDir: asString(value.chaptersDir),
   };
 }
 

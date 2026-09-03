@@ -18,7 +18,7 @@ export function validateCourse(
 ): Course {
   const issues: ProtocolIssue[] = [];
   validateCourseConfig(config, issues);
-  validateChapters(chapters, issues);
+  validateChapters(chapters, issues, config.chaptersDir);
 
   if (issues.length > 0) {
     throw new ProtocolError(issues);
@@ -34,6 +34,7 @@ function validateCourseConfig(config: CourseConfig, issues: ProtocolIssue[]): vo
   requireNonEmpty(issues, "course.yml#id", config.id);
   requireNonEmpty(issues, "course.yml#title", config.title);
   requireNonEmpty(issues, "course.yml#source.repository", config.source.repository);
+  requireSourceDirPath(issues, "course.yml#chaptersDir", config.chaptersDir);
   if (config.source.root !== undefined && config.source.root.trim() !== "") {
     requireSourceDirPath(issues, "course.yml#source.root", config.source.root);
   }
@@ -41,11 +42,19 @@ function validateCourseConfig(config: CourseConfig, issues: ProtocolIssue[]): vo
 
 /**
  * Collects chapter-level issues (ids unique; optional dirs/paths when present).
+ *
+ * @param chapters - Parsed chapter documents
+ * @param issues - Accumulator
+ * @param chaptersDir - Relative chapters directory from `course.yml` (for empty-list errors)
  */
-function validateChapters(chapters: ChapterConfig[], issues: ProtocolIssue[]): void {
+function validateChapters(
+  chapters: ChapterConfig[],
+  issues: ProtocolIssue[],
+  chaptersDir: string,
+): void {
   if (chapters.length === 0) {
     issues.push({
-      path: "chapters/",
+      path: `${chaptersDir}/`,
       message: "at least one chapter yaml is required",
     });
     return;

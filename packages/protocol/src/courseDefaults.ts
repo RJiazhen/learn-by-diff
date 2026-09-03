@@ -1,13 +1,16 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import type { CourseConfig, CourseSource } from "./types.ts";
-import { COURSE_CONFIG_DIR } from "./types.ts";
+import { COURSE_CONFIG_DIR, CHAPTERS_DIR_NAME } from "./types.ts";
+import { normalizeSourceDirPath } from "./sourcePath.ts";
 
 /** Sparse `course.yml` fields before load-time defaults. */
 export interface ParsedCourseFields {
   id: string;
   title: string;
   source: CourseSource;
+  /** Empty when omitted in YAML; {@link applyCourseDefaults} fills `chapters`. */
+  chaptersDir: string;
 }
 
 /**
@@ -53,6 +56,7 @@ export function defaultCourseId(configDir: string): string {
  * - `id` ← course home folder (or `{repo}-learn` at a git root); for `.learn/course`, learning folder name
  * - `title` ← `id`
  * - `source.repository` ← `.` (course home)
+ * - `chaptersDir` ← `chapters` (directory next to `course.yml`)
  *
  * @param partial - Parsed fields (empty strings mean omitted)
  * @param configDir - Absolute config directory used for path-based defaults
@@ -62,6 +66,9 @@ export function applyCourseDefaults(partial: ParsedCourseFields, configDir: stri
   const title = partial.title.trim() || id;
   const repository = partial.source.repository.trim() || ".";
   const root = partial.source.root?.trim();
+  const chaptersRaw = partial.chaptersDir.trim();
+  const chaptersDir =
+    chaptersRaw === "" ? CHAPTERS_DIR_NAME : (normalizeSourceDirPath(chaptersRaw) ?? chaptersRaw);
   return {
     id,
     title,
@@ -69,6 +76,7 @@ export function applyCourseDefaults(partial: ParsedCourseFields, configDir: stri
       repository,
       ...(root !== undefined && root !== "" ? { root } : {}),
     },
+    chaptersDir,
   };
 }
 

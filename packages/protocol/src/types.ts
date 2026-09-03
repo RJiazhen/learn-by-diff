@@ -4,12 +4,12 @@ export const COURSE_CONFIG_DIR = ".course-config";
 /** Filename of the course-level protocol document. */
 export const COURSE_FILE_NAME = "course.yml";
 
-/** Directory of per-chapter protocol documents under the course config dir. */
+/** Default directory of per-chapter YAML next to `course.yml` (`chaptersDir` when omitted). */
 export const CHAPTERS_DIR_NAME = "chapters";
 
 /** Source repository pointer in `course.yml`. */
 export interface CourseSource {
-  /** Git URL or path to the source repository (relative paths resolve from the course repo). */
+  /** Git URL or path to the source repository (relative paths resolve from the course home). */
   repository: string;
   /**
    * Optional subdirectory under `repository` that prefixes every chapter `fromDir` / `toDir`.
@@ -25,6 +25,7 @@ export interface CourseSource {
  * - `id` ← course home folder, or `{repoName}-learn` when that home is a git root
  * - `title` ← `id`
  * - `source.repository` ← `.` (course home)
+ * - `chaptersDir` ← `chapters` (next to `course.yml`)
  *
  * Protocol evolves by adding optional fields only; there is no `protocolVersion` gate.
  */
@@ -32,6 +33,11 @@ export interface CourseConfig {
   id: string;
   title: string;
   source: CourseSource;
+  /**
+   * Directory of chapter YAML files, relative to the directory that contains `course.yml`.
+   * Defaults to `chapters`. Nested paths allowed; no `..` or absolutes.
+   */
+  chaptersDir: string;
 }
 
 /**

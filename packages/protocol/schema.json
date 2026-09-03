@@ -29,7 +29,7 @@
         "repository": {
           "type": "string",
           "minLength": 1,
-          "description": "Git URL or filesystem path to the source repository. Defaults to `.` (the directory that contains `.course-config`). Relative paths resolve from the course repository."
+          "description": "Git URL or filesystem path to the source repository. Defaults to `.` (the course home: parent of `.course-config`, or the directory that contains a root-level course.yml). Relative paths resolve from the course home."
         },
         "root": {
           "$ref": "#/$defs/sourceDirPath",
@@ -40,11 +40,11 @@
     "course": {
       "type": "object",
       "additionalProperties": false,
-      "description": "All fields optional. Defaults: id from parent of `.course-config` (or `{repo}-learn` at a git root), title=id, source.repository=`.`.",
+      "description": "All fields optional. Defaults: id from course home (or `{repo}-learn` at a git root), title=id, source.repository=`.`, chaptersDir=`chapters` (next to course.yml).",
       "properties": {
         "id": {
           "$ref": "#/$defs/nonEmptyString",
-          "description": "Stable course id (also used as the default learning workspace folder name). Defaults from the `.course-config` parent directory."
+          "description": "Stable course id (also used as the default learning workspace folder name). Defaults from the course home directory."
         },
         "title": {
           "$ref": "#/$defs/nonEmptyString",
@@ -52,6 +52,10 @@
         },
         "source": {
           "$ref": "#/$defs/courseSource"
+        },
+        "chaptersDir": {
+          "$ref": "#/$defs/sourceDirPath",
+          "description": "Directory of chapter YAML files, relative to the directory that contains course.yml. Defaults to `chapters`. Nested paths allowed; no absolute paths or '..' segments."
         }
       }
     },

@@ -18,6 +18,7 @@ const validConfig = {
   id: "demo",
   title: "Demo",
   source: { repository: "https://example.com/src.git" },
+  chaptersDir: "chapters",
 };
 
 const validChapter = {
@@ -69,14 +70,15 @@ describe("course defaults", () => {
     }
   });
 
-  test("applyCourseDefaults fills id, title, and repository", () => {
+  test("applyCourseDefaults fills id, title, repository, and chaptersDir", () => {
     const config = applyCourseDefaults(
-      { id: "", title: "", source: { repository: "" } },
+      { id: "", title: "", source: { repository: "" }, chaptersDir: "" },
       "/repo/my-course/.course-config",
     );
     expect(config.id).toBe("my-course");
     expect(config.title).toBe("my-course");
     expect(config.source.repository).toBe(".");
+    expect(config.chaptersDir).toBe("chapters");
   });
 });
 
@@ -94,7 +96,13 @@ describe("parseCourseYaml", () => {
       id: "",
       title: "",
       source: { repository: "" },
+      chaptersDir: "",
     });
+  });
+
+  test("parses optional chaptersDir", () => {
+    const config = parseCourseYaml("chaptersDir: lessons\n", "course.yml");
+    expect(config.chaptersDir).toBe("lessons");
   });
 
   test("parses optional source.root", () => {
@@ -261,5 +269,11 @@ describe("validateCourse", () => {
     expect(() =>
       validateCourse(validConfig, [{ ...validChapter, fromDir: "../secret" }], "/tmp/config"),
     ).toThrow(/fromDir/);
+  });
+
+  test("rejects unsafe chaptersDir paths", () => {
+    expect(() =>
+      validateCourse({ ...validConfig, chaptersDir: "../secret" }, [validChapter], "/tmp/config"),
+    ).toThrow(/chaptersDir/);
   });
 });

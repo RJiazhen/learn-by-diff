@@ -5,6 +5,7 @@ import {
   findCourseConfigDir,
   isCourseRepository,
   loadCourse,
+  loadCourseFromFile,
   ProtocolError,
 } from "../src/index.ts";
 
@@ -31,7 +32,14 @@ describe("loadCourse", () => {
     expect(course.config.id).toBe("empty-course");
     expect(course.config.title).toBe("empty-course");
     expect(course.config.source.repository).toBe(".");
+    expect(course.config.chaptersDir).toBe("chapters");
     expect(course.chapters.map((chapter) => chapter.id)).toEqual(["hello"]);
+  });
+
+  test("loads chapters from course.yml chaptersDir", async () => {
+    const course = await loadCourse(fixtureRoot("custom-chapters-dir"));
+    expect(course.config.chaptersDir).toBe("lessons");
+    expect(course.chapters.map((chapter) => chapter.id)).toEqual(["one"]);
   });
 
   test("rejects duplicate chapter ids", async () => {
@@ -72,6 +80,25 @@ describe("findCourseConfigDir", () => {
     expect(await findCourseConfigDir(fixtureRoot("valid-course"))).toBe(
       path.join(fixtureRoot("valid-course"), ".course-config"),
     );
+  });
+});
+
+describe("loadCourseFromFile", () => {
+  test("loads from an explicit course.yml path", async () => {
+    const filePath = path.join(fixtureRoot("valid-course"), ".course-config", "course.yml");
+    const course = await loadCourseFromFile(filePath);
+    expect(course.config.id).toBe("chibivue");
+    expect(course.configDir).toBe(path.dirname(filePath));
+  });
+
+  test("rejects a file that is not named course.yml", async () => {
+    const chapterFile = path.join(
+      fixtureRoot("valid-course"),
+      ".course-config",
+      "chapters",
+      "001-reactive.yml",
+    );
+    await expect(loadCourseFromFile(chapterFile)).rejects.toBeInstanceOf(ProtocolError);
   });
 });
 

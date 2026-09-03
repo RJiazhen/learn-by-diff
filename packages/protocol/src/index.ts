@@ -20,4 +20,5 @@ export {
   isCourseRepository,
   loadCourse,
   loadCourseFromConfigDir,
+  loadCourseFromFile,
 } from "./load.ts";
