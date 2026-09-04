@@ -10,7 +10,7 @@ Chapter snapshots live as directories **inside one source repository**. Each cha
 - Chapters do **not** need to share a parent folder or chain `toDir` → next `fromDir`.
 - Per-chapter separate git remotes are not supported (one `source.repository` per course).
 
-The demo is a small visual course (`start/` → `skeleton/` → `particles/` → `follow/` → `glow/`): a canvas particle field that ends up following the cursor. Snapshot trees nest under `src/scene`, `src/particle`, and `src/pointer` so chapter diffs include new folders, not only a single `main.js`. A fifth course chapter reuses `glow` as both `fromDir` and `toDir` (no new snapshot) so `docs` can be an https URL.
+The demo is a small visual course (`start/` → `skeleton/` → `particles/` → `follow/` → `glow/`): a canvas particle field that ends up following the cursor. Snapshot trees nest under `src/scene`, `src/particle`, and `src/pointer` so chapter diffs include new folders, not only a single `main.js`. Chapter 1 `docs` is the https tutorial on the project site; later chapters keep Markdown and PDF docs in the snapshots.
 
 **LearnByDiff: Open Course** prefills `examples/demo-course/.course-config/course.yml` in Development mode.
 
