@@ -1,0 +1,17 @@
+{
+  "name": "website",
+  "version": "0.1.0",
+  "private": true,
+  "description": "LearnByDiff project website (VitePress).",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev docs",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs"
+  },
+  "devDependencies": {
+    "vitepress": "catalog:",
+    "vue": "^3.5.13"
+  }
+}
