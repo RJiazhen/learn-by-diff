@@ -12,6 +12,21 @@
       ],
       "outFiles": ["${workspaceFolder}/apps/vscode-extension/dist/**/*.js"],
       "preLaunchTask": "watch-extension"
+    },
+    {
+      "name": "Website: Dev Server",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "cwd": "${workspaceFolder}/apps/website",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "serverReadyAction": {
+        "pattern": "Local:\\s+https?://[^:]+:(\\d+)/",
+        "uriFormat": "http://localhost:%s/learn-by-diff/",
+        "action": "openExternally"
+      }
     }
   ]
 }

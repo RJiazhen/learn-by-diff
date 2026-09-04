@@ -37,6 +37,30 @@
         "isDefault": true
       },
       "problemMatcher": []
+    },
+    {
+      "label": "website-dev",
+      "type": "shell",
+      "command": "pnpm --filter website dev",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "learn-by-diff-website",
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "vitepress",
+          "endsPattern": "Local:\\s+https?://"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
     }
   ]
 }
