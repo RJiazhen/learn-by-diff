@@ -33,3 +33,7 @@ dist
 # Generated learning workspace used for F5 debugging
 sandbox/**
 !sandbox/README.md
+
+# VitePress
+**/.vitepress/cache
+**/.vitepress/dist
