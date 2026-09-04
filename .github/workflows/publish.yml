@@ -5,12 +5,19 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Tag to publish (for example v0.1.0). Defaults to the current ref name.
+        required: false
+        type: string
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      RELEASE_TAG: ${{ github.event.inputs.release_tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -23,7 +30,7 @@ jobs:
       - name: Check tag matches extension version
         run: |
           set -euo pipefail
-          TAG="${GITHUB_REF_NAME#v}"
+          TAG="${RELEASE_TAG#v}"
           VERSION="$(node -p "require('./apps/vscode-extension/package.json').version")"
           if [ "$TAG" != "$VERSION" ]; then
             echo "Tag v$TAG does not match apps/vscode-extension version $VERSION"
@@ -34,7 +41,7 @@ jobs:
       - run: pnpm exec vp run learn-by-diff#pack
       - name: Package VSIX
         working-directory: apps/vscode-extension
-        run: pnpm exec vsce package --no-dependencies -o ../../learn-by-diff-${{ github.ref_name }}.vsix
+        run: pnpm exec vsce package --no-dependencies -o ../../learn-by-diff-${{ env.RELEASE_TAG }}.vsix
       - name: Require publish secrets
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
@@ -53,17 +60,52 @@ jobs:
         working-directory: apps/vscode-extension
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: pnpm exec vsce publish --no-dependencies --packagePath ../../learn-by-diff-${{ github.ref_name }}.vsix
+        run: |
+          set -euo pipefail
+          vsix="../../learn-by-diff-${{ env.RELEASE_TAG }}.vsix"
+          if output="$(pnpm exec vsce publish --no-dependencies --packagePath "$vsix" 2>&1)"; then
+            printf '%s\n' "$output"
+          else
+            status=$?
+            printf '%s\n' "$output"
+            if printf '%s\n' "$output" | grep -qiE 'already been published|already published'; then
+              echo "This version is already on the Marketplace; continuing."
+            else
+              exit "$status"
+            fi
+          fi
       - name: Publish to Open VSX
         working-directory: apps/vscode-extension
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
-        run: pnpm exec ovsx publish ../../learn-by-diff-${{ github.ref_name }}.vsix
+        run: |
+          set -euo pipefail
+          publisher="$(node -p "require('./package.json').publisher")"
+          # Open VSX rejects the first publish until the publisher namespace exists.
+          pnpm exec ovsx create-namespace "$publisher" || true
+          vsix="../../learn-by-diff-${{ env.RELEASE_TAG }}.vsix"
+          if output="$(pnpm exec ovsx publish "$vsix" 2>&1)"; then
+            printf '%s\n' "$output"
+          else
+            status=$?
+            printf '%s\n' "$output"
+            if printf '%s\n' "$output" | grep -qiE 'already exists|already published'; then
+              echo "This version is already on Open VSX; continuing."
+            else
+              exit "$status"
+            fi
+          fi
       - name: GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "${{ github.ref_name }}" \
-            "learn-by-diff-${{ github.ref_name }}.vsix" \
-            --title "LearnByDiff ${{ github.ref_name }}" \
-            --notes "LearnByDiff ${{ github.ref_name }} for VS Code Marketplace and Open VSX."
+          set -euo pipefail
+          tag="${{ env.RELEASE_TAG }}"
+          vsix="learn-by-diff-${tag}.vsix"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$vsix" --clobber
+          else
+            gh release create "$tag" "$vsix" \
+              --title "LearnByDiff ${tag}" \
+              --notes "LearnByDiff ${tag} for VS Code Marketplace and Open VSX."
+          fi
