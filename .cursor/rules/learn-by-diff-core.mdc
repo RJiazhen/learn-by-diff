@@ -5,7 +5,7 @@ alwaysApply: true
 
 # LearnByDiff core
 
-- Monorepo: `packages/protocol` (LCP) + `apps/vscode-extension` + `examples/` + `skills/` + `sandbox/`.
+- Monorepo: `packages/protocol` (LCP) + `apps/vscode-extension` + `apps/website` + `examples/` + `skills/` + `sandbox/`.
 - Entry docs: `AGENTS.md`, `docs/architecture.md`.
 - Protocol: additive optional fields only; no version gate; no `workspace` / chapter `tests` yet.
 - Prefer teaching via **diff reference**; overwrite the student tree only through **Chapter Start** / **Chapter Finish**.

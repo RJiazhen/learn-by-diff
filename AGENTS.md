@@ -14,6 +14,7 @@ Not in scope: course hosting, accounts, AI explanations of code.
 | -------------------------------------- | ------------------------------------------------------------------------------ |
 | `packages/protocol`                    | LCP types, YAML parse/validate/load, `schema.json` (`@learn-by-diff/protocol`) |
 | `apps/vscode-extension`                | Extension UI, git, workspace create, explorer, deep links                      |
+| `apps/website`                         | VitePress site (GitHub Pages: `https://rjiazhen.github.io/learn-by-diff/`)     |
 | `examples/demo-course` + `demo-source` | Local F5 fixtures                                                              |
 | `sandbox/`                             | Extension Development Host folder (generated `.learn/` gitignored)             |
 | `skills/`                              | Author Agent Skills (not in pnpm workspace)                                    |
@@ -27,6 +28,7 @@ pnpm exec vp check
 pnpm exec vp run -r test
 pnpm exec vp run @learn-by-diff/protocol#pack   # required after protocol src changes
 pnpm exec vp run learn-by-diff#pack
+pnpm --filter website dev   # VitePress site
 ```
 
 F5 → packs with watch → opens `sandbox/`. Reload Extension Host after code changes.
@@ -56,6 +58,7 @@ F5 → packs with watch → opens `sandbox/`. Reload Extension Host after code c
 | Explorer / docs button / diffs          | `apps/vscode-extension/src/ui/`                      |
 | `vscode://` / `cursor://` links         | `apps/vscode-extension/src/uri/` + `onUri`           |
 | Author scaffolding skill                | `skills/generate-course-config/`                     |
+| Project website (VitePress)             | `apps/website/`                                      |
 
 ## Deeper reading
 
