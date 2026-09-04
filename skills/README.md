@@ -59,8 +59,8 @@ After files are written, the agent should print:
 - Local try-open links:
 
 ```text
-vscode://rjiazhen.learn-by-diff/open?url=<urlencoded-absolute-course.yml>
-cursor://rjiazhen.learn-by-diff/open?url=<urlencoded-absolute-course.yml>
+vscode://RuanJiazhen.learn-by-diff/open?url=<urlencoded-absolute-course.yml>
+cursor://RuanJiazhen.learn-by-diff/open?url=<urlencoded-absolute-course.yml>
 ```
 
 ## Protocol notes

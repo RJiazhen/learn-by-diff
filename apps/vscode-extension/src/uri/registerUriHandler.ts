@@ -7,7 +7,7 @@ import { parseOpenCourseUri, type OpenCourseUriError } from "./parseOpenCourseUr
 /**
  * Handles `vscode://` / `cursor://` deep links for this extension.
  *
- * Authority is `rjiazhen.learn-by-diff`. Path `/open?url=…` opens a course.
+ * Authority is `RuanJiazhen.learn-by-diff`. Path `/open?url=…` opens a course.
  */
 export class LearnByDiffUriHandler implements vscode.UriHandler {
   /**
@@ -26,7 +26,7 @@ export class LearnByDiffUriHandler implements vscode.UriHandler {
   /**
    * Handles an incoming system URI (browser click or OS open).
    *
-   * @param uri - Extension URI (`vscode://rjiazhen.learn-by-diff/…`)
+   * @param uri - Extension URI (`vscode://RuanJiazhen.learn-by-diff/…`)
    */
   handleUri(uri: vscode.Uri): vscode.ProviderResult<void> {
     return this.handleUriAsync(uri);

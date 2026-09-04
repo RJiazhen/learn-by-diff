@@ -34,14 +34,14 @@ outline: deep
 安装扩展后，链接可拉起 VS Code 或 Cursor 并执行 Open Course：
 
 ```text
-vscode://rjiazhen.learn-by-diff/open?url=<urlencoded-course.yml-或-仓库>
-cursor://rjiazhen.learn-by-diff/open?url=<urlencoded-course.yml-或-仓库>
+vscode://RuanJiazhen.learn-by-diff/open?url=<urlencoded-course.yml-或-仓库>
+cursor://RuanJiazhen.learn-by-diff/open?url=<urlencoded-course.yml-或-仓库>
 ```
 
 `url` 可以是本地 `course.yml` 路径、`file:` URL，或课程 git 仓库地址。可选 `parent=`（同样需编码）指定学习仓父目录，跳过文件夹选择。
 
 ```html
-<a href="vscode://rjiazhen.learn-by-diff/open?url=https%3A%2F%2Fgithub.com%2Forg%2Fcourse.git">
+<a href="vscode://RuanJiazhen.learn-by-diff/open?url=https%3A%2F%2Fgithub.com%2Forg%2Fcourse.git">
   在 VS Code 中打开
 </a>
 ```

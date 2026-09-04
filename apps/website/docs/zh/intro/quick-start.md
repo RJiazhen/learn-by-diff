@@ -11,10 +11,10 @@ outline: deep
 
 LearnByDiff 用于 **VS Code** 与 **Cursor**（需兼容 `^1.90.0`）。
 
-在扩展市场搜索 **LearnByDiff**（publisher `rjiazhen`）：
+在扩展市场搜索 **LearnByDiff**（publisher `RuanJiazhen`）：
 
-- [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=rjiazhen.learn-by-diff)
-- [Open VSX](https://open-vsx.org/extension/rjiazhen/learn-by-diff)
+- [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=RuanJiazhen.learn-by-diff)
+- [Open VSX](https://open-vsx.org/extension/RuanJiazhen/learn-by-diff)
 
 若商店尚未上架，可向课程作者索取 `.vsix`，在 IDE 中「从 VSIX 安装」。
 

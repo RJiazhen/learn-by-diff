@@ -40,14 +40,14 @@ Real users pick a parent folder; the workspace is created as `{parent}/{course.i
 With the extension installed, a link can launch VS Code or Cursor and run **Open Course**:
 
 ```text
-vscode://rjiazhen.learn-by-diff/open?url=<urlencoded-course.yml-or-repo>
-cursor://rjiazhen.learn-by-diff/open?url=<urlencoded-course.yml-or-repo>
+vscode://RuanJiazhen.learn-by-diff/open?url=<urlencoded-course.yml-or-repo>
+cursor://RuanJiazhen.learn-by-diff/open?url=<urlencoded-course.yml-or-repo>
 ```
 
 Optional `parent=<urlencoded-absolute-folder>` skips the folder picker. Example:
 
 ```html
-<a href="vscode://rjiazhen.learn-by-diff/open?url=https%3A%2F%2Fgithub.com%2Forg%2Fcourse.git">
+<a href="vscode://RuanJiazhen.learn-by-diff/open?url=https%3A%2F%2Fgithub.com%2Forg%2Fcourse.git">
   Open in VS Code
 </a>
 ```
@@ -91,6 +91,6 @@ Push an annotated tag `vX.Y.Z` matching [`apps/vscode-extension/package.json`](a
 - Visual Studio Marketplace (`VSCE_PAT`)
 - Open VSX (`OVSX_PAT`)
 
-`publisher` is `rjiazhen`; the Open VSX namespace must match. Both secrets are required; the job fails if either is missing.
+`publisher` is `RuanJiazhen` (same as Powerful NPM Run); the Open VSX namespace must match. Both secrets are required; the job fails if either is missing.
 
 Do not use local `vsce publish` as the release path. `vsce package` is fine for a local preview.

@@ -137,8 +137,8 @@ Summarize generated chapters (`fromDir` → `toDir`). Then give the author a way
 2. Print clickable local deep links (URL-encode the same absolute file path, or a `file:` URL, as `url=`):
 
 ```text
-vscode://rjiazhen.learn-by-diff/open?url=<urlencoded-absolute-course.yml>
-cursor://rjiazhen.learn-by-diff/open?url=<urlencoded-absolute-course.yml>
+vscode://RuanJiazhen.learn-by-diff/open?url=<urlencoded-absolute-course.yml>
+cursor://RuanJiazhen.learn-by-diff/open?url=<urlencoded-absolute-course.yml>
 ```
 
 Also point authors at:

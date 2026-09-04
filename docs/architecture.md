@@ -97,9 +97,9 @@ Activation today: `onUri` + `onView:learnByDiff.courseView` + `workspaceContains
 | `workspace/session.ts`       | Chapter navigation and snapshot apply                                |
 | `ui/explorerView.ts`         | SCM-like chapter/file tree, contextValues, inline actions            |
 | `ui/diff.ts` / `openDocs.ts` | File diffs (lazy `.learn/snapshots`); docs URL / Markdown / file     |
-| `uri/*`                      | `vscode://rjiazhen.learn-by-diff/open?url=…` (also `cursor://`)      |
+| `uri/*`                      | `vscode://RuanJiazhen.learn-by-diff/open?url=…` (also `cursor://`)   |
 
-Deep link authority = `publisher.name` → `rjiazhen.learn-by-diff`.
+Deep link authority = `publisher.name` → `RuanJiazhen.learn-by-diff`.
 
 ## Development loop (as practiced)
 
