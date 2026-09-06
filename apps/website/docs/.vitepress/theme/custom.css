@@ -92,6 +92,49 @@
   text-decoration: underline;
 }
 
+.lbd-media-slot {
+  margin: 1.5rem 0;
+  padding: 1.1rem 1.15rem;
+  border: 1px dashed var(--vp-c-brand-1);
+  border-radius: 10px;
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-text-2);
+}
+
+.lbd-media-slot p {
+  margin: 0.35rem 0 0;
+}
+
+.lbd-media-slot__title {
+  margin: 0;
+  font-weight: 650;
+  color: var(--vp-c-brand-1);
+}
+
+.lbd-media-slot__hint {
+  font-size: 0.85rem;
+  color: var(--vp-c-text-3);
+}
+
+.vp-doc .language-text pre,
+.vp-doc .language-text code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.vp-doc .language-text pre {
+  overflow-x: hidden;
+  padding-right: 3.5rem;
+}
+
+.vp-doc .lbd-loop-video {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 1rem 0;
+}
+
 /* Home atmosphere — sits behind hero / features */
 .lbd-home-atmosphere {
   position: fixed;

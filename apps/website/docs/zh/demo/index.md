@@ -17,7 +17,7 @@ outline: deep
 | 章节     | 4 章：骨架 → 粒子 → 跟随 → 光晕                                                                                                                        |
 
 <p class="lbd-quiet-link">
-  <a href="/zh/intro/quick-start">还不会用？先看快速开始</a>
+  <a href="/zh/intro/start">还不会用？先看快速开始</a>
 </p>
 
 克隆 [learn-by-diff](https://github.com/RJiazhen/learn-by-diff) 之后，在 Open Course 中选择：

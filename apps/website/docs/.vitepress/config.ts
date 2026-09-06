@@ -11,7 +11,7 @@ function englishSidebar(): DefaultTheme.Sidebar {
     {
       text: "Introduction",
       items: [
-        { text: "Quick start", link: "/intro/quick-start" },
+        { text: "Quick start", link: "/intro/start" },
         { text: "Features", link: "/intro/features" },
         { text: "Author a course", link: "/intro/authoring" },
       ],
@@ -27,7 +27,7 @@ function chineseSidebar(): DefaultTheme.Sidebar {
     {
       text: "介绍",
       items: [
-        { text: "快速开始", link: "/zh/intro/quick-start" },
+        { text: "快速开始", link: "/zh/intro/start" },
         { text: "功能", link: "/zh/intro/features" },
         { text: "制作课程", link: "/zh/intro/authoring" },
       ],
@@ -37,13 +37,13 @@ function chineseSidebar(): DefaultTheme.Sidebar {
 
 /** Top nav: one Introduction entry + one Sample course entry. */
 const englishNav: DefaultTheme.NavItem[] = [
-  { text: "Introduction", link: "/intro/quick-start" },
+  { text: "Introduction", link: "/intro/start" },
   { text: "Sample course", link: "/demo/" },
 ];
 
 /** Top nav: 介绍 + 示例课程. */
 const chineseNav: DefaultTheme.NavItem[] = [
-  { text: "介绍", link: "/zh/intro/quick-start" },
+  { text: "介绍", link: "/zh/intro/start" },
   { text: "示例课程", link: "/zh/demo/" },
 ];
 
