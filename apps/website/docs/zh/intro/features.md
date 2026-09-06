@@ -7,19 +7,31 @@ outline: deep
 
 开课后，在 Explorer 的 **Learn By Diff** 视图里完成学习。
 
+<figure class="lbd-media-slot">
+  <p class="lbd-media-slot__title">待补图</p>
+  <p>Learn By Diff 侧栏：章节列表、未开始 / 已完成、文件行（建议截图）</p>
+  <p class="lbd-media-slot__hint"><code>features-explorer.png</code></p>
+</figure>
+
 ## 章节与 Diff
 
 | 操作                | 作用                                   |
 | ------------------- | -------------------------------------- |
-| **未开始**          | 用该章起始快照覆盖学生树，并标为当前章 |
-| **已完成**          | 用该章完成快照覆盖学生树，并标为当前章 |
+| **未开始**          | 用该章起始快照覆盖工作区，并标为当前章 |
+| **已完成**          | 用该章完成快照覆盖工作区，并标为当前章 |
 | **上一章 / 下一章** | 应用相邻章的起始快照                   |
 | 文件行              | 打开官方起始 ↔ 完成 Diff               |
 | 文档按钮            | 打开章节文档：网页、Markdown 或 PDF    |
 
-相对上次应用到学生树的快照，若工作区**没有改动**，覆盖会直接进行；**有改动**时会出现确认，避免丢掉你的编辑。
+相对上次应用到工作区的快照，若**没有改动**，覆盖会直接进行；**有改动**时会出现确认，避免丢掉你的编辑。
 
 第一次开课会导出第 1 章的起始快照。标题栏上一章 / 下一章同样应用相邻章的**起始**状态。
+
+<figure class="lbd-media-slot">
+  <p class="lbd-media-slot__title">待补图</p>
+  <p>点文件后打开的官方 Diff（建议截图）</p>
+  <p class="lbd-media-slot__hint"><code>features-diff.png</code></p>
+</figure>
 
 ## 参考运行区
 
@@ -28,6 +40,12 @@ outline: deep
 章节上的「打开未开始文件夹 / 打开已完成文件夹」会把该章快照**复制**到学习仓内，并作为额外工作区根目录加入窗口。主工作区里的你的代码不会被覆盖。
 
 每个参考文件夹可单独开终端、起开发服务器，方便和自己的实现并排对比。
+
+<figure class="lbd-media-slot">
+  <p class="lbd-media-slot__title">待补图</p>
+  <p>打开参考文件夹后，与主工作区并排运行（建议截图）</p>
+  <p class="lbd-media-slot__hint"><code>features-reference.png</code></p>
+</figure>
 
 ## 从链接打开课程
 
