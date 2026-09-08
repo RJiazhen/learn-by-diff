@@ -12,7 +12,7 @@ Each snapshot’s `index.html` loads a single entry: `<script src="src/main.js" 
 | `follow/`    | follow goal / glow start        | add `src/pointer/`; orbit ring + scatter on leave       |
 | `glow/`      | glow goal                       | constant glow + trails in `particle.js` / `canvas.js`   |
 
-Chapter 1 course `docs` is the website tutorial (`https://rjiazhen.github.io/learn-by-diff/zh/demo/skeleton.html`), not the snapshot `README.md`. `glow/docs.pdf` is the PDF docs sample. Rebuild it from `glow/docs.md` with pandoc (this repo does not assume LaTeX):
+Chapter 1 course `docs` is the website tutorial (`https://rjiazhen.github.io/learn-by-diff/demo/skeleton.html`), which matches this snapshot’s `skeleton/README.md`. `glow/docs.pdf` is the PDF docs sample. Rebuild it from `glow/docs.md` with pandoc (this repo does not assume LaTeX):
 
 ```bash
 pandoc examples/demo-source/glow/docs.md -s -t html5 \
