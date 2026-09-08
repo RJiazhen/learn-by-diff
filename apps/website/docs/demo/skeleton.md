@@ -1,17 +1,11 @@
 ---
-title: 01 Canvas skeleton
+title: Canvas skeleton
 outline: deep
 ---
 
-# 01 Canvas skeleton
+# Canvas skeleton
 
-Turn the empty page into a **full-window dark canvas** that clears every frame. Preview over `http://` (ES modules).
-
-<div class="lbd-note">
-
-Open this chapter’s file diffs in the extension and compare the official `start` → `skeleton`. This page is a walkthrough; it does not edit the files for you.
-
-</div>
+Turn the empty page into a **full-window dark canvas** that clears itself every frame. Serve over `http://` when you check (ES modules).
 
 ## 1. `index.html` — add the canvas
 
@@ -35,7 +29,7 @@ canvas {
 }
 ```
 
-## 3. Create `src/scene/canvas.js`
+## 3. New file `src/scene/canvas.js`
 
 Create the folder `src/scene/` and this file. It owns the 2D context, resize, and a solid clear:
 
@@ -60,7 +54,7 @@ export function clear() {
 }
 ```
 
-## 4. Create `src/scene/loop.js`
+## 4. New file `src/scene/loop.js`
 
 Same folder. The loop already walks a `particles` array (empty for now) so later chapters only fill that array:
 
@@ -83,7 +77,7 @@ export function frame() {
 }
 ```
 
-## 5. `src/main.js` — finish `boot()`
+## 5. `src/main.js` — fill `boot()`
 
 **Do not delete `boot()`.** At the **top** of the file, add:
 
