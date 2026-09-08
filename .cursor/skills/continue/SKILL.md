@@ -3,10 +3,9 @@ name: continue
 description: >-
   Repo-specific workflow to advance LearnByDiff development from issue to merge.
   Detects current phase and executes the matching step. On main, resolves a
-  GitHub issue from the description, creates a branch, and starts work. After
-  development, the next invocation commits; if the index already has staged
-  changes, that same invocation also pushes and opens a PR. Push and create PR
-  are never split across invocations. Merges only when the branch is clean and
+  GitHub issue from the description, creates a branch, and starts work. Uncommitted
+  changes (staged or unstaged) commit only — no push. A later invocation with a
+  clean tree pushes and opens a PR. Merges only when the branch is clean and
   fully pushed. Use when the user asks to continue, ship, commit, open PR,
   or progress work on a feature.
 ---
@@ -23,21 +22,20 @@ description: >-
 
 ## 每次 `/continue` 只执行一个阶段（硬性）
 
-**禁止**在同一次 skill 调用内把 Develop 接到 Commit（例如实现刚完成就立刻提交）。
-
-**例外（Commit → Ship）**：功能分支上已有未提交变更（含**暂存区已有 staged 文件**）时，Commit 完成后**立即** `git push` **并** `gh pr create`（已有 OPEN PR 则只 push、不开新 PR）。**不要**把 push 和 create PR 拆成两次 `/continue`。
+**禁止**把 Develop、Commit、Ship 接在同一次调用里。Commit **只提交、不 push、不开 PR**。工作区干净后的下一次调用才进入 Ship（push + 创建 PR）。
 
 典型节奏（功能分支上，自开发完成起）：
 
-| 第几次 `/continue` | Phase        | 做什么                                                              |
-| ------------------ | ------------ | ------------------------------------------------------------------- |
-| 1                  | Develop      | 实现并跑验证；**不** commit / push / 开 PR                          |
-| 2                  | Commit       | 原子提交；然后**立刻** push 并创建 PR。已有 OPEN PR 则提交后只 push |
-| 3+                 | Wait → Merge | 工作区干净且已与远程同步时，再次执行即合并                          |
+| 第几次 `/continue` | Phase        | 做什么                                             |
+| ------------------ | ------------ | -------------------------------------------------- |
+| 1                  | Develop      | 实现并跑验证；**不** commit / push / 开 PR         |
+| 2                  | Commit       | 有未提交变更时原子提交；**停止**，不 push          |
+| 3                  | Ship         | 工作区已干净：push，尚无 OPEN PR 时 `gh pr create` |
+| 4+                 | Wait → Merge | 已有 OPEN PR 且与远程同步时，再次执行即合并        |
 
-若调用时暂存区 / 工作区已有未提交变更：直接进入 **Commit**（含 push + create PR），不要先停在「只提交、等下次再开 PR」。
+若调用时工作区 / 暂存区仍有未提交变更：只进入 **Commit**。不要在提交后接着 push。
 
-执行完当前 phase 后**必须停止**（Commit 的 push+PR 属于该阶段例外，做完后停止）；在 Response template 中写明「下次 `/continue` 将进入哪一阶段」；**不要**在同一轮对话里重新跑 phase detection 或进入下一阶段。
+执行完当前 phase 后**必须停止**；在 Response template 中写明「下次 `/continue` 将进入哪一阶段」；**不要**在同一轮对话里重新跑 phase detection 或进入下一阶段。
 
 ## Phase detection (run first)
 
@@ -80,7 +78,7 @@ gh pr view --json number,state,url 2>/dev/null || gh pr list --head "$(git branc
 
 ## Safety & constraints
 
-- **单次调用 = 单阶段**，但 Commit 必须带上 push；无 OPEN PR 时必须同时 `gh pr create`。已有 OPEN PR 时只 push。
+- **单次调用 = 单阶段**。Commit 禁止 `git push` / `gh pr create`。Ship 才 push；尚无 OPEN PR 时再 `gh pr create`。已有 OPEN PR 时 Ship 只 push。
 - Issue：**只读**；不要擅自创建或关闭 Issue（Merge 后由 PR 的 `Closes`/`Fixes` 收尾除外）。
 - 不要在 `main` 上直接开发或 `--force` push。
 - 不要跳过原子提交把无关改动混在一个 commit 里。Commit **body 必写**（对照 `git log`）：写 why / 约束，禁止空 body 或复述 subject。

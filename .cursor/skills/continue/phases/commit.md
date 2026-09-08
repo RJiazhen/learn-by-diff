@@ -1,6 +1,8 @@
 # Phase: Commit（有未提交变更）
 
-当功能分支上 `git status` 非空时进入——**包括暂存区已有 staged 文件**。此阶段在同一次 `/continue` 内完成：原子提交 → push →（无 OPEN PR 时）创建 PR。
+当功能分支上 `git status` 非空时进入——**包括暂存区已有 staged 文件，以及未暂存改动**。此阶段**只做原子提交**。
+
+**禁止** `git push`、`gh pr create`、merge。提交结束后立刻停止。下次 `/continue` 在工作区干净时才会进入 [ship.md](./ship.md)。
 
 拆分与暂存遵循 [conventional-commit](/Users/a1/.cursor/skills/conventional-commit/SKILL.md)。**覆盖**其中「body 可选 / subject 够了就可以不写」的规则：本仓库 **几乎总是要写 body**，且 body 不得复述 title。
 
@@ -92,11 +94,4 @@ Add login endpoint and token validation middleware
 
 每个 commit 用 HEREDOC；提交后检查 `git log -1 --format='%an %ae%n%B'`，去掉 Cursor trailer。全部完成后 `git status` 应干净。
 
-## 提交之后：立即 Ship（同一次调用）
-
-用 `gh pr view --json number,state`（或 `gh pr list --head`）判断当前分支是否已有 **OPEN PR**。
-
-- **已有 OPEN PR**：立即 `git push`（更新同一 PR）。**禁止** `gh pr create` / merge。汇报 commit 摘要与 PR URL 后停止。
-- **尚无 PR**：立刻执行 [ship.md](./ship.md) 的 Push **和** 创建 PR（两步都在本阶段做完，不要停下来等下一次 `/continue`）。
-
-**禁止**只 commit 就结束（那会把 push / 开 PR 拆成另一次调用）。
+汇报各 SHA + subject，提示下次 `/continue` 将进入 **Ship**（push 并在尚无 PR 时创建）。**到此停止。**

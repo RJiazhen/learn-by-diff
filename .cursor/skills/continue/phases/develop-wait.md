@@ -14,7 +14,7 @@
 4. 全部验收项完成后：
    - **禁止**在本阶段 `git add` / `git commit` / `git push` / `gh pr create`。
    - 汇报完成情况与验证结果，**立即停止**。
-   - 提示用户**再次执行 `/continue`** 才会进入 **Commit**（该阶段会提交并立刻 push + 开 PR）。
+   - 提示用户**再次执行 `/continue`** 才会进入 **Commit**（只提交；再下一次干净工作区才会 Ship）。
 
 > 即使工作区已有未提交变更、验收已全部通过，也**不得**在同一次 skill 调用内进入 Commit。
 
@@ -25,4 +25,4 @@
 - 汇报 PR 链接、`gh pr checks` 状态
 - 列出未通过项
 - 站点随 `main` 部署到 GitHub Pages：`https://rjiazhen.github.io/learn-by-diff/`（PR 上没有独立预览环境）
-- 工作区干净且已推送时，验收通过后再次执行本 skill 进入 Merge；若还有未提交改动，先走 Commit（会 push）；仅未推送则走 Ship
+- 工作区干净且已推送时，验收通过后再次执行本 skill 进入 Merge；若还有未提交改动，先走 Commit（不 push）；仅未推送则走 Ship
