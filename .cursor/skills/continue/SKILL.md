@@ -83,7 +83,7 @@ gh pr view --json number,state,url 2>/dev/null || gh pr list --head "$(git branc
 - **单次调用 = 单阶段**，但 Commit 必须带上 push；无 OPEN PR 时必须同时 `gh pr create`。已有 OPEN PR 时只 push。
 - Issue：**只读**；不要擅自创建或关闭 Issue（Merge 后由 PR 的 `Closes`/`Fixes` 收尾除外）。
 - 不要在 `main` 上直接开发或 `--force` push。
-- 不要跳过原子提交把无关改动混在一个 commit 里。
+- 不要跳过原子提交把无关改动混在一个 commit 里。Commit **body 必写**（对照 `git log`）：写 why / 约束，禁止空 body 或复述 subject。
 - 只有 **Merge** 阶段可合并 PR；步骤见 [phases/merge.md](./phases/merge.md)。
 - 不要把 `sandbox/**` 生成态当源（gitignored）；课程夹具改 `examples/`。不要提交密钥。
 - 协议 `src` 改动后先 `pnpm exec vp run @learn-by-diff/protocol#pack` 再跑扩展测试 / 宣称完成。
