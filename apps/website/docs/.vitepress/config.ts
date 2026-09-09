@@ -35,7 +35,7 @@ function introNav(prefix: string, intro: string, sample: string): DefaultTheme.N
 }
 
 /**
- * Builds the Introduction sidebar for one locale prefix (`""`, `/zh`, `/ja`, `/zh-tw`).
+ * Builds the Introduction sidebar for one locale prefix (`""`, `/zh`, `/zh-tw`, `/ja`).
  */
 function introSidebar(
   prefix: string,
@@ -190,17 +190,17 @@ export default defineConfig({
       link: zhChrome.link,
       themeConfig: cjkTheme(zhChrome),
     },
-    ja: {
-      label: jaChrome.label,
-      lang: jaChrome.lang,
-      link: jaChrome.link,
-      themeConfig: cjkTheme(jaChrome),
-    },
     "zh-tw": {
       label: zhTwChrome.label,
       lang: zhTwChrome.lang,
       link: zhTwChrome.link,
       themeConfig: cjkTheme(zhTwChrome),
+    },
+    ja: {
+      label: jaChrome.label,
+      lang: jaChrome.lang,
+      link: jaChrome.link,
+      themeConfig: cjkTheme(jaChrome),
     },
   },
 });
