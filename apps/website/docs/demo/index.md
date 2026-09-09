@@ -1,5 +1,5 @@
 ---
-title: Demo: Cursor particles
+title: "Demo: Cursor particles"
 outline: deep
 ---
 
