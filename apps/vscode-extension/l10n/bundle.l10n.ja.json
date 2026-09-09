@@ -1,7 +1,7 @@
 {
   "LearnByDiff: Open Course": "LearnByDiff: コースを開く",
   "Path to course.yml (prefilled with local examples/demo-course/.course-config/course.yml)": "course.yml のパス（ローカルの examples/demo-course/.course-config/course.yml を事前入力済み）",
-  "Path to course.yml, or a git URL to a course repository": "course.yml のパス、またはコースリポジトリの git URL",
+  "Path to course.yml, a GitHub course.yml URL, or a git URL to a course repository": "course.yml のパス、GitHub 上の course.yml URL、またはコースリポジトリの git URL",
   "This is the last chapter.": "これが最後の章です。",
   "This is the first chapter.": "これが最初の章です。",
   "Unknown chapter: {0}": "不明な章: {0}",

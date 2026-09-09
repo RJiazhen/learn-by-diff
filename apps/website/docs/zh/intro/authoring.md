@@ -90,7 +90,25 @@ docs: README.md
 
 ### 分享课程配置文件地址
 
-将课程配置文件的地址分享给他人，他人即可通过 Open Course 粘贴仓库 URL 打开课程。
+如果是托管在 GitHub 上，则可以直接分享 `course.yml` 的地址，对方在 Open Course 里粘贴即可。
+
+例如：
+
+```text
+https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml
+```
+
+如果课程配置文件是直接放在仓库根目录下，或在根目录的 `.course-config/course.yml` 时，则可以直接分享仓库 git 地址 URL：
+
+```text
+https://github.com/RJiazhen/learn-by-diff.git
+```
+
+如果课程配置文件在仓库的子目录下，用 git 地址加 `#` 再拼上相对路径（相对仓库根，指向 `course.yml`）：
+
+```text
+https://github.com/RJiazhen/learn-by-diff.git#examples/demo-course/.course-config/course.yml
+```
 
 ### 生成一键分享链接
 

@@ -1,7 +1,7 @@
 {
   "LearnByDiff: Open Course": "LearnByDiff: 開啟課程",
   "Path to course.yml (prefilled with local examples/demo-course/.course-config/course.yml)": "course.yml 路徑（已預填本機 examples/demo-course/.course-config/course.yml）",
-  "Path to course.yml, or a git URL to a course repository": "course.yml 路徑，或課程存放庫的 git URL",
+  "Path to course.yml, a GitHub course.yml URL, or a git URL to a course repository": "course.yml 路徑、GitHub 上的 course.yml 連結，或課程存放庫的 git URL",
   "This is the last chapter.": "已經是最後一章。",
   "This is the first chapter.": "已經是第一章。",
   "Unknown chapter: {0}": "未知章節：{0}",

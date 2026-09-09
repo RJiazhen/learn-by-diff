@@ -13,6 +13,7 @@ import {
 import type { GitClient } from "../git/client.ts";
 import { isCodeWorkspaceFileName, learningPaths } from "./paths.ts";
 import { ensureLearningWorkspaceFile } from "./multiRoot.ts";
+import { githubCloneBranch, parseCourseConfigUrl } from "./parseCourseConfigUrl.ts";
 import { isRemoteGitUrl, localCourseOrigin, resolveSourceRepository } from "./resolveRepo.ts";
 import {
   assertSourceSubtree,
@@ -24,7 +25,7 @@ import { writeProgress, type ChapterSnapshotSide } from "./state.ts";
 
 /** Options for creating a learning workspace from a `course.yml` path or git URL. */
 export interface CreateLearningWorkspaceOptions {
-  /** Local path to `course.yml` (`file:` URLs allowed) or a git URL to clone. */
+  /** Local `course.yml` path (`file:` URLs allowed), GitHub file URL, or git URL to clone. */
   courseRepoUrl: string;
   git: GitClient;
   /** Initialize this folder in place (debug sandbox). */
@@ -115,7 +116,7 @@ export async function createLearningWorkspace(
 }
 
 /** Temporary or in-place course config directory used while creating a workspace. */
-interface CourseConfigSource {
+export interface CourseConfigSource {
   configDir: string;
   cleanup: () => Promise<void>;
 }
@@ -124,13 +125,15 @@ interface CourseConfigSource {
  * Resolves course config from a local `course.yml` path or by cloning a git course repository.
  *
  * Local inputs must be the `course.yml` file (or a `file:` URL to it), not a directory.
- * Remote git URLs are cloned, then `course.yml` is found at the clone root or under `.course-config/`.
+ * GitHub blob/raw URLs that point at `course.yml` clone the parent repository, then use that path.
+ * A git URL may append `#path/to/course.yml` for a nested config. Other remote git URLs are cloned,
+ * then `course.yml` is found at the clone root or under `.course-config/`.
  *
  * @param git - Git client
- * @param courseRepoUrl - User-supplied `course.yml` path or git URL
+ * @param courseRepoUrl - User-supplied `course.yml` path, GitHub file URL, or git URL
  * @param onLog - Optional progress logger
  */
-async function resolveCourseConfigDir(
+export async function resolveCourseConfigDir(
   git: GitClient,
   courseRepoUrl: string,
   onLog?: (line: string) => void,
@@ -147,14 +150,41 @@ async function resolveCourseConfigDir(
     }
   }
 
-  if (!isRemoteGitUrl(courseRepoUrl) && local === undefined) {
+  const remote = parseCourseConfigUrl(courseRepoUrl);
+  if (remote === undefined) {
     throw new Error(`course.yml not found: ${courseRepoUrl}`);
   }
 
   onLog?.("Cloning course repository…");
   const courseCloneDir = await mkdtemp(path.join(tmpdir(), "learn-by-diff-course-"));
   try {
-    await git.clone(courseRepoUrl, courseCloneDir);
+    if (remote.kind === "githubFile") {
+      const branch = githubCloneBranch(remote.ref);
+      await git.clone(remote.cloneUrl, courseCloneDir, {
+        depth: 1,
+        ...(branch !== undefined ? { branch } : {}),
+      });
+      const configFile = joinConfigRelative(courseCloneDir, remote.configRelPath);
+      const configDir = await configDirFromClonedCourseFile(configFile, remote.configRelPath);
+      return {
+        configDir,
+        cleanup: async () => {
+          await rm(courseCloneDir, { recursive: true, force: true });
+        },
+      };
+    }
+
+    await git.clone(remote.url, courseCloneDir);
+    if (remote.configRelPath !== undefined) {
+      const configFile = joinConfigRelative(courseCloneDir, remote.configRelPath);
+      const configDir = await configDirFromClonedCourseFile(configFile, remote.configRelPath);
+      return {
+        configDir,
+        cleanup: async () => {
+          await rm(courseCloneDir, { recursive: true, force: true });
+        },
+      };
+    }
     const configDir = await findCourseConfigDir(courseCloneDir);
     if (configDir === undefined) {
       throw new ProtocolError([
@@ -175,6 +205,28 @@ async function resolveCourseConfigDir(
     await rm(courseCloneDir, { recursive: true, force: true });
     throw error;
   }
+}
+
+/**
+ * Returns the directory that contains a cloned `course.yml`, or throws if the file is missing.
+ *
+ * @param configFile - Absolute path to the expected `course.yml`
+ * @param configRelPath - Posix-relative path shown in the error
+ */
+async function configDirFromClonedCourseFile(
+  configFile: string,
+  configRelPath: string,
+): Promise<string> {
+  let info: Awaited<ReturnType<typeof stat>>;
+  try {
+    info = await stat(configFile);
+  } catch {
+    throw new Error(`${COURSE_FILE_NAME} not found in cloned repository: ${configRelPath}`);
+  }
+  if (!info.isFile() || path.basename(configFile) !== COURSE_FILE_NAME) {
+    throw new Error(`${COURSE_FILE_NAME} not found in cloned repository: ${configRelPath}`);
+  }
+  return path.dirname(configFile);
 }
 
 /**

@@ -82,13 +82,33 @@ docs: README.md
 
 ## コースを共有する
 
+次の手順で完成したコースを共有します。
+
 ### コースリポジトリを Git に載せる
 
 ソースを含むコースリポジトリを Git に公開します。
 
 ### 設定ファイルの場所を共有する
 
-コース設定のアドレスを共有します。相手は Open Course にリポジトリ URL を貼って開けます。
+GitHub 上にある場合は、`course.yml` のアドレスを共有できます。相手は Open Course に貼り付けます。
+
+例:
+
+```text
+https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml
+```
+
+`course.yml` がリポジトリルート、またはルート直下の `.course-config/course.yml` にあるときは、git リポジトリ URL だけでも共有できます。
+
+```text
+https://github.com/RJiazhen/learn-by-diff.git
+```
+
+`course.yml` がサブディレクトリにあるときは、git URL に `#` と、リポジトリルートからの相対パス（`course.yml` を指す）を付けます。
+
+```text
+https://github.com/RJiazhen/learn-by-diff.git#examples/demo-course/.course-config/course.yml
+```
 
 ### ワンクリック共有リンク
 

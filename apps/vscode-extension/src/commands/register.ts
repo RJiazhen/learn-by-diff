@@ -95,7 +95,9 @@ export function registerCommands(
           ? vscode.l10n.t(
               "Path to course.yml (prefilled with local examples/demo-course/.course-config/course.yml)",
             )
-          : vscode.l10n.t("Path to course.yml, or a git URL to a course repository"),
+          : vscode.l10n.t(
+              "Path to course.yml, a GitHub course.yml URL, or a git URL to a course repository",
+            ),
         placeHolder: "/path/to/course.yml",
         value: defaultCourseUrl,
         ignoreFocusOut: true,
