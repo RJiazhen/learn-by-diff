@@ -146,7 +146,10 @@
   mask-image: linear-gradient(to bottom, #000 0%, #000 58%, transparent 100%);
 }
 
-.Layout:has(.VPHome) .VPNav,
+/* Lift page chrome above the atmosphere, but keep the nav at VitePress's
+   default z-index so language/appearance flyouts stack above home content.
+   Flattening .VPNav to the same layer as .VPContent made overflow menus
+   lose hover as soon as the pointer left the button. */
 .Layout:has(.VPHome) .VPContent,
 .Layout:has(.VPHome) .VPFooter {
   position: relative;
