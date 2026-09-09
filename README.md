@@ -24,6 +24,7 @@ Requires Node 22+, pnpm, Git, and the `vp` CLI from Vite+ (or use `pnpm exec vp`
 
 ```bash
 pnpm install
+git config core.hooksPath .githooks
 pnpm exec vp check
 pnpm exec vp run -r test
 pnpm exec vp run @learn-by-diff/protocol#pack
@@ -86,7 +87,7 @@ Learning workspaces created by the extension use `.learn/` (progress, source mir
 
 ## Publish
 
-Push an annotated tag `vX.Y.Z` matching [`apps/vscode-extension/package.json`](apps/vscode-extension/package.json) `version`. GitHub Actions packages one VSIX and publishes it to:
+Bump `version` in [`apps/vscode-extension/package.json`](apps/vscode-extension/package.json) and push that commit. With `core.hooksPath` set to `.githooks` (see Develop), the `pre-push` hook creates and pushes annotated tag `vX.Y.Z` matching that field. You can still push the tag yourself. GitHub Actions then packages one VSIX and publishes it to:
 
 - Visual Studio Marketplace (`VSCE_PAT`)
 - Open VSX (`OVSX_PAT`)

@@ -1,0 +1,6 @@
+#!/bin/sh
+# Creates and pushes vX.Y.Z when this push changes apps/vscode-extension/package.json version.
+# Git runs pre-push with remote name and URL as arguments and ref updates on stdin.
+set -e
+root=$(git rev-parse --show-toplevel)
+exec node "$root/scripts/tag-extension-on-push.mjs" "$@"
