@@ -7,7 +7,7 @@ hero:
   actions:
     - theme: brand
       text: ▶ 快速开始
-      link: /zh/intro/quick-start
+      link: /zh/intro/start
     - theme: alt
       text: 功能一览
       link: /zh/intro/features

@@ -5,55 +5,39 @@ outline: deep
 
 # 功能
 
-开课后，在 Explorer 的 **Learn By Diff** 视图里完成学习。
+## 打开课程
 
-## 章节与 Diff
+如果当前打开的工作区中没有课程，则可以点击 **「打开课程」** 按钮，或者在命令面板中搜索并使用 **「Learn By Diff: Open Course」** 命令。
 
-| 操作                | 作用                                   |
-| ------------------- | -------------------------------------- |
-| **未开始**          | 用该章起始快照覆盖学生树，并标为当前章 |
-| **已完成**          | 用该章完成快照覆盖学生树，并标为当前章 |
-| **上一章 / 下一章** | 应用相邻章的起始快照                   |
-| 文件行              | 打开官方起始 ↔ 完成 Diff               |
-| 文档按钮            | 打开章节文档：网页、Markdown 或 PDF    |
+<img src="../../images/features-open-course.png" alt="打开课程" style="height: 400px; width: auto; margin: 0 auto; display: block;"/>
 
-相对上次应用到学生树的快照，若工作区**没有改动**，覆盖会直接进行；**有改动**时会出现确认，避免丢掉你的编辑。
+然后在弹出的输入框中输入课程配置文件的 URL，然后点击 **「确定」** 按钮，即可打开课程。
 
-第一次开课会导出第 1 章的起始快照。标题栏上一章 / 下一章同样应用相邻章的**起始**状态。
+## 章节切换与查看
 
-## 参考运行区
+在打开课程后，可以看到 Explorer 视图中出现 **Learn By Diff** 栏位，其中会罗列当前工作区对应的课程章节列表。
 
-除了看 Diff，有时需要把参考实现真正跑起来。
+<img src="../../images/features-chapter-switch-and-view.png" alt="章节切换与查看" style="height: 400px; width: auto; margin: 0 auto; display: block;"/>
 
-章节上的「打开未开始文件夹 / 打开已完成文件夹」会把该章快照**复制**到学习仓内，并作为额外工作区根目录加入窗口。主工作区里的你的代码不会被覆盖。
+在 Learn By Diff 栏位中，提供了以下切换章节相关操作按钮：
 
-每个参考文件夹可单独开终端、起开发服务器，方便和自己的实现并排对比。
+| 操作                | 作用                     |
+| ------------------- | ------------------------ |
+| **上一章 / 下一章** | 切换到相邻章节的初始状态 |
+| **打开章节文档**    | 打开该章节的课程文档     |
+| **未开始**          | 切换到该章节的未开始状态 |
+| **已完成**          | 切换到该章节的已完成状态 |
 
-## 从链接打开课程
+注意，你可以随时修改当前文件夹中的代码，而切换章节时，会提示**是否覆盖当前文件夹中的代码**。
 
-安装扩展后，链接可拉起 VS Code 或 Cursor 并执行 Open Course：
+## 文件对比
 
-```text
-vscode://RuanJiazhen.learn-by-diff/open?url=<urlencoded-course.yml-或-仓库>
-cursor://RuanJiazhen.learn-by-diff/open?url=<urlencoded-course.yml-或-仓库>
-```
+<img src="../../images/features-file-compare.png" alt="文件对比" style="height: 400px; width: auto; margin: 0 auto; display: block;"/>
 
-`url` 可以是本地 `course.yml` 路径、`file:` URL，或课程 git 仓库地址。可选 `parent=`（同样需编码）指定学习仓父目录，跳过文件夹选择。
+在 Learn By Diff 栏位中，可以展开章节，查看该章节的变更列表，和源代码视图一样，可以点击文件名并查看对应的文件对比。
 
-```html
-<a href="vscode://RuanJiazhen.learn-by-diff/open?url=https%3A%2F%2Fgithub.com%2Forg%2Fcourse.git">
-  在 VS Code 中打开
-</a>
-```
+## 章节对比
 
-系统可能首次询问是否允许该协议。IDE 里必须已经装好 LearnByDiff。
+有时候需要将不同章节的不同完成状态的代码进行运行对比，这时候就可以点击章节名称右侧的 **「打开未开始文件夹」** 或 **「打开已完成文件夹」** 按钮。这时，对应的代码会被下载到本地，并作为一个单独的文件夹添加到工作区。
 
-## 常见问题
-
-**课程打不开。** 确认选的是 `course.yml`，远程仓库根目录或 `.course-config/` 下有合法配置，且 Git 在 PATH 上。
-
-**源码拉取失败。** 课程声明的源码仓库若是 git URL，本机需能访问；若是相对路径，则只在本地课程布局下有效。
-
-**Diff 是空的。** 起始与完成目录相同则没有增量。空目录表示「从零开始」。确认章节指向的快照目录真实存在。
-
-**文档按钮没反应。** 该章需声明文档：快照内文件路径，或 `http(s)` URL。
+<img src="../../images/features-chapter-compare.png" alt="章节对比" style="height: 400px; width: auto; margin: 0 auto; display: block;"/>

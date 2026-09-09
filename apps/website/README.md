@@ -1,8 +1,8 @@
 # LearnByDiff website
 
-VitePress site for [https://rjiazhen.github.io/learn-by-diff/](https://rjiazhen.github.io/learn-by-diff/). Default locale is English (placeholder pages); Simplified Chinese is the complete copy.
+VitePress site for [https://rjiazhen.github.io/learn-by-diff/](https://rjiazhen.github.io/learn-by-diff/). Locales: English (root), Simplified Chinese (`/zh/`), Japanese (`/ja/`), Traditional Chinese (`/zh-tw/`).
 
-Top nav: **介绍** + **示例课程**. Sidebar under 介绍: 快速开始 / 功能 / 制作课程. Demo pages are not listed in the sidebar.
+Intro nav + sidebar exist in every locale. The sample course (`/demo/`) is English only; other locales link there. Chapter pages under `/demo/` match `examples/demo-source` snapshot docs (`README.md` / `docs.md`).
 
 ```bash
 pnpm --filter website dev
