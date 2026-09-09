@@ -90,7 +90,25 @@ docs: README.md
 
 ### 分享課程設定檔位址
 
-將課程設定檔的位址分享給他人，他人即可透過 Open Course 貼上倉庫 URL 開啟課程。
+如果託管在 GitHub 上，可以直接分享 `course.yml` 的位址，對方在 Open Course 裡貼上即可。
+
+例如：
+
+```text
+https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml
+```
+
+如果課程設定檔直接放在倉庫根目錄，或在根目錄的 `.course-config/course.yml`，則可以直接分享倉庫 git 位址：
+
+```text
+https://github.com/RJiazhen/learn-by-diff.git
+```
+
+如果課程設定檔在倉庫的子目錄下，用 git 位址加 `#` 再拼上相對路徑（相對倉庫根，指向 `course.yml`）：
+
+```text
+https://github.com/RJiazhen/learn-by-diff.git#examples/demo-course/.course-config/course.yml
+```
 
 ### 產生一鍵分享連結
 

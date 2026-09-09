@@ -82,13 +82,33 @@ Fields in each chapter file:
 
 ## Share a course
 
+Follow these steps to share a finished course.
+
 ### Push the course repository to Git
 
 Publish the course repository (including the source) to Git.
 
 ### Share the config location
 
-Share the course config address. Others can paste the repository URL into Open Course.
+If the course is on GitHub, you can share the `course.yml` file URL. The other person pastes it into Open Course.
+
+For example:
+
+```text
+https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml
+```
+
+If `course.yml` is at the repository root, or at `.course-config/course.yml` under the root, you can share the git repository URL instead:
+
+```text
+https://github.com/RJiazhen/learn-by-diff.git
+```
+
+If `course.yml` lives in a subdirectory, append `#` and the path relative to the repository root (pointing at `course.yml`):
+
+```text
+https://github.com/RJiazhen/learn-by-diff.git#examples/demo-course/.course-config/course.yml
+```
 
 ### One-click share links
 
