@@ -1,6 +1,6 @@
 # LearnByDiff website
 
-VitePress site for [https://rjiazhen.github.io/learn-by-diff/](https://rjiazhen.github.io/learn-by-diff/). Locales: English (root), Simplified Chinese (`/zh/`), Japanese (`/ja/`), Traditional Chinese (`/zh-tw/`).
+VitePress site for [https://rjiazhen.github.io/learn-by-diff/](https://rjiazhen.github.io/learn-by-diff/). Locales: English (root), Simplified Chinese (`/zh/`), Traditional Chinese (`/zh-tw/`), Japanese (`/ja/`).
 
 Intro nav + sidebar exist in every locale. The sample course (`/demo/`) is English only; other locales link there. Chapter pages under `/demo/` match `examples/demo-source` snapshot docs (`README.md` / `docs.md`).
 
