@@ -68,4 +68,12 @@ describe("GitClient", () => {
     await git.archiveSubtree(mirror, "start", out);
     expect(await readFile(path.join(out, "a.ts"), "utf8")).toBe("export const a = 1;\n");
   });
+
+  test("clones a shallow branch into dest", async () => {
+    const source = await tempDir("lbd-clone-src-");
+    await seedRepo(source, { "readme.txt": "hello\n" }, "main");
+    const dest = path.join(await tempDir("lbd-clone-dest-"), "work");
+    await git.clone(source, dest, { depth: 1, branch: "main" });
+    expect(await readFile(path.join(dest, "readme.txt"), "utf8")).toBe("hello\n");
+  });
 });

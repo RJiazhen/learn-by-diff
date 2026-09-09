@@ -13,6 +13,14 @@ export interface GitRunResult {
   stderr: string;
 }
 
+/** Optional flags for {@link GitClient.clone}. */
+export interface GitCloneOptions {
+  /** Create a shallow clone of this many commits (`git clone --depth`). */
+  depth?: number;
+  /** Checkout this branch or tag (`git clone --branch`). */
+  branch?: string;
+}
+
 /**
  * Thin wrapper around the host `git` CLI. Does not keep a worktree GIT_DIR
  * pointed at a source mirror.
@@ -41,10 +49,22 @@ export class GitClient {
 
   /**
    * Clones `url` into `dest` (creates parent directories as needed).
+   *
+   * @param url - Git remote or local repository path
+   * @param dest - Destination worktree directory
+   * @param options - Optional shallow clone and branch checkout
    */
-  async clone(url: string, dest: string): Promise<void> {
+  async clone(url: string, dest: string, options: GitCloneOptions = {}): Promise<void> {
     await mkdir(path.dirname(dest), { recursive: true });
-    await this.run(["clone", "--", url, dest]);
+    const args = ["clone"];
+    if (options.depth !== undefined) {
+      args.push("--depth", String(options.depth));
+    }
+    if (options.branch !== undefined && options.branch !== "") {
+      args.push("--branch", options.branch);
+    }
+    args.push("--", url, dest);
+    await this.run(args);
   }
 
   /**
