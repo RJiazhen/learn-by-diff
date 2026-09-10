@@ -30,6 +30,9 @@ dist
 .pnpm-store/
 *.vsix
 
+# Copied from repo-root README.md by scripts/copy-extension-readme.mjs before vsce package
+apps/vscode-extension/README.md
+
 # Generated learning workspace used for F5 debugging
 sandbox/**
 !sandbox/README.md

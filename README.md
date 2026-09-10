@@ -1,97 +1,64 @@
+[简体中文](docs/README.zh-cn.md) | [English](README.md) | [繁體中文](docs/README.zh-tw.md) | [日本語](docs/README.ja.md)
+
 # LearnByDiff
 
-VS Code / Cursor extension that turns a GitHub **course repository** (Learning Course Protocol) plus a **source repository** into a real local learning workspace. You learn by implementing **feature increments**, not by reverse-engineering the final tree.
+Learn course source code through diffs—without losing track of what changed while you follow along.
 
-This repo is a pnpm + [Vite+](https://viteplus.dev/) monorepo. It does not host courses, user accounts, or AI explanations.
+Full docs and demo videos: [rjiazhen.github.io/learn-by-diff](https://rjiazhen.github.io/learn-by-diff/).
 
-**Website:** [rjiazhen.github.io/learn-by-diff](https://rjiazhen.github.io/learn-by-diff/) (Simplified Chinese first; English pages are placeholders).
+## Install
 
-**Agents:** start at [`AGENTS.md`](AGENTS.md) (architecture: [`docs/architecture.md`](docs/architecture.md)).
+Search for **LearnByDiff** in the Extensions view, or open the matching marketplace:
 
-## Packages
+- [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=RuanJiazhen.learn-by-diff) (VS Code)
+- [Open VSX](https://open-vsx.org/extension/RuanJiazhen/learn-by-diff) (Cursor and other Open VSX-based IDEs)
 
-| Path                                             | Role                                                                   |
-| ------------------------------------------------ | ---------------------------------------------------------------------- |
-| [`packages/protocol`](packages/protocol)         | LCP types, YAML parse, validation (`@learn-by-diff/protocol`)          |
-| [`apps/vscode-extension`](apps/vscode-extension) | VS Code extension (`learn-by-diff`)                                    |
-| [`apps/website`](apps/website)                   | Project site (VitePress, GitHub Pages)                                 |
-| [`sandbox/`](sandbox)                            | F5 debug workspace (generated files are gitignored)                    |
-| [`skills/`](skills), [`examples/`](examples)     | Author skills (course scaffolding); committed local demo course/source |
+You can also [install a `.vsix` manually](https://github.com/RJiazhen/learn-by-diff/releases/latest): download it from the release page and drop it into the Extensions view.
 
-## Develop
+## Open a course
 
-Requires Node 22+, pnpm, Git, and the `vp` CLI from Vite+ (or use `pnpm exec vp`).
+Click **Open Course** on the **LEARN BY DIFF** view title bar in Explorer (or run **LearnByDiff: Open Course** from the Command Palette).
 
-```bash
-pnpm install
-git config core.hooksPath .githooks
-pnpm exec vp check
-pnpm exec vp run -r test
-pnpm exec vp run @learn-by-diff/protocol#pack
-pnpm exec vp run learn-by-diff#pack
-pnpm --filter website dev
-```
+<img src="https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/apps/website/docs/images/open-course-button.png" alt="Open Course button" style="max-width: 300px; display: block; margin: 0 auto;">
 
-Press **F5** (`Run Extension`). The prelaunch task runs `vp pack --watch`, then the Extension Development Host opens [`sandbox/`](sandbox) in a temporary empty profile (no other user extensions). After code changes, reload the Extension Development Host window to pick up the rebuilt bundle. **LearnByDiff: Open Course** prefills [`examples/demo-course/.course-config/course.yml`](examples/demo-course/.course-config/course.yml).
-
-Real users pick a parent folder; the workspace is created as `{parent}/{course.id}/`.
-
-### Open from a browser link
-
-With the extension installed, a link can launch VS Code or Cursor and run **Open Course**:
+Paste this demo course config URL and confirm:
 
 ```text
-vscode://RuanJiazhen.learn-by-diff/open?url=<urlencoded-course.yml-or-repo>
-cursor://RuanJiazhen.learn-by-diff/open?url=<urlencoded-course.yml-or-repo>
+https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml
 ```
 
-Optional `parent=<urlencoded-absolute-folder>` skips the folder picker. Example:
+In the folder picker, choose a directory for the learning workspace. Course files download into that folder.
 
-```html
-<a href="vscode://RuanJiazhen.learn-by-diff/open?url=https%3A%2F%2Fgithub.com%2Forg%2Fcourse.git">
-  Open in VS Code
-</a>
-```
+Learning workspace after download:
 
-The IDE must already have LearnByDiff installed; the OS may ask to allow the `vscode://` / `cursor://` protocol once.
+<img src="https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/apps/website/docs/images/demo-course-screenshot.png" alt="Learning workspace after download" style="max-width: 300px; display: block; margin: 0 auto;">
 
-## Course protocol (LCP)
+With the extension installed, you can also open the demo in one click:
 
-Course authors typically keep:
+- [VS Code](vscode://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml)
+- [Cursor](cursor://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml)
 
-```text
-course.yml                 # Open Course takes this file
-chapters/*.yml             # default chaptersDir
+## Learn in your own way
 
-# or
+The first time you open a course, chapter 1’s **Not Started** snapshot is exported locally. For the demo course, preview `index.html` with [Live Preview](https://marketplace.visualstudio.com/items?itemName=ms-vscode.live-server).
 
-.course-config/course.yml
-.course-config/chapters/*.yml
-```
+The Learn By Diff view lists chapters and provides:
 
-`course.yml` fields are all optional: `id` defaults from the course home folder (or `{repo}-learn` at a git root), `title` defaults to `id`, `source.repository` defaults to `.` (the course home), `chaptersDir` defaults to `chapters` next to `course.yml`. Optional `source.root` prefixes chapter dirs. Chapter YAML fields are all optional: `id`/`title` default from the filename, empty `fromDir`/`toDir` mean empty trees, omitted `entryFiles` auto-discovers all files under `toDir`, optional `docs` is an http(s) URL or a relative doc path under the chapter snapshot. Nested paths and unrelated parents in the same repo are supported; separate remotes per chapter are not.
+| Action                      | What it does                                                   |
+| --------------------------- | -------------------------------------------------------------- |
+| **Previous / Next chapter** | Switch to the adjacent chapter’s Not Started snapshot          |
+| **Open chapter docs**       | Open this chapter’s documentation                              |
+| **Not Started**             | Apply this chapter’s start snapshot                            |
+| **Completed**               | Apply this chapter’s finish snapshot                           |
+| **Open Not Started folder** | Add this chapter’s start snapshot as its own workspace folder  |
+| **Open Completed folder**   | Add this chapter’s finish snapshot as its own workspace folder |
 
-Authoring: JSON Schema lives at [`packages/protocol/schema.json`](packages/protocol/schema.json). Point YAML files at it with a top comment, e.g. `# yaml-language-server: $schema=../../../packages/protocol/schema.json#/$defs/course`. Runtime validation still uses `@learn-by-diff/protocol`.
+You can edit the code anytime to see how changes affect behavior.
 
-### Author skills
+You can also expand a chapter to inspect the diffs that implement each feature.
 
-Scaffold `.course-config` from chapter snapshot folders with the `generate-course-config` skill:
+More on the website: [Features](https://rjiazhen.github.io/learn-by-diff/intro/features.html).
 
-```bash
-npx skills add RJiazhen/learn-by-diff@generate-course-config -y
-```
+## Contributing
 
-Then open an Agent chat and run `/generate-course-config` (or ask to generate course config). Without explicit directories, the skill tries to detect `start` / `step-N`-style siblings; if detection fails it asks you for paths. Details: [`skills/README.md`](skills/README.md).
-
-Learning workspaces created by the extension use `.learn/` (progress, source mirror, config copy). Opening a course repo to edit config does not restore a learning session.
-
-## Publish
-
-Bump `version` in [`apps/vscode-extension/package.json`](apps/vscode-extension/package.json) and push that commit. With `core.hooksPath` set to `.githooks` (see Develop), the `pre-push` hook creates and pushes annotated tag `vX.Y.Z` matching that field. You can still push the tag yourself. GitHub Actions then packages one VSIX and publishes it to:
-
-- Visual Studio Marketplace (`VSCE_PAT`)
-- Open VSX (`OVSX_PAT`)
-
-`publisher` is `RuanJiazhen` (same as Powerful NPM Run); the Open VSX namespace must match. Both secrets are required; the job fails if either is missing.
-
-Do not use local `vsce publish` as the release path. `vsce package` is fine for a local preview.
+See the [contributing guide](CONTRIBUTING.md).

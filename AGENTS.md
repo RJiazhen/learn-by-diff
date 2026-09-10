@@ -24,6 +24,7 @@ Not in scope: course hosting, accounts, AI explanations of code.
 
 ```bash
 pnpm install
+git config core.hooksPath .githooks
 pnpm exec vp check
 pnpm exec vp run -r test
 pnpm exec vp run @learn-by-diff/protocol#pack   # required after protocol src changes
@@ -60,8 +61,20 @@ F5 → packs with watch → opens `sandbox/`. Reload Extension Host after code c
 | Author scaffolding skill                | `skills/generate-course-config/`                     |
 | Project website (VitePress)             | `apps/website/`                                      |
 
+## Publish
+
+Bump `version` in [`apps/vscode-extension/package.json`](apps/vscode-extension/package.json) and push that commit. With `core.hooksPath` set to `.githooks` (see Commands), the `pre-push` hook creates and pushes annotated tag `vX.Y.Z` matching that field. You can still push the tag yourself. GitHub Actions then copies root [`README.md`](README.md) into the extension folder, packages one VSIX, and publishes it to:
+
+- Visual Studio Marketplace (`VSCE_PAT`)
+- Open VSX (`OVSX_PAT`)
+
+`publisher` is `RuanJiazhen` (same as Powerful NPM Run); the Open VSX namespace must match. Both secrets are required; the job fails if either is missing.
+
+Do not use local `vsce publish` as the release path. `vsce package` is fine for a local preview (`vscode:prepublish` copies the English README then packs).
+
 ## Deeper reading
 
 - [`docs/architecture.md`](docs/architecture.md) — runtime model, package boundaries, dev loop
-- [`README.md`](README.md) — human overview, publish, deep-link examples
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — human setup, PR norms, publish
+- [`README.md`](README.md) — user-facing English overview (Marketplace); locales under [`docs/README.zh-cn.md`](docs/README.zh-cn.md) and siblings
 - Cursor rules under [`.cursor/rules/`](.cursor/rules/) — scoped conventions while editing

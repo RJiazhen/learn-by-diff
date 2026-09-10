@@ -121,5 +121,6 @@ Deep link authority = `publisher.name` → `RuanJiazhen.learn-by-diff`.
 
 ## Related docs
 
-- Human README: [`../README.md`](../README.md)
+- Human README (English, Marketplace): [`../README.md`](../README.md); locales: [`README.zh-cn.md`](README.zh-cn.md), [`README.zh-tw.md`](README.zh-tw.md), [`README.ja.md`](README.ja.md)
+- Contributing / publish: [`../CONTRIBUTING.md`](../CONTRIBUTING.md), [`../AGENTS.md`](../AGENTS.md)
 - Skill install/use: [`../skills/README.md`](../skills/README.md)
