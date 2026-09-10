@@ -39,6 +39,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec vp run @learn-by-diff/protocol#pack
       - run: pnpm exec vp run learn-by-diff#pack
+      - name: Copy README into extension package
+        run: node scripts/copy-extension-readme.mjs
       - name: Package VSIX
         working-directory: apps/vscode-extension
         run: pnpm exec vsce package --no-dependencies -o ../../learn-by-diff-${{ env.RELEASE_TAG }}.vsix
