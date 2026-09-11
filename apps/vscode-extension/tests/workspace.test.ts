@@ -671,6 +671,29 @@ describe("learning workspace", () => {
     });
   });
 
+  test("applyChapterSnapshot ignores gitignored files then removes them on export", async () => {
+    const { learningRoot } = await createTwoChapterWorkspace();
+    await mkdir(path.join(learningRoot, "node_modules", "leftpad"), { recursive: true });
+    await writeFile(
+      path.join(learningRoot, "node_modules", "leftpad", "index.js"),
+      "module.exports = 1;\n",
+      "utf8",
+    );
+    const session = await loadLearningSession(learningRoot);
+    expect(session).toBeDefined();
+    if (session === undefined) {
+      return;
+    }
+
+    await applyChapterSnapshot(git, session, "two", "start");
+    expect(await readFile(path.join(learningRoot, "pkg/index.ts"), "utf8")).toBe(
+      "export const v = 2;\n",
+    );
+    await expect(access(path.join(learningRoot, "node_modules"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+  });
+
   test("applyChapterSnapshot throws when the student tree differs from the last snapshot", async () => {
     const { learningRoot } = await createTwoChapterWorkspace();
     await writeFile(

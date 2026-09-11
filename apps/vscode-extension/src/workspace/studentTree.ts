@@ -1,4 +1,4 @@
-import { readdir, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { GitClient } from "../git/client.ts";
 import { isCodeWorkspaceFileName } from "./paths.ts";
@@ -8,56 +8,18 @@ import { listSourceSubtreeFiles, readSourceFile } from "./sourceStore.ts";
 const STUDENT_COMPARE_SKIP = new Set([".git", ".learn", "README.md", ".gitignore"]);
 
 /**
- * Recursively lists relative file paths under `root`.
- *
- * @param absDir - Absolute directory to walk
- * @param relativePrefix - Relative prefix for returned paths
- */
-async function walkFiles(absDir: string, relativePrefix: string): Promise<string[]> {
-  let entries;
-  try {
-    entries = await readdir(absDir, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-  const files: string[] = [];
-  for (const entry of entries) {
-    const relative = relativePrefix === "" ? entry.name : `${relativePrefix}/${entry.name}`;
-    const absolute = path.join(absDir, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...(await walkFiles(absolute, relative)));
-    } else if (entry.isFile()) {
-      files.push(relative.split(/[/\\]/).join("/"));
-    }
-  }
-  return files;
-}
-
-/**
  * Lists student-visible files under the learning workspace root.
  *
+ * Uses git exclude rules (`.gitignore`) so ignored trees such as `node_modules/`
+ * are omitted. Also skips `.git`, `.learn`, `README.md`, `.gitignore`, and
+ * `.code-workspace`.
+ *
+ * @param git - Git client
  * @param workspaceRoot - Learning workspace root
  */
-async function listStudentWorkspaceFiles(workspaceRoot: string): Promise<string[]> {
-  let entries;
-  try {
-    entries = await readdir(workspaceRoot, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-  const files: string[] = [];
-  for (const entry of entries) {
-    if (STUDENT_COMPARE_SKIP.has(entry.name) || isCodeWorkspaceFileName(entry.name)) {
-      continue;
-    }
-    const absolute = path.join(workspaceRoot, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...(await walkFiles(absolute, entry.name)));
-    } else if (entry.isFile()) {
-      files.push(entry.name);
-    }
-  }
-  return files.map((file) => file.split(/[/\\]/).join("/"));
+async function listStudentWorkspaceFiles(git: GitClient, workspaceRoot: string): Promise<string[]> {
+  const files = await git.listUnignoredWorkTreeFiles(workspaceRoot);
+  return files.filter((relative) => !isPreservedComparePath(relative));
 }
 
 /**
@@ -65,7 +27,7 @@ async function listStudentWorkspaceFiles(workspaceRoot: string): Promise<string[
  *
  * @param relative - Path relative to the student tree or snapshot root
  */
-function isSkippedComparePath(relative: string): boolean {
+function isPreservedComparePath(relative: string): boolean {
   const top = relative.split("/")[0];
   if (top !== undefined && STUDENT_COMPARE_SKIP.has(top)) {
     return true;
@@ -78,8 +40,8 @@ function isSkippedComparePath(relative: string): boolean {
  *
  * Compares against the snapshot for the **current** chapter status (Not Started =
  * `fromDir`, Completed = `toDir`). Ignores `.git`, `.learn`, `README.md`,
- * `.gitignore`, and `.code-workspace` on both sides so preserved tooling files
- * do not count as edits.
+ * `.gitignore`, `.code-workspace`, and gitignored paths on both sides so
+ * generated folders such as `node_modules/` do not count as edits.
  *
  * @param git - Git client
  * @param workspaceRoot - Learning workspace root
@@ -93,14 +55,14 @@ export async function hasStudentEditsSinceChapterStart(
   fromDir: string | undefined,
 ): Promise<boolean> {
   if (fromDir === undefined) {
-    return (await listStudentWorkspaceFiles(workspaceRoot)).length > 0;
+    return (await listStudentWorkspaceFiles(git, workspaceRoot)).length > 0;
   }
-  const startFiles = new Set(
-    (await listSourceSubtreeFiles(git, storePath, fromDir)).filter(
-      (relative) => !isSkippedComparePath(relative),
-    ),
+  const snapshotFiles = (await listSourceSubtreeFiles(git, storePath, fromDir)).filter(
+    (relative) => !isPreservedComparePath(relative),
   );
-  const workspaceFiles = new Set(await listStudentWorkspaceFiles(workspaceRoot));
+  const ignored = await git.listIgnoredWorkTreePaths(workspaceRoot, snapshotFiles);
+  const startFiles = new Set(snapshotFiles.filter((relative) => !ignored.has(relative)));
+  const workspaceFiles = new Set(await listStudentWorkspaceFiles(git, workspaceRoot));
 
   if (startFiles.size !== workspaceFiles.size) {
     return true;
