@@ -253,6 +253,9 @@ export class GitClient {
   /**
    * Spawns `git` and optionally writes stdin, treating listed exit codes as success.
    *
+   * Stdin is written only when `options.input` is set. Closing stdin on commands
+   * that do not read it can raise unhandled `EPIPE` on Linux.
+   *
    * @param args - Git CLI arguments
    * @param options - Working directory, stdin, and tolerated exit codes
    */
@@ -297,7 +300,25 @@ export class GitClient {
         },
         onClose,
       );
-      child.stdin?.end(options.input ?? "");
+      const stdin = child.stdin;
+      if (stdin === undefined || stdin === null) {
+        return;
+      }
+      /**
+       * Ignores EPIPE when git closes stdin before the write finishes.
+       *
+       * @param error - Stdin stream failure
+       */
+      const onStdinError = (error: Error): void => {
+        if ("code" in error && error.code === "EPIPE") {
+          return;
+        }
+        reject(error);
+      };
+      stdin.on("error", onStdinError);
+      if (options.input !== undefined) {
+        stdin.end(options.input);
+      }
     };
     return new Promise(runProcess);
   }
