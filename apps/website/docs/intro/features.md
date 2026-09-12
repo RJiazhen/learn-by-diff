@@ -28,7 +28,7 @@ That view includes:
 | **Not Started**             | Apply this chapter’s start snapshot             |
 | **Completed**               | Apply this chapter’s finish snapshot            |
 
-You can edit files freely. Switching chapters asks whether to **overwrite the current folder**.
+You can edit files freely. Switching chapters asks whether to **overwrite the current folder**. Top-level files and folders ignored by `.gitignore` (for example `node_modules/`) are kept. See [Retained files](../course-config/retained).
 
 ## File compare
 

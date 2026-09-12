@@ -1,4 +1,4 @@
-import { defineConfig, type DefaultTheme } from "vitepress";
+import { defineConfig, type DefaultTheme, type HeadConfig } from "vitepress";
 
 const GITHUB = "https://github.com/RJiazhen/learn-by-diff";
 const SITE_BASE = "/learn-by-diff/";
@@ -12,6 +12,8 @@ interface LocaleChrome {
   start: string;
   features: string;
   authoring: string;
+  courseConfig: string;
+  retained: string;
   sample: string;
   editLink: string;
   outlineTitle: string;
@@ -25,33 +27,68 @@ interface LocaleChrome {
 }
 
 /**
- * Builds Introduction + Sample course nav. Sample course always points at the English demo.
+ * Builds Introduction + Course configuration + Sample course nav.
+ *
+ * Sample course always points at the English demo.
  */
-function introNav(prefix: string, intro: string, sample: string): DefaultTheme.NavItem[] {
+function docsNav(
+  prefix: string,
+  intro: string,
+  courseConfig: string,
+  sample: string,
+): DefaultTheme.NavItem[] {
   return [
     { text: intro, link: `${prefix}/intro/start` },
+    { text: courseConfig, link: `${prefix}/course-config/` },
     { text: sample, link: "/demo/" },
   ];
 }
 
 /**
- * Builds the Introduction sidebar for one locale prefix (`""`, `/zh`, `/zh-tw`, `/ja`).
+ * Returns whether `relativePath` is the course-config section index page.
+ *
+ * @param relativePath - Markdown path relative to `docs/`
  */
-function introSidebar(
+function isCourseConfigIndex(relativePath: string): boolean {
+  return /(?:^|\/)course-config\/index\.md$/.test(relativePath);
+}
+
+/**
+ * Adds a meta refresh so `/course-config/` opens the first section page without Vue.
+ *
+ * @param ctx - VitePress `transformHead` context
+ */
+function courseConfigIndexHead(ctx: { pageData: { relativePath: string } }): HeadConfig[] {
+  if (!isCourseConfigIndex(ctx.pageData.relativePath)) {
+    return [];
+  }
+  return [["meta", { "http-equiv": "refresh", content: "0;url=./retained.html" }]];
+}
+
+/**
+ * Builds Introduction + Course configuration sidebars for one locale prefix.
+ */
+function docsSidebar(
   prefix: string,
-  section: string,
+  intro: string,
   start: string,
   features: string,
   authoring: string,
-): DefaultTheme.Sidebar {
+  courseConfig: string,
+  retained: string,
+): DefaultTheme.SidebarItem[] {
   return [
     {
-      text: section,
+      text: intro,
       items: [
         { text: start, link: `${prefix}/intro/start` },
         { text: features, link: `${prefix}/intro/features` },
         { text: authoring, link: `${prefix}/intro/authoring` },
       ],
+    },
+    {
+      text: courseConfig,
+      items: [{ text: retained, link: `${prefix}/course-config/retained` }],
     },
   ];
 }
@@ -60,14 +97,17 @@ function introSidebar(
  * Theme config shared by Simplified Chinese, Japanese, and Traditional Chinese.
  */
 function cjkTheme(chrome: LocaleChrome): DefaultTheme.Config {
+  const prefix = chrome.link.replace(/\/$/, "");
   return {
-    nav: introNav(chrome.link.replace(/\/$/, ""), chrome.intro, chrome.sample),
-    sidebar: introSidebar(
-      chrome.link.replace(/\/$/, ""),
+    nav: docsNav(prefix, chrome.intro, chrome.courseConfig, chrome.sample),
+    sidebar: docsSidebar(
+      prefix,
       chrome.intro,
       chrome.start,
       chrome.features,
       chrome.authoring,
+      chrome.courseConfig,
+      chrome.retained,
     ),
     footer: {
       copyright: `Copyright © ${String(new Date().getFullYear())} Ruan Jiazhen`,
@@ -97,6 +137,8 @@ const zhChrome: LocaleChrome = {
   start: "快速开始",
   features: "功能",
   authoring: "制作课程",
+  courseConfig: "课程配置",
+  retained: "保留文件",
   sample: "示例课程",
   editLink: "在 GitHub 上编辑此页",
   outlineTitle: "本页目录",
@@ -117,6 +159,8 @@ const jaChrome: LocaleChrome = {
   start: "はじめに",
   features: "機能",
   authoring: "コースを作る",
+  courseConfig: "コース設定",
+  retained: "残すファイル",
   sample: "サンプルコース",
   editLink: "GitHub でこのページを編集",
   outlineTitle: "目次",
@@ -137,6 +181,8 @@ const zhTwChrome: LocaleChrome = {
   start: "快速開始",
   features: "功能",
   authoring: "製作課程",
+  courseConfig: "課程設定",
+  retained: "保留檔案",
   sample: "示例課程",
   editLink: "在 GitHub 上編輯此頁",
   outlineTitle: "本頁目錄",
@@ -160,6 +206,7 @@ export default defineConfig({
     ["link", { rel: "icon", href: `${SITE_BASE}icon.png` }],
     ["meta", { name: "theme-color", content: "#00754c" }],
   ],
+  transformHead: courseConfigIndexHead,
   themeConfig: {
     logo: "/icon.png",
     socialLinks: [{ icon: "github", link: GITHUB }],
@@ -172,8 +219,16 @@ export default defineConfig({
       label: "English",
       lang: "en",
       themeConfig: {
-        nav: introNav("", "Introduction", "Sample course"),
-        sidebar: introSidebar("", "Introduction", "Get started", "Features", "Author a course"),
+        nav: docsNav("", "Introduction", "Course configuration", "Sample course"),
+        sidebar: docsSidebar(
+          "",
+          "Introduction",
+          "Get started",
+          "Features",
+          "Author a course",
+          "Course configuration",
+          "Retained files",
+        ),
         footer: {
           message: "Released under the MIT License.",
           copyright: `Copyright © ${String(new Date().getFullYear())} LearnByDiff`,

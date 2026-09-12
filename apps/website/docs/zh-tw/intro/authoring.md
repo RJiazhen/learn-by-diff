@@ -42,7 +42,7 @@ chaptersDir: chapters
 `course.yml` 可以包含以下欄位：
 
 - `id`（可選）：課程的穩定識別碼，也會用作學生本機學習目錄的資料夾名。請改成適合作路徑的 slug（建議只用字母、數字、連字號）。不寫則用課程所在資料夾名；若該目錄是 git 倉庫根，則為 `{倉庫名}-learn`。
-- `title`（可選）：課程顯示名，出現在狀態列等介面上。預設為 `id`。
+- `title`（可選）：課程顯示名。預設為 `id`。
 - `source.repository`（可選）：原始碼所在位置，允許以下三種寫法：
   - git 倉庫位址：例如 `https://github.com/org/repo.git`，代表原始碼所屬的 git 倉庫；
   - 本機路徑：本機上的原始碼目錄，可以是絕對路徑，也可以是相對於 `course.yml` 的相對路徑；
@@ -79,6 +79,10 @@ docs: README.md
 - `toDir`（可選）：本章目標快照目錄，相對規則同 `fromDir`。預設為空，表示空目錄。
 - `entryFiles`（可選）：本章要關注的檔案清單，路徑相對章節快照樹根（`toDir`）。預設為所有 `toDir` 下的檔案。
 - `docs`（可選）：本章文件。可以是 `http(s)` URL，也可以是快照樹裡的檔案路徑（先找 `toDir`，再找 `fromDir`），例如 `README.md`。預設為空，表示沒有文件按鈕。
+
+### 保留檔案
+
+切換章節時，`.gitignore` 忽略的頂層檔案與資料夾會留在學習目錄中。規則寫法見 [保留檔案](../course-config/retained)。
 
 ## 分享製作好的課程
 
