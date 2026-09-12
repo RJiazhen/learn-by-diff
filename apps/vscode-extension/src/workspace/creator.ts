@@ -1,3 +1,4 @@
+import type { Dirent } from "node:fs";
 import { cp, mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -293,8 +294,9 @@ function joinConfigRelative(configDir: string, relativePosix: string): string {
 /**
  * Replaces the student tree with a chapter start (`fromDir`) or finish (`toDir`).
  *
- * Preserves the workspace `.gitignore` across the export so regenerable `.learn`
- * paths stay ignored and course config under `.learn/course` remains commit-able.
+ * Preserves the workspace `.gitignore` and gitignored folders such as
+ * `node_modules/` across the export so regenerable `.learn` paths stay ignored
+ * and course config under `.learn/course` remains commit-able.
  *
  * @param git - Git client
  * @param workspaceRoot - Learning repository root
@@ -334,6 +336,8 @@ export async function checkoutChapter(
  * Chapter snapshots may include a `.gitignore`; that must not replace the learner's
  * file. Learn-related ignore rules are merged afterward via {@link ensureLearnGitignore}.
  * When `subdir` is `undefined`, the workspace is cleared to an empty tree (empty fromDir).
+ * Gitignored top-level paths such as `node_modules/` are left in place so chapter
+ * switches do not wipe regenerable installs.
  *
  * @param git - Git client
  * @param workspaceRoot - Learning workspace root
@@ -347,7 +351,7 @@ async function replaceStudentTreeFromSource(
   subdir: string | undefined,
 ): Promise<void> {
   const preservedGitignore = await readGitignore(workspaceRoot);
-  await clearStudentTree(workspaceRoot);
+  await clearStudentTree(git, workspaceRoot);
   await exportSourceSubtree(git, sourceStore, subdir, workspaceRoot);
   if (preservedGitignore !== undefined) {
     await writeFile(path.join(workspaceRoot, ".gitignore"), preservedGitignore, "utf8");
@@ -355,24 +359,49 @@ async function replaceStudentTreeFromSource(
   await ensureLearnGitignore(workspaceRoot);
 }
 
+/** Top-level names that stay on disk when replacing the student snapshot. */
+const PRESERVED_STUDENT_TREE_NAMES = new Set([".git", ".learn", ".gitignore"]);
+
 /**
- * Deletes workspace files except `.git`, `.learn`, `.gitignore`, and `.code-workspace`.
+ * Returns the gitignore-relative path used to test a top-level student-tree entry.
+ *
+ * Directories use a trailing slash so rules such as `node_modules/` match.
+ *
+ * @param entry - Direct child of the learning workspace root
+ */
+function studentTreeIgnorePath(entry: Dirent): string {
+  return entry.isDirectory() ? `${entry.name}/` : entry.name;
+}
+
+/**
+ * Deletes snapshot files, keeping `.git`, `.learn`, `.gitignore`, `.code-workspace`,
+ * and top-level paths ignored by `.gitignore`.
  *
  * Chapter docs such as `README.md` are snapshot content and must be removed so
  * the next export is a replace, not a merge with the previous chapter. The
  * multi-root workspace file must stay so Open Recent can restore extra folders.
+ * Ignored trees (typically `node_modules/`) stay so switching chapters does not
+ * wipe regenerable installs.
  *
+ * @param git - Git client used to apply `.gitignore` exclude rules
  * @param workspaceRoot - Learning repository root
  */
-async function clearStudentTree(workspaceRoot: string): Promise<void> {
+async function clearStudentTree(git: GitClient, workspaceRoot: string): Promise<void> {
   const entries = await readdir(workspaceRoot, { withFileTypes: true });
+  const checkPaths: string[] = [];
   for (const entry of entries) {
-    if (
-      entry.name === ".git" ||
-      entry.name === ".learn" ||
-      entry.name === ".gitignore" ||
-      isCodeWorkspaceFileName(entry.name)
-    ) {
+    if (PRESERVED_STUDENT_TREE_NAMES.has(entry.name) || isCodeWorkspaceFileName(entry.name)) {
+      continue;
+    }
+    checkPaths.push(studentTreeIgnorePath(entry));
+  }
+  const ignored = await git.listIgnoredWorkTreePaths(workspaceRoot, checkPaths);
+
+  for (const entry of entries) {
+    if (PRESERVED_STUDENT_TREE_NAMES.has(entry.name) || isCodeWorkspaceFileName(entry.name)) {
+      continue;
+    }
+    if (ignored.has(studentTreeIgnorePath(entry))) {
       continue;
     }
     await rm(path.join(workspaceRoot, entry.name), {

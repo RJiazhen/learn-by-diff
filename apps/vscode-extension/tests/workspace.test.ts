@@ -671,7 +671,7 @@ describe("learning workspace", () => {
     });
   });
 
-  test("applyChapterSnapshot ignores gitignored files then removes them on export", async () => {
+  test("applyChapterSnapshot preserves gitignored folders such as node_modules", async () => {
     const { learningRoot } = await createTwoChapterWorkspace();
     await mkdir(path.join(learningRoot, "node_modules", "leftpad"), { recursive: true });
     await writeFile(
@@ -679,6 +679,10 @@ describe("learning workspace", () => {
       "module.exports = 1;\n",
       "utf8",
     );
+    await mkdir(path.join(learningRoot, "dist"), { recursive: true });
+    await writeFile(path.join(learningRoot, "dist", "app.js"), "console.log(1);\n", "utf8");
+    const gitignore = await readFile(path.join(learningRoot, ".gitignore"), "utf8");
+    await writeFile(path.join(learningRoot, ".gitignore"), `${gitignore}dist/\n`, "utf8");
     const session = await loadLearningSession(learningRoot);
     expect(session).toBeDefined();
     if (session === undefined) {
@@ -689,9 +693,12 @@ describe("learning workspace", () => {
     expect(await readFile(path.join(learningRoot, "pkg/index.ts"), "utf8")).toBe(
       "export const v = 2;\n",
     );
-    await expect(access(path.join(learningRoot, "node_modules"))).rejects.toMatchObject({
-      code: "ENOENT",
-    });
+    expect(
+      await readFile(path.join(learningRoot, "node_modules", "leftpad", "index.js"), "utf8"),
+    ).toBe("module.exports = 1;\n");
+    expect(await readFile(path.join(learningRoot, "dist", "app.js"), "utf8")).toBe(
+      "console.log(1);\n",
+    );
   });
 
   test("applyChapterSnapshot throws when the student tree differs from the last snapshot", async () => {
