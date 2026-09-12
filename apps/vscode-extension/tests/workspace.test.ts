@@ -671,6 +671,36 @@ describe("learning workspace", () => {
     });
   });
 
+  test("applyChapterSnapshot preserves gitignored folders such as node_modules", async () => {
+    const { learningRoot } = await createTwoChapterWorkspace();
+    await mkdir(path.join(learningRoot, "node_modules", "leftpad"), { recursive: true });
+    await writeFile(
+      path.join(learningRoot, "node_modules", "leftpad", "index.js"),
+      "module.exports = 1;\n",
+      "utf8",
+    );
+    await mkdir(path.join(learningRoot, "dist"), { recursive: true });
+    await writeFile(path.join(learningRoot, "dist", "app.js"), "console.log(1);\n", "utf8");
+    const gitignore = await readFile(path.join(learningRoot, ".gitignore"), "utf8");
+    await writeFile(path.join(learningRoot, ".gitignore"), `${gitignore}dist/\n`, "utf8");
+    const session = await loadLearningSession(learningRoot);
+    expect(session).toBeDefined();
+    if (session === undefined) {
+      return;
+    }
+
+    await applyChapterSnapshot(git, session, "two", "start");
+    expect(await readFile(path.join(learningRoot, "pkg/index.ts"), "utf8")).toBe(
+      "export const v = 2;\n",
+    );
+    expect(
+      await readFile(path.join(learningRoot, "node_modules", "leftpad", "index.js"), "utf8"),
+    ).toBe("module.exports = 1;\n");
+    expect(await readFile(path.join(learningRoot, "dist", "app.js"), "utf8")).toBe(
+      "console.log(1);\n",
+    );
+  });
+
   test("applyChapterSnapshot throws when the student tree differs from the last snapshot", async () => {
     const { learningRoot } = await createTwoChapterWorkspace();
     await writeFile(

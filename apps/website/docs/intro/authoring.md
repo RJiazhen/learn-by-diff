@@ -42,7 +42,7 @@ chaptersDir: chapters
 Fields in `course.yml`:
 
 - `id` (optional): Stable course id, also used as the student workspace folder name. Prefer a path-safe slug (letters, digits, hyphens). If omitted, the course folder name is used; if that folder is a git repository root, `{repo-name}-learn`.
-- `title` (optional): Display name in the status bar and similar UI. Defaults to `id`.
+- `title` (optional): Human-readable display name. Defaults to `id`.
 - `source.repository` (optional): Where the source lives. Three forms:
   - Git repository URL, for example `https://github.com/org/repo.git`.
   - Local path: absolute, or relative to the `course.yml` file.
@@ -79,6 +79,10 @@ Fields in each chapter file:
 - `toDir` (optional): Goal snapshot directory; same path rules as `fromDir`. Empty means an empty tree.
 - `entryFiles` (optional): Files to highlight, relative to the chapter snapshot tree (`toDir`). Omitted means every file under `toDir`.
 - `docs` (optional): Chapter documentation: an `http(s)` URL, or a file path in the snapshot tree (`toDir` first, then `fromDir`), for example `README.md`. Omitted means no docs button.
+
+### Retained files
+
+When you switch chapters, top-level files and folders ignored by `.gitignore` stay in the learning folder. See [Retained files](../course-config/retained).
 
 ## Share a course
 

@@ -21,6 +21,16 @@ export interface GitCloneOptions {
   branch?: string;
 }
 
+/** Optional flags for {@link GitClient.run}. */
+export interface GitRunOptions {
+  /** Working directory for the git process. */
+  cwd?: string;
+  /** Bytes written to stdin (used by `check-ignore --stdin`). */
+  input?: string;
+  /** Non-zero exit codes that should not be treated as failure. */
+  allowExitCodes?: readonly number[];
+}
+
 /**
  * Thin wrapper around the host `git` CLI. Does not keep a worktree GIT_DIR
  * pointed at a source mirror.
@@ -137,20 +147,206 @@ export class GitClient {
   }
 
   /**
-   * Runs `git` with `args`.
+   * Lists files under `workTree` that are not matched by git exclude rules.
+   *
+   * The folder does not need to be a git repository. Uses a temporary GIT_DIR
+   * and `git ls-files -o --exclude-standard` so ignored trees such as
+   * `node_modules/` are not walked.
+   *
+   * @param workTree - Directory that contains the `.gitignore` to apply
    */
-  async run(args: string[], options: { cwd?: string } = {}): Promise<GitRunResult> {
+  async listUnignoredWorkTreeFiles(workTree: string): Promise<string[]> {
+    /**
+     * Lists unignored files with `gitDir` as GIT_DIR and `workTree` as the work tree.
+     *
+     * @param gitDir - Temporary bare repository path
+     */
+    const listFiles = async (gitDir: string): Promise<string[]> => {
+      const result = await this.run(
+        [
+          "--git-dir",
+          gitDir,
+          "--work-tree",
+          workTree,
+          "ls-files",
+          "-z",
+          "-o",
+          "--exclude-standard",
+        ],
+        { cwd: workTree },
+      );
+      return splitNulPaths(result.stdout);
+    };
+    return await this.withScratchGitDir(listFiles);
+  }
+
+  /**
+   * Returns the subset of `relativePaths` ignored by `workTree`'s exclude rules.
+   *
+   * Paths do not need to exist on disk. Uses `git check-ignore --stdin --no-index`
+   * with a temporary GIT_DIR so the student workspace is not initialized as a repo.
+   *
+   * @param workTree - Directory that contains the `.gitignore` to apply
+   * @param relativePaths - Slash-separated paths relative to `workTree`
+   */
+  async listIgnoredWorkTreePaths(workTree: string, relativePaths: string[]): Promise<Set<string>> {
+    if (relativePaths.length === 0) {
+      return new Set();
+    }
+    /**
+     * Asks git which of `relativePaths` are ignored using `gitDir` as GIT_DIR.
+     *
+     * @param gitDir - Temporary bare repository path
+     */
+    const listIgnored = async (gitDir: string): Promise<Set<string>> => {
+      const result = await this.run(
+        [
+          "--git-dir",
+          gitDir,
+          "--work-tree",
+          workTree,
+          "check-ignore",
+          "--stdin",
+          "-z",
+          "--no-index",
+        ],
+        {
+          cwd: workTree,
+          input: `${relativePaths.join("\0")}\0`,
+          allowExitCodes: [1],
+        },
+      );
+      return new Set(splitNulPaths(result.stdout));
+    };
+    return await this.withScratchGitDir(listIgnored);
+  }
+
+  /**
+   * Runs `git` with `args`.
+   *
+   * @param args - Git CLI arguments
+   * @param options - Working directory, stdin, and tolerated exit codes
+   */
+  async run(args: string[], options: GitRunOptions = {}): Promise<GitRunResult> {
     try {
-      const { stdout, stderr } = await execFileAsync(this.gitBin, args, {
-        cwd: options.cwd,
-        encoding: "utf8",
-        maxBuffer: 32 * 1024 * 1024,
-      });
-      return { stdout, stderr };
+      return await this.exec(args, options);
     } catch (error) {
       throw wrapGitError(error, `git ${args.join(" ")} failed`);
     }
   }
+
+  /**
+   * Creates a temporary bare GIT_DIR, runs `useGitDir`, then deletes it.
+   *
+   * @param useGitDir - Receives the GIT_DIR path; must not keep it after returning
+   */
+  private async withScratchGitDir<T>(useGitDir: (gitDir: string) => Promise<T>): Promise<T> {
+    const gitDir = await mkdtemp(path.join(tmpdir(), "learn-by-diff-excludes-"));
+    try {
+      await this.run(["init", "--bare", gitDir]);
+      return await useGitDir(gitDir);
+    } finally {
+      await rm(gitDir, { recursive: true, force: true });
+    }
+  }
+
+  /**
+   * Spawns `git` and optionally writes stdin, treating listed exit codes as success.
+   *
+   * Stdin is written only when `options.input` is set. Closing stdin on commands
+   * that do not read it can raise unhandled `EPIPE` on Linux.
+   *
+   * @param args - Git CLI arguments
+   * @param options - Working directory, stdin, and tolerated exit codes
+   */
+  private exec(args: string[], options: GitRunOptions): Promise<GitRunResult> {
+    const allowExitCodes = options.allowExitCodes ?? [];
+    /**
+     * Starts git, writes stdin, and settles when the process exits.
+     *
+     * @param resolve - Success path (including tolerated non-zero exits)
+     * @param reject - Spawn or unexpected non-zero exit
+     */
+    const runProcess = (
+      resolve: (value: GitRunResult) => void,
+      reject: (reason: unknown) => void,
+    ): void => {
+      /**
+       * Settles the process result, accepting configured non-zero exits.
+       *
+       * @param error - Spawn or non-zero-exit error, or `null` on success
+       * @param stdout - Captured standard output
+       * @param stderr - Captured standard error
+       */
+      const onClose = (error: Error | null, stdout: string, stderr: string): void => {
+        if (error !== null) {
+          const code = execExitCode(error);
+          if (code !== undefined && allowExitCodes.includes(code)) {
+            resolve({ stdout, stderr });
+            return;
+          }
+          reject(error);
+          return;
+        }
+        resolve({ stdout, stderr });
+      };
+      const child = execFile(
+        this.gitBin,
+        args,
+        {
+          cwd: options.cwd,
+          encoding: "utf8",
+          maxBuffer: 32 * 1024 * 1024,
+        },
+        onClose,
+      );
+      const stdin = child.stdin;
+      if (stdin === undefined || stdin === null) {
+        return;
+      }
+      /**
+       * Ignores EPIPE when git closes stdin before the write finishes.
+       *
+       * @param error - Stdin stream failure
+       */
+      const onStdinError = (error: Error): void => {
+        if ("code" in error && error.code === "EPIPE") {
+          return;
+        }
+        reject(error);
+      };
+      stdin.on("error", onStdinError);
+      if (options.input !== undefined) {
+        stdin.end(options.input);
+      }
+    };
+    return new Promise(runProcess);
+  }
+}
+
+/**
+ * Splits a NUL-terminated `git -z` path list into POSIX relative paths.
+ *
+ * @param stdout - Raw git stdout
+ */
+function splitNulPaths(stdout: string): string[] {
+  return stdout
+    .split("\0")
+    .filter((entry) => entry !== "")
+    .map((entry) => entry.split(/[/\\]/).join("/"));
+}
+
+/**
+ * Returns a numeric process exit code from an execFile error, or `undefined`.
+ *
+ * @param error - `child_process` failure
+ */
+function execExitCode(error: unknown): number | undefined {
+  if (typeof error !== "object" || error === null || !("code" in error)) {
+    return undefined;
+  }
+  const code = (error as { code?: unknown }).code;
+  return typeof code === "number" ? code : undefined;
 }
 
 /**

@@ -45,6 +45,40 @@ describe("hasStudentEditsSinceChapterStart", () => {
     expect(await hasStudentEditsSinceChapterStart(git, workspace, store, "start")).toBe(true);
   });
 
+  test("ignores gitignored folders such as node_modules when comparing", async () => {
+    const store = await tempDir("lbd-nm-store-");
+    const workspace = await tempDir("lbd-nm-ws-");
+    await mkdir(path.join(store, "start", "src"), { recursive: true });
+    await writeFile(path.join(store, "start", "src", "index.ts"), "export const v = 1;\n", "utf8");
+    await mkdir(path.join(workspace, "src"), { recursive: true });
+    await writeFile(path.join(workspace, "src", "index.ts"), "export const v = 1;\n", "utf8");
+    await writeFile(path.join(workspace, ".gitignore"), "node_modules/\ndist/\n", "utf8");
+    await mkdir(path.join(workspace, "node_modules", "leftpad"), { recursive: true });
+    await writeFile(
+      path.join(workspace, "node_modules", "leftpad", "index.js"),
+      "module.exports = 1;\n",
+      "utf8",
+    );
+    await mkdir(path.join(workspace, "dist"), { recursive: true });
+    await writeFile(path.join(workspace, "dist", "app.js"), "console.log(1);\n", "utf8");
+
+    expect(await hasStudentEditsSinceChapterStart(git, workspace, store, "start")).toBe(false);
+  });
+
+  test("still detects source edits when gitignored folders are present", async () => {
+    const store = await tempDir("lbd-nm-edit-store-");
+    const workspace = await tempDir("lbd-nm-edit-ws-");
+    await mkdir(path.join(store, "start", "src"), { recursive: true });
+    await writeFile(path.join(store, "start", "src", "index.ts"), "export const v = 1;\n", "utf8");
+    await mkdir(path.join(workspace, "src"), { recursive: true });
+    await writeFile(path.join(workspace, "src", "index.ts"), "export const v = 2;\n", "utf8");
+    await writeFile(path.join(workspace, ".gitignore"), "node_modules/\n", "utf8");
+    await mkdir(path.join(workspace, "node_modules"), { recursive: true });
+    await writeFile(path.join(workspace, "node_modules", "pkg.js"), "export {};\n", "utf8");
+
+    expect(await hasStudentEditsSinceChapterStart(git, workspace, store, "start")).toBe(true);
+  });
+
   test("ignores README.md present only in the snapshot", async () => {
     const store = await tempDir("lbd-readme-store-");
     const workspace = await tempDir("lbd-readme-ws-");

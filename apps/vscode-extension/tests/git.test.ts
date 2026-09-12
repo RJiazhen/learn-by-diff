@@ -76,4 +76,23 @@ describe("GitClient", () => {
     await git.clone(source, dest, { depth: 1, branch: "main" });
     expect(await readFile(path.join(dest, "readme.txt"), "utf8")).toBe("hello\n");
   });
+
+  test("lists unignored work-tree files using git exclude rules", async () => {
+    const workTree = await tempDir("lbd-excludes-");
+    await mkdir(path.join(workTree, "src"), { recursive: true });
+    await mkdir(path.join(workTree, "node_modules", "pkg"), { recursive: true });
+    await writeFile(path.join(workTree, "src", "index.ts"), "export {};\n", "utf8");
+    await writeFile(
+      path.join(workTree, "node_modules", "pkg", "index.js"),
+      "module.exports = 1;\n",
+      "utf8",
+    );
+    await writeFile(path.join(workTree, ".gitignore"), "node_modules/\n", "utf8");
+
+    const files = await git.listUnignoredWorkTreeFiles(workTree);
+    expect(files.sort()).toEqual([".gitignore", "src/index.ts"]);
+    expect(
+      await git.listIgnoredWorkTreePaths(workTree, ["src/index.ts", "node_modules/pkg/index.js"]),
+    ).toEqual(new Set(["node_modules/pkg/index.js"]));
+  });
 });
