@@ -13,6 +13,7 @@
   "Completed": "已完成",
   "Parent folder for the learning workspace": "選擇學習工作區的父資料夾",
   "Create learning workspace here": "在此建立學習工作區",
+  "The folder “{0}” is not empty. Open Course will not overwrite existing files. Choose another parent folder.": "資料夾 「{0}」 不是空的。開啟課程不會覆蓋既有檔案。請選擇其他父資料夾。",
   "LearnByDiff: opening course": "LearnByDiff：正在開啟課程",
   "This repository has no valid Learning Course Protocol config.\n{0}": "此存放庫沒有有效的 Learning Course Protocol 設定。\n{0}",
   "Could not add “{0}” to this window. Open it in a new window?": "無法將「{0}」新增到目前視窗。要在新視窗中開啟嗎？",

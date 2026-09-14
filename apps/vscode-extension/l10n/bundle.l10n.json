@@ -13,6 +13,7 @@
   "Completed": "Completed",
   "Parent folder for the learning workspace": "Parent folder for the learning workspace",
   "Create learning workspace here": "Create learning workspace here",
+  "The folder “{0}” is not empty. Open Course will not overwrite existing files. Choose another parent folder.": "The folder “{0}” is not empty. Open Course will not overwrite existing files. Choose another parent folder.",
   "LearnByDiff: opening course": "LearnByDiff: opening course",
   "This repository has no valid Learning Course Protocol config.\n{0}": "This repository has no valid Learning Course Protocol config.\n{0}",
   "Could not add “{0}” to this window. Open it in a new window?": "Could not add “{0}” to this window. Open it in a new window?",

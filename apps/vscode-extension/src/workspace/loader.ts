@@ -1,6 +1,7 @@
-import { readdir, stat } from "node:fs/promises";
+import { stat } from "node:fs/promises";
 import { isCourseRepository, loadCourseFromConfigDir, type Course } from "@learn-by-diff/protocol";
-import { isCodeWorkspaceFileName, learningPaths } from "./paths.ts";
+import { isEmptyLearningTarget } from "./emptyTarget.ts";
+import { learningPaths } from "./paths.ts";
 import { readProgress, type LearningProgress } from "./state.ts";
 
 /** Loaded learning session: course copy plus progress. */
@@ -56,40 +57,22 @@ export async function loadLearningSession(
 }
 
 /**
- * Returns whether `dir` can be initialized in place (empty except README / dotfiles).
+ * Returns whether `dir` exists and is empty enough to initialize in place.
  *
- * Used so F5 sandbox does not nest `sandbox/{course-id}/`.
+ * Used so F5 sandbox does not nest `sandbox/{course-id}/`. Non-empty folders
+ * (including existing learning workspaces) are never in-place targets.
  *
  * @param dir - Candidate learning root
  */
 export async function isInPlaceLearningTarget(dir: string): Promise<boolean> {
-  if (await isLearningWorkspace(dir)) {
-    return true;
-  }
-  let entries: string[];
   try {
-    entries = await readdir(dir);
+    if (!(await stat(dir)).isDirectory()) {
+      return false;
+    }
   } catch {
     return false;
   }
-  const meaningful = [];
-  for (const name of entries) {
-    if (name.startsWith(".")) {
-      continue;
-    }
-    if (name === "README.md" || isCodeWorkspaceFileName(name)) {
-      continue;
-    }
-    meaningful.push(name);
-  }
-  if (meaningful.length > 0) {
-    return false;
-  }
-  try {
-    return (await stat(dir)).isDirectory();
-  } catch {
-    return false;
-  }
+  return isEmptyLearningTarget(dir);
 }
 
 /**

@@ -2,6 +2,7 @@ import { ProtocolError } from "@learn-by-diff/protocol";
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
 import { createLearningWorkspace } from "./creator.ts";
+import { NonEmptyLearningTargetError } from "./errors.ts";
 import {
   findLearningWorkspaceRoot,
   isInPlaceLearningTarget,
@@ -50,53 +51,69 @@ export async function openCourse(options: OpenCourseOptions): Promise<string | u
     inPlaceRoot = root;
     parentDir = undefined;
   } else if (parentDir === undefined || parentDir.trim() === "") {
-    const picked = await vscode.window.showOpenDialog({
-      canSelectFiles: false,
-      canSelectFolders: true,
-      canSelectMany: false,
-      openLabel: vscode.l10n.t("Create learning workspace here"),
-      title: vscode.l10n.t("Parent folder for the learning workspace"),
-    });
-    parentDir = picked?.[0]?.fsPath;
+    parentDir = await pickLearningWorkspaceParent();
     if (parentDir === undefined) {
       return undefined;
     }
   }
 
   let learningRoot: string | undefined;
-  await vscode.window.withProgress(
-    {
-      location: vscode.ProgressLocation.Notification,
-      title: vscode.l10n.t("LearnByDiff: opening course"),
-      cancellable: false,
-    },
-    async () => {
-      try {
-        const created = await createLearningWorkspace({
-          courseRepoUrl: url,
-          inPlaceRoot,
-          parentDir,
-          git,
-          onLog: (line) => output.appendLine(line),
-        });
-        learningRoot = created.learningRoot;
-      } catch (error) {
-        if (error instanceof ProtocolError) {
-          void vscode.window.showErrorMessage(
-            vscode.l10n.t(
-              "This repository has no valid Learning Course Protocol config.\n{0}",
-              error.message,
-            ),
-          );
-          return;
+  for (;;) {
+    let blockedRoot: string | undefined;
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: vscode.l10n.t("LearnByDiff: opening course"),
+        cancellable: false,
+      },
+      async () => {
+        try {
+          const created = await createLearningWorkspace({
+            courseRepoUrl: url,
+            inPlaceRoot,
+            parentDir,
+            git,
+            onLog: (line) => output.appendLine(line),
+          });
+          learningRoot = created.learningRoot;
+        } catch (error) {
+          if (error instanceof NonEmptyLearningTargetError) {
+            blockedRoot = error.learningRoot;
+            return;
+          }
+          if (error instanceof ProtocolError) {
+            void vscode.window.showErrorMessage(
+              vscode.l10n.t(
+                "This repository has no valid Learning Course Protocol config.\n{0}",
+                error.message,
+              ),
+            );
+            return;
+          }
+          showError(error);
         }
-        showError(error);
-      }
-    },
-  );
+      },
+    );
 
-  if (learningRoot === undefined) {
-    return undefined;
+    if (learningRoot !== undefined) {
+      break;
+    }
+    if (blockedRoot === undefined) {
+      return undefined;
+    }
+
+    await vscode.window.showWarningMessage(
+      vscode.l10n.t(
+        "The folder “{0}” is not empty. Open Course will not overwrite existing files. Choose another parent folder.",
+        blockedRoot,
+      ),
+      { modal: true },
+    );
+    inPlaceRoot = undefined;
+    parentDir = await pickLearningWorkspaceParent();
+    if (parentDir === undefined) {
+      return undefined;
+    }
   }
 
   const switched = await openLearningWorkspaceIfNeeded(learningRoot);
@@ -112,4 +129,20 @@ export async function openCourse(options: OpenCourseOptions): Promise<string | u
     showError(error);
   }
   return learningRoot;
+}
+
+/**
+ * Asks the user to pick a parent folder for a new learning workspace.
+ *
+ * @returns Absolute path, or `undefined` when the picker is cancelled
+ */
+async function pickLearningWorkspaceParent(): Promise<string | undefined> {
+  const picked = await vscode.window.showOpenDialog({
+    canSelectFiles: false,
+    canSelectFolders: true,
+    canSelectMany: false,
+    openLabel: vscode.l10n.t("Create learning workspace here"),
+    title: vscode.l10n.t("Parent folder for the learning workspace"),
+  });
+  return picked?.[0]?.fsPath;
 }

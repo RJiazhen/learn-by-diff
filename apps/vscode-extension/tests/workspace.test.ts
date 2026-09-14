@@ -4,7 +4,7 @@ import path from "node:path";
 import { afterEach, describe, expect, test } from "vite-plus/test";
 import { GitClient } from "../src/git/client.ts";
 import { createLearningWorkspace, checkoutChapter } from "../src/workspace/creator.ts";
-import { DirtyWorkspaceError } from "../src/workspace/errors.ts";
+import { DirtyWorkspaceError, NonEmptyLearningTargetError } from "../src/workspace/errors.ts";
 import {
   findLearningWorkspaceRoot,
   isInPlaceLearningTarget,
@@ -747,6 +747,80 @@ describe("learning workspace", () => {
     await writeFile(path.join(dir, "README.md"), "sandbox\n", "utf8");
     await writeFile(path.join(dir, `${path.basename(dir)}.code-workspace`), "{}\n", "utf8");
     expect(await isInPlaceLearningTarget(dir)).toBe(true);
+  });
+
+  test("isInPlaceLearningTarget rejects a course repo with only README and .course-config", async () => {
+    const dir = await tempDir("lbd-course-hidden-");
+    await writeFile(path.join(dir, "README.md"), "course\n", "utf8");
+    await mkdir(path.join(dir, ".course-config"), { recursive: true });
+    await writeFile(path.join(dir, ".course-config", "course.yml"), "id: demo\n", "utf8");
+    expect(await isInPlaceLearningTarget(dir)).toBe(false);
+  });
+
+  test("isInPlaceLearningTarget rejects a course repo with course.yml at the root", async () => {
+    const dir = await tempDir("lbd-course-root-");
+    await writeFile(path.join(dir, "README.md"), "course\n", "utf8");
+    await writeFile(path.join(dir, "course.yml"), "id: demo\n", "utf8");
+    expect(await isInPlaceLearningTarget(dir)).toBe(false);
+  });
+
+  test("isInPlaceLearningTarget rejects an existing learning workspace", async () => {
+    const { learningRoot } = await createTwoChapterWorkspace();
+    expect(await isInPlaceLearningTarget(learningRoot)).toBe(false);
+  });
+
+  test("createLearningWorkspace refuses a non-empty in-place folder", async () => {
+    const courseDir = await tempDir("lbd-refuse-inplace-course-");
+    await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
+    await writeFile(
+      path.join(courseDir, ".course-config", "course.yml"),
+      "id: refuse-inplace\n",
+      "utf8",
+    );
+    await writeFile(
+      path.join(courseDir, ".course-config", "chapters", "001.yml"),
+      "id: one\n",
+      "utf8",
+    );
+    const occupied = await tempDir("lbd-occupied-inplace-");
+    const keepPath = path.join(occupied, "keep.ts");
+    await writeFile(keepPath, "keep\n", "utf8");
+    await expect(
+      createLearningWorkspace({
+        courseRepoUrl: nestedCourseYml(courseDir),
+        inPlaceRoot: occupied,
+        git,
+      }),
+    ).rejects.toBeInstanceOf(NonEmptyLearningTargetError);
+    expect(await readFile(keepPath, "utf8")).toBe("keep\n");
+  });
+
+  test("createLearningWorkspace refuses an existing non-empty course-id folder", async () => {
+    const courseDir = await tempDir("lbd-refuse-parent-course-");
+    await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
+    await writeFile(
+      path.join(courseDir, ".course-config", "course.yml"),
+      "id: refuse-parent\n",
+      "utf8",
+    );
+    await writeFile(
+      path.join(courseDir, ".course-config", "chapters", "001.yml"),
+      "id: one\n",
+      "utf8",
+    );
+    const parent = await tempDir("lbd-occupied-parent-");
+    const dest = path.join(parent, "refuse-parent");
+    await mkdir(dest, { recursive: true });
+    const keepPath = path.join(dest, "keep.ts");
+    await writeFile(keepPath, "keep\n", "utf8");
+    await expect(
+      createLearningWorkspace({
+        courseRepoUrl: nestedCourseYml(courseDir),
+        parentDir: parent,
+        git,
+      }),
+    ).rejects.toBeInstanceOf(NonEmptyLearningTargetError);
+    expect(await readFile(keepPath, "utf8")).toBe("keep\n");
   });
 
   test("findLearningWorkspaceRoot picks the folder that has progress.json", async () => {
