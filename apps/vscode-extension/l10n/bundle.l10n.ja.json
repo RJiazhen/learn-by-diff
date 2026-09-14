@@ -13,6 +13,7 @@
   "Completed": "完了",
   "Parent folder for the learning workspace": "学習ワークスペースの親フォルダーを選択",
   "Create learning workspace here": "ここに学習ワークスペースを作成",
+  "The folder “{0}” is not empty. Open Course will not overwrite existing files. Choose another parent folder.": "フォルダー「{0}」は空ではありません。コースを開いても既存のファイルは上書きしません。別の親フォルダーを選択してください。",
   "LearnByDiff: opening course": "LearnByDiff: コースを開いています",
   "This repository has no valid Learning Course Protocol config.\n{0}": "このリポジトリには有効な Learning Course Protocol 設定がありません。\n{0}",
   "Could not add “{0}” to this window. Open it in a new window?": "「{0}」をこのウィンドウに追加できませんでした。新しいウィンドウで開きますか？",

@@ -12,6 +12,8 @@ import {
   type Course,
 } from "@learn-by-diff/protocol";
 import type { GitClient } from "../git/client.ts";
+import { isEmptyLearningTarget } from "./emptyTarget.ts";
+import { NonEmptyLearningTargetError } from "./errors.ts";
 import { isCodeWorkspaceFileName, learningPaths } from "./paths.ts";
 import { ensureLearningWorkspaceFile } from "./multiRoot.ts";
 import { githubCloneBranch, parseCourseConfigUrl } from "./parseCourseConfigUrl.ts";
@@ -29,7 +31,7 @@ export interface CreateLearningWorkspaceOptions {
   /** Local `course.yml` path (`file:` URLs allowed), GitHub file URL, or git URL to clone. */
   courseRepoUrl: string;
   git: GitClient;
-  /** Initialize this folder in place (debug sandbox). */
+  /** Initialize this folder in place when it is empty (debug sandbox). */
   inPlaceRoot?: string;
   /** Parent directory; workspace becomes `{parent}/{course.id}`. */
   parentDir?: string;
@@ -48,6 +50,7 @@ export interface CreatedLearningWorkspace {
  *
  * Local course/source directories (including committed `examples/`) do not need nested git.
  * The learning workspace GIT_DIR is a new repo for the student; it never points at the source store.
+ * Throws {@link NonEmptyLearningTargetError} instead of replacing files in a non-empty destination.
  *
  * @param options - Clone URLs, destination, and git client
  * @returns Loaded course
@@ -67,6 +70,9 @@ export async function createLearningWorkspace(
       (parentDir !== undefined ? path.join(parentDir, preview.config.id) : undefined);
     if (learningRoot === undefined) {
       throw new Error("createLearningWorkspace requires inPlaceRoot or parentDir");
+    }
+    if (!(await isEmptyLearningTarget(learningRoot))) {
+      throw new NonEmptyLearningTargetError(learningRoot);
     }
     await mkdir(learningRoot, { recursive: true });
 
