@@ -47,6 +47,7 @@ The Learn By Diff view lists chapters and provides:
 | Action                      | What it does                                                   |
 | --------------------------- | -------------------------------------------------------------- |
 | **Previous / Next chapter** | Switch to the adjacent chapter’s Not Started snapshot          |
+| **Search chapter**          | Find a chapter by title or id and reveal it in the list        |
 | **Open chapter docs**       | Open this chapter’s documentation                              |
 | **Not Started**             | Apply this chapter’s start snapshot                            |
 | **Completed**               | Apply this chapter’s finish snapshot                           |

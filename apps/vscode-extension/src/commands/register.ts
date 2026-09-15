@@ -4,6 +4,7 @@ import { openChapterFileDiff } from "../ui/diff.ts";
 import type { CourseTreeItem, CourseTreeProvider } from "../ui/explorerView.ts";
 import { localizedSnapshotStatus } from "../ui/labels.ts";
 import { openChapterDocs } from "../ui/openDocs.ts";
+import { chapterSearchPicks, type ChapterSearchPick } from "../ui/searchChapter.ts";
 import { DirtyWorkspaceError } from "../workspace/errors.ts";
 import {
   findLearningWorkspaceRoot,
@@ -13,7 +14,12 @@ import {
 import { openCourse } from "../workspace/openCourse.ts";
 import { materializeChapterRef, chapterRefWorkspaceName } from "../workspace/refs.ts";
 import { demoCoursePath } from "../workspace/resolveRepo.ts";
-import { applyChapterSnapshot, nextChapter, previousChapter } from "../workspace/session.ts";
+import {
+  applyChapterSnapshot,
+  currentChapter,
+  nextChapter,
+  previousChapter,
+} from "../workspace/session.ts";
 import type { ChapterSnapshotSide } from "../workspace/state.ts";
 import {
   addOrOpenWorkspaceFolder,
@@ -143,6 +149,48 @@ export function registerCommands(
       }
       await applySnapshotWithConfirm(session, previous.id, "start");
     }),
+  );
+
+  /**
+   * Opens a QuickPick of chapters and reveals the chosen row in Explorer.
+   *
+   * Does not apply a snapshot; students still use Not Started / Completed to switch.
+   */
+  async function onSearchChapter(): Promise<void> {
+    const session = await loadFromRoot();
+    if (session === undefined) {
+      return;
+    }
+    const current = currentChapter(session);
+    const picks = chapterSearchPicks(session.course.chapters, current.id);
+    /**
+     * Maps a search row to a QuickPick item, marking the applied chapter.
+     *
+     * @param pick - Chapter search row
+     */
+    function toQuickPickItem(pick: ChapterSearchPick): vscode.QuickPickItem & {
+      chapterId: string;
+    } {
+      return {
+        label: pick.label,
+        description: pick.description,
+        chapterId: pick.chapterId,
+        iconPath: pick.current ? new vscode.ThemeIcon("mortar-board") : undefined,
+      };
+    }
+    const selected = await vscode.window.showQuickPick(picks.map(toQuickPickItem), {
+      title: vscode.l10n.t("LearnByDiff: Search Chapter"),
+      placeHolder: vscode.l10n.t("Filter by chapter title or id"),
+      matchOnDescription: true,
+    });
+    if (selected === undefined) {
+      return;
+    }
+    await tree.revealChapter(selected.chapterId);
+  }
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("learnByDiff.searchChapter", onSearchChapter),
   );
 
   /**

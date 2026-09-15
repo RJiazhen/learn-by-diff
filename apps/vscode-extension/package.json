@@ -55,6 +55,11 @@
         "icon": "$(arrow-left)"
       },
       {
+        "command": "learnByDiff.searchChapter",
+        "title": "%learnByDiff.searchChapter.title%",
+        "icon": "$(search)"
+      },
+      {
         "command": "learnByDiff.openFileDiff",
         "title": "%learnByDiff.openFileDiff.title%"
       },
@@ -144,14 +149,19 @@
           "group": "navigation@2"
         },
         {
+          "command": "learnByDiff.searchChapter",
+          "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace",
+          "group": "navigation@3"
+        },
+        {
           "command": "learnByDiff.viewAsTree",
           "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace && learnByDiff.viewMode == 'list'",
-          "group": "navigation@3"
+          "group": "navigation@4"
         },
         {
           "command": "learnByDiff.viewAsList",
           "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace && learnByDiff.viewMode != 'list'",
-          "group": "navigation@3"
+          "group": "navigation@4"
         }
       ],
       "view/item/context": [

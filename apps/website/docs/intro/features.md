@@ -24,6 +24,7 @@ That view includes:
 | Action                      | What it does                                    |
 | --------------------------- | ----------------------------------------------- |
 | **Previous / Next chapter** | Switch to the adjacent chapter’s start snapshot |
+| **Search chapter**          | Find a chapter by title or id and reveal it     |
 | **Open chapter docs**       | Open this chapter’s documentation               |
 | **Not Started**             | Apply this chapter’s start snapshot             |
 | **Completed**               | Apply this chapter’s finish snapshot            |

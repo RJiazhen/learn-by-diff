@@ -20,6 +20,8 @@
   "Open in New Window": "在新窗口中打开",
   "File {0} is not an entry file for chapter {1}.": "文件 {0} 不是章节 {1} 的入口文件。",
   "LearnByDiff: Next Chapter": "LearnByDiff: 下一章",
+  "LearnByDiff: Search Chapter": "LearnByDiff: 搜索章节",
+  "Filter by chapter title or id": "按章节标题或 ID 筛选",
   "Open File Diff": "打开文件对比",
   "Docs: {0}": "文档：{0}",
   "Added in chapter goal": "章节目标中新增",

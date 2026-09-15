@@ -133,21 +133,47 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
    * Expands the current chapter so its entry files are visible (does not steal selection).
    */
   async revealCurrentChapter(): Promise<void> {
+    await this.revealChapter(undefined, { select: false, focus: false });
+  }
+
+  /**
+   * Reveals a chapter row in the Learn By Diff view.
+   *
+   * @param chapterId - Chapter to reveal, or `undefined` for the applied chapter
+   * @param options - Reveal behavior; search uses select + focus so the row is obvious
+   */
+  async revealChapter(
+    chapterId?: string,
+    options: { select: boolean; focus: boolean } = { select: true, focus: true },
+  ): Promise<void> {
     if (this.session === undefined || this.treeView === undefined) {
       return;
     }
-    const chapter = currentChapter(this.session);
+    const chapter =
+      chapterId === undefined
+        ? currentChapter(this.session)
+        : this.session.course.chapters.find((item) => item.id === chapterId);
+    if (chapter === undefined) {
+      return;
+    }
+    const index = this.session.course.chapters.findIndex((item) => item.id === chapter.id);
+    const appliedSide =
+      chapter.id === currentChapter(this.session).id
+        ? appliedSnapshotSide(this.session.progress)
+        : undefined;
     const element =
       this.chapterElements.get(chapter.id) ??
-      this.buildChapterItem(
-        chapter,
-        appliedSnapshotSide(this.session.progress),
-        this.session.course.chapters.findIndex((item) => item.id === chapter.id),
-        this.session.course.chapters.length,
-      );
+      this.buildChapterItem(chapter, appliedSide, index, this.session.course.chapters.length);
     this.chapterElements.set(chapter.id, element);
     try {
-      await this.treeView.reveal(element, { expand: true, select: false, focus: false });
+      if (options.focus) {
+        await vscode.commands.executeCommand("learnByDiff.courseView.focus");
+      }
+      await this.treeView.reveal(element, {
+        expand: true,
+        select: options.select,
+        focus: options.focus,
+      });
     } catch {
       // Tree may not be visible yet; ignore.
     }
