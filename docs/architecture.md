@@ -74,30 +74,31 @@ Wire editors with:
 
 Under a learning workspace root:
 
-| Path                                     | Purpose                                        |
-| ---------------------------------------- | ---------------------------------------------- |
-| `.learn/progress.json`                   | Applied chapter id / start or finish snapshot  |
-| `.learn/course/`                         | Copy of course config                          |
-| `.learn/source.git/`                     | Materialized source store (mirror)             |
-| `.learn/snapshots/<chapter>/`            | Cached from/to trees when needed               |
-| `.learn/refs/<ordinal>-<title> (status)` | Runnable copy; folder name matches Explorer    |
-| `{root}.code-workspace`                  | Multi-root window (named after the course dir) |
+| Path                                     | Purpose                                                                            |
+| ---------------------------------------- | ---------------------------------------------------------------------------------- |
+| `.learn/progress.json`                   | Applied chapter id / start or finish snapshot                                      |
+| `.learn/course/`                         | Copy of course config                                                              |
+| `.learn/source.git/`                     | Materialized source store (mirror)                                                 |
+| `.learn/snapshots/dirs/<source-dir>/`    | Cached source trees (one copy per unique `fromDir`/`toDir`; prefetched after open) |
+| `.learn/refs/<ordinal>-<title> (status)` | Runnable copy; folder name matches Explorer                                        |
+| `{root}.code-workspace`                  | Multi-root window (named after the course dir)                                     |
 
 Activation today: `onUri` + `onView:learnByDiff.courseView` + `workspaceContains:.learn/progress.json`. Explorer view **Learn By Diff** is always shown; `viewsWelcome` + Open Course in the view title when the folder is not a learning workspace.
 
-**Not Started** / **Completed** export that chapter’s `fromDir` or `toDir` into the student tree and mark the row with that status (QuickPick only when the tree differs from the last applied snapshot). Title-bar prev/next apply the adjacent chapter’s start. Title-bar search opens a QuickPick and reveals the chapter (does not apply a snapshot). First open still exports chapter one’s `fromDir`. Opening a course loads `{course-dir}.code-workspace` at the learning root (student tree only at first) so later **Open Not Started Folder** / **Open Completed Folder** append chapter copies as extra roots without restarting the host, and File → Open Recent can reopen that workspace with those folders. Copies live under `.learn/refs/` as `01-Title (Not Started)` (gitignored).
+**Not Started** / **Completed** export that chapter’s `fromDir` or `toDir` into the student tree and mark the row with that status (QuickPick only when the tree differs from the last applied snapshot). Title-bar prev/next apply the adjacent chapter’s start. Title-bar search opens a QuickPick and reveals the chapter (does not apply a snapshot). First open still exports chapter one’s `fromDir`, then unique source snapshot directories (shared when chapters reuse the same `fromDir`/`toDir`) are cached in the **same** Open Course progress notification. Reopening a learning workspace only shows that notification if snapshots are still missing. Later Start/Finish, diffs, and reference folders copy from `.learn/snapshots` instead of `git archive`. Opening a course loads `{course-dir}.code-workspace` at the learning root (student tree only at first) so later **Open Not Started Folder** / **Open Completed Folder** append chapter copies as extra roots without restarting the host, and File → Open Recent can reopen that workspace with those folders. Copies live under `.learn/refs/` as `01-Title (Not Started)` (gitignored).
 
 ## Major surfaces
 
-| Area                         | Responsibility                                                       |
-| ---------------------------- | -------------------------------------------------------------------- |
-| `workspace/openCourse.ts`    | Shared open-course flow (command + deep link)                        |
-| `workspace/creator.ts`       | Create learning root, copy config, materialize source, first chapter |
-| `workspace/sourceStore.ts`   | Source mirror (git or tree copy); list/read/export chapter subtrees  |
-| `workspace/session.ts`       | Chapter navigation and snapshot apply                                |
-| `ui/explorerView.ts`         | SCM-like chapter/file tree, contextValues, inline actions            |
-| `ui/diff.ts` / `openDocs.ts` | File diffs (lazy `.learn/snapshots`); docs URL / Markdown / file     |
-| `uri/*`                      | `vscode://RuanJiazhen.learn-by-diff/open?url=…` (also `cursor://`)   |
+| Area                                  | Responsibility                                                                  |
+| ------------------------------------- | ------------------------------------------------------------------------------- |
+| `workspace/openCourse.ts`             | Shared open-course flow (command + deep link)                                   |
+| `workspace/creator.ts`                | Create learning root, copy config, materialize source, first chapter            |
+| `workspace/sourceStore.ts`            | Source mirror (git or tree copy); list/read/export chapter subtrees             |
+| `workspace/session.ts`                | Chapter navigation and snapshot apply                                           |
+| `snapshot/archive.ts` / `prefetch.ts` | Unique source trees; prefetch during Open Course (and on reopen if missing)     |
+| `ui/explorerView.ts`                  | SCM-like chapter/file tree from cached snapshots; contextValues, inline actions |
+| `ui/diff.ts` / `openDocs.ts`          | File diffs (`.learn/snapshots`, warmed after open); docs URL / Markdown / file  |
+| `uri/*`                               | `vscode://RuanJiazhen.learn-by-diff/open?url=…` (also `cursor://`)              |
 
 Deep link authority = `publisher.name` → `RuanJiazhen.learn-by-diff`.
 
