@@ -35,5 +35,7 @@
   "(no chapter snapshot dirs)": "（無章節快照目錄）",
   "Docs file not found for chapter {0}: {1} (looked in {2})": "找不到章節 {0} 的文件檔：{1}（已搜尋：{2}）",
   "git was not found on PATH. Install Git and reopen the window.": "在 PATH 中找不到 git。請安裝 Git 後重新開啟視窗。",
-  "Deep link: open course {0}": "深層連結：開啟課程 {0}"
+  "Deep link: open course {0}": "深層連結：開啟課程 {0}",
+  "{0} ({1} of {2})": "{0}（{1}/{2}）",
+  "(empty tree)": "（空目錄）"
 }

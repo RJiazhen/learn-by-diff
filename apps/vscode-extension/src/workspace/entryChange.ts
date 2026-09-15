@@ -1,11 +1,119 @@
 import type { ChapterConfig, CourseSource } from "@learn-by-diff/protocol";
 import { resolveSourceSubtreePath } from "@learn-by-diff/protocol";
+import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import type { GitClient } from "../git/client.ts";
-import { listSourceSubtreeFiles, readSourceFile, sourceFileExists } from "./sourceStore.ts";
+import {
+  listDirectoryFiles,
+  listSourceSubtreeFiles,
+  readSourceFile,
+  sourceFileExists,
+} from "./sourceStore.ts";
 
 /** SCM-style change letter for a chapter entry file. */
 export type EntryChangeKind = "U" | "M" | "D";
+
+/** One changed entry file under a chapter. */
+export interface ChangedEntryFile {
+  relativePath: string;
+  changeKind: EntryChangeKind;
+}
+
+/**
+ * Returns whether `absPath` exists as a file.
+ *
+ * @param absPath - Absolute filesystem path
+ */
+async function isFile(absPath: string): Promise<boolean> {
+  try {
+    return (await stat(absPath)).isFile();
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Joins a snapshot root with a chapter-relative file path.
+ *
+ * @param snapshotRoot - Cached from/to snapshot directory
+ * @param relativePath - Path relative to the chapter tree root
+ */
+function snapshotRelativeFile(snapshotRoot: string, relativePath: string): string {
+  return path.join(snapshotRoot, ...relativePath.split(/[/\\]/));
+}
+
+/**
+ * Classifies how an entry file changes between two on-disk snapshot directories.
+ *
+ * @param fromRoot - Cached start snapshot directory
+ * @param toRoot - Cached goal snapshot directory
+ * @param relativePath - Path relative to the chapter tree root
+ */
+export async function classifySnapshotEntryChange(
+  fromRoot: string,
+  toRoot: string,
+  relativePath: string,
+): Promise<EntryChangeKind | undefined> {
+  const normalizedRelative = relativePath.split(/[/\\]/).join("/");
+  const fromPath = snapshotRelativeFile(fromRoot, normalizedRelative);
+  const toPath = snapshotRelativeFile(toRoot, normalizedRelative);
+  const fromExists = await isFile(fromPath);
+  const toExists = await isFile(toPath);
+
+  if (!fromExists && toExists) {
+    return "U";
+  }
+  if (fromExists && !toExists) {
+    return "D";
+  }
+  if (!fromExists && !toExists) {
+    return undefined;
+  }
+
+  const fromText = await readFile(fromPath, "utf8");
+  const toText = await readFile(toPath, "utf8");
+  if (fromText === toText) {
+    return undefined;
+  }
+  return "M";
+}
+
+/**
+ * Lists entry files that differ between two cached snapshot directories.
+ *
+ * When `entryFiles` is omitted, discovers files under the goal snapshot (`toRoot`).
+ * Compares in parallel against the local cache rather than spawning git per file.
+ *
+ * @param fromRoot - Cached start snapshot directory
+ * @param toRoot - Cached goal snapshot directory
+ * @param entryFiles - Explicit chapter entry files, or `undefined` to discover `toRoot`
+ */
+export async function listChangedFilesInSnapshots(
+  fromRoot: string,
+  toRoot: string,
+  entryFiles?: string[],
+): Promise<ChangedEntryFile[]> {
+  const paths =
+    entryFiles ??
+    (await listDirectoryFiles(toRoot)).sort((left, right) => left.localeCompare(right));
+  /**
+   * Classifies one entry file and drops unchanged paths.
+   *
+   * @param relativePath - Path relative to the chapter tree root
+   */
+  const classifyOne = async (relativePath: string): Promise<ChangedEntryFile | undefined> => {
+    const changeKind = await classifySnapshotEntryChange(fromRoot, toRoot, relativePath);
+    return changeKind === undefined ? undefined : { relativePath, changeKind };
+  };
+  const classified = await Promise.all(paths.map(classifyOne));
+  const items: ChangedEntryFile[] = [];
+  for (const item of classified) {
+    if (item !== undefined) {
+      items.push(item);
+    }
+  }
+  return items;
+}
 
 /**
  * Returns the entry-file list for a chapter: explicit `entryFiles`, or all files

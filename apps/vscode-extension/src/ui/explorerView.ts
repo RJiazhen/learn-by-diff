@@ -1,11 +1,11 @@
 import type { ChapterConfig } from "@learn-by-diff/protocol";
-import { resolveSourceSubtreePath } from "@learn-by-diff/protocol";
 import path from "node:path";
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
+import { writeChapterArchives } from "../snapshot/archive.ts";
 import {
-  classifyEntryChange,
-  resolveChapterEntryFiles,
+  listChangedFilesInSnapshots,
+  type ChangedEntryFile,
   type EntryChangeKind,
 } from "../workspace/entryChange.ts";
 import type { LearningSession } from "../workspace/loader.ts";
@@ -34,12 +34,6 @@ export type CourseTreeItem = vscode.TreeItem & {
   changeKind?: EntryChangeKind;
 };
 
-/** One changed entry file under a chapter. */
-interface ChangedEntryFile {
-  relativePath: string;
-  changeKind: EntryChangeKind;
-}
-
 /**
  * Chapter + entry-file tree in the Explorer LearnByDiff view.
  *
@@ -54,10 +48,12 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
   private readonly chapterElements = new Map<string, CourseTreeItem>();
   /** Chapter ids the user (or reveal) has expanded — used to auto-expand folder trees. */
   private readonly expandedChapterIds = new Set<string>();
+  /** Per-chapter changed-file lists, keyed by chapter id (invalidated on session change). */
+  private readonly changedFiles = new Map<string, Promise<ChangedEntryFile[]>>();
   private readonly emitter = new vscode.EventEmitter<CourseTreeItem | undefined>();
 
   /**
-   * @param git - Git client used to classify entry-file changes
+   * @param git - Git client used to materialize the snapshot cache
    * @param workspaceState - Persists tree/list view mode
    */
   constructor(
@@ -123,6 +119,7 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
     this.session = session;
     this.chapterElements.clear();
     this.expandedChapterIds.clear();
+    this.changedFiles.clear();
     this.emitter.fire(undefined);
     if (session !== undefined) {
       void this.revealCurrentChapter();
@@ -283,32 +280,49 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
   /**
    * Lists entry files that differ between a chapter's from/to snapshots.
    *
+   * Reads the shared `.learn/snapshots` cache (materializing those trees if needed)
+   * instead of spawning git per file. Nested folder expands reuse the same list.
+   *
    * @param chapter - Chapter config
    */
   private async listChangedEntryFiles(chapter: ChapterConfig): Promise<ChangedEntryFile[]> {
+    const cached = this.changedFiles.get(chapter.id);
+    if (cached !== undefined) {
+      return cached;
+    }
+    /**
+     * Drops a failed load so a later expand can retry.
+     *
+     * @param error - Snapshot export or classification failure
+     */
+    const forgetOnFailure = (error: unknown): Promise<ChangedEntryFile[]> => {
+      this.changedFiles.delete(chapter.id);
+      return Promise.reject(error);
+    };
+    const pending = this.loadChangedEntryFiles(chapter).catch(forgetOnFailure);
+    this.changedFiles.set(chapter.id, pending);
+    return pending;
+  }
+
+  /**
+   * Materializes this chapter's snapshot dirs and classifies changed entry files from disk.
+   *
+   * @param chapter - Chapter config
+   */
+  private async loadChangedEntryFiles(chapter: ChapterConfig): Promise<ChangedEntryFile[]> {
     if (this.session === undefined) {
       return [];
     }
     const { sourceMirror } = learningPaths(this.session.workspaceRoot);
-    const source = this.session.course.config.source;
-    const fromSubtree = resolveSourceSubtreePath(source, chapter.fromDir);
-    const toSubtree = resolveSourceSubtreePath(source, chapter.toDir);
-    const entryFiles = await resolveChapterEntryFiles(this.git, sourceMirror, source, chapter);
-    const items: ChangedEntryFile[] = [];
-    for (const relativePath of entryFiles) {
-      const changeKind = await classifyEntryChange(
-        this.git,
-        sourceMirror,
-        fromSubtree,
-        toSubtree,
-        relativePath,
-      );
-      if (changeKind === undefined) {
-        continue;
-      }
-      items.push({ relativePath, changeKind });
-    }
-    return items;
+    const archives = await writeChapterArchives(
+      this.git,
+      sourceMirror,
+      this.session.workspaceRoot,
+      chapter.fromDir,
+      chapter.toDir,
+      this.session.course.config.source,
+    );
+    return listChangedFilesInSnapshots(archives.fromDir, archives.toDir, chapter.entryFiles);
   }
 
   /**

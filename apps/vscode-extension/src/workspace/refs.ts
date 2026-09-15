@@ -1,13 +1,13 @@
 import type { Course } from "@learn-by-diff/protocol";
-import { resolveSourceSubtreePath } from "@learn-by-diff/protocol";
 import { mkdir, readdir, rm } from "node:fs/promises";
 import path from "node:path";
 import type { GitClient } from "../git/client.ts";
+import { writeChapterArchives } from "../snapshot/archive.ts";
 import { ensureLearnGitignore } from "./creator.ts";
 import type { LearningSession } from "./loader.ts";
 import { chapterRefPath, learningPaths } from "./paths.ts";
 import { chapterOrdinal } from "./session.ts";
-import { exportSourceSubtree } from "./sourceStore.ts";
+import { copyDirectoryChildren } from "./sourceStore.ts";
 import { chapterSnapshotStatusLabel, type ChapterSnapshotSide } from "./state.ts";
 
 /**
@@ -33,7 +33,8 @@ export function chapterRefWorkspaceName(
  * Exports a chapter Not Started or Completed snapshot into `.learn/refs/…`.
  *
  * Does not overwrite the student working tree. Replaces any previous copy at
- * the same path. `.learn/refs/` is gitignored.
+ * the same path. Copies from `.learn/snapshots` (writing that cache first when
+ * missing). `.learn/refs/` is gitignored.
  *
  * @param git - Git client
  * @param session - Active learning session
@@ -51,19 +52,22 @@ export async function materializeChapterRef(
   if (chapter === undefined) {
     throw new Error(`unknown chapter: ${chapterId}`);
   }
-  const snapshotDir = side === "finish" ? chapter.toDir : chapter.fromDir;
   const dest = chapterRefPath(
     session.workspaceRoot,
     chapterRefWorkspaceName(session.course, chapterId, side),
   );
   await emptyDirectory(dest);
   const { sourceMirror } = learningPaths(session.workspaceRoot);
-  await exportSourceSubtree(
+  const archives = await writeChapterArchives(
     git,
     sourceMirror,
-    resolveSourceSubtreePath(session.course.config.source, snapshotDir),
-    dest,
+    session.workspaceRoot,
+    chapter.fromDir,
+    chapter.toDir,
+    session.course.config.source,
   );
+  const snapshotRoot = side === "finish" ? archives.toDir : archives.fromDir;
+  await copyDirectoryChildren(snapshotRoot, dest);
   await ensureLearnGitignore(session.workspaceRoot);
   return dest;
 }

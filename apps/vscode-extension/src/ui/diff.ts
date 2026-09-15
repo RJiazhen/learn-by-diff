@@ -1,9 +1,8 @@
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
 import { snapshotFile, writeChapterArchives } from "../snapshot/archive.ts";
-import { resolveChapterEntryFiles } from "../workspace/entryChange.ts";
 import type { LearningSession } from "../workspace/loader.ts";
 import { learningPaths } from "../workspace/paths.ts";
 import { chapterOrdinal } from "../workspace/session.ts";
@@ -48,6 +47,21 @@ function uriForDiffSide(fsPath: string): vscode.Uri {
 }
 
 /**
+ * Returns whether a chapter-relative file exists in a cached snapshot directory.
+ *
+ * @param snapshotRoot - Cached from/to snapshot directory
+ * @param relativePath - Path relative to the chapter tree root
+ */
+async function snapshotHasFile(snapshotRoot: string, relativePath: string): Promise<boolean> {
+  try {
+    await access(snapshotFile(snapshotRoot, relativePath));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Opens vscode.diff for one chapter entry file (from snapshot ↔ to snapshot).
  *
  * Missing sides (adds/deletes) use an empty virtual document so the editor still opens,
@@ -72,28 +86,26 @@ export async function openChapterFileDiff(
     return;
   }
   const { sourceMirror } = learningPaths(session.workspaceRoot);
-  const entryFiles = await resolveChapterEntryFiles(
+  const { fromDir, toDir } = await writeChapterArchives(
     git,
     sourceMirror,
+    session.workspaceRoot,
+    chapter.fromDir,
+    chapter.toDir,
     session.course.config.source,
-    chapter,
   );
-  if (!entryFiles.includes(relativePath)) {
+  const listed = chapter.entryFiles;
+  const allowed =
+    listed !== undefined
+      ? listed.includes(relativePath)
+      : (await snapshotHasFile(fromDir, relativePath)) ||
+        (await snapshotHasFile(toDir, relativePath));
+  if (!allowed) {
     void vscode.window.showWarningMessage(
       vscode.l10n.t("File {0} is not an entry file for chapter {1}.", relativePath, chapter.title),
     );
     return;
   }
-
-  const { fromDir, toDir } = await writeChapterArchives(
-    git,
-    sourceMirror,
-    session.workspaceRoot,
-    chapter.id,
-    chapter.fromDir,
-    chapter.toDir,
-    session.course.config.source,
-  );
 
   const left = uriForDiffSide(snapshotFile(fromDir, relativePath));
   const right = uriForDiffSide(snapshotFile(toDir, relativePath));

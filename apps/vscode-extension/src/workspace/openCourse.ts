@@ -1,6 +1,12 @@
 import { ProtocolError } from "@learn-by-diff/protocol";
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
+import {
+  prefetchAllChapterSnapshots,
+  type SnapshotPrefetchProgress,
+} from "../snapshot/prefetch.ts";
+import { reportSnapshotPrefetchProgress } from "../snapshot/prefetchProgress.ts";
+import { showError } from "../commands/showError.ts";
 import { createLearningWorkspace } from "./creator.ts";
 import { NonEmptyLearningTargetError } from "./errors.ts";
 import {
@@ -9,7 +15,6 @@ import {
   loadLearningSession,
   type LearningSession,
 } from "./loader.ts";
-import { showError } from "../commands/showError.ts";
 import { openLearningWorkspaceIfNeeded } from "./workspaceFolders.ts";
 
 /** Options for opening a course into a learning workspace. */
@@ -26,7 +31,10 @@ export interface OpenCourseOptions {
 }
 
 /**
- * Creates a learning workspace from a `course.yml` path, GitHub file URL, or git URL and opens the folder when needed.
+ * Creates a learning workspace from a `course.yml` path, GitHub file URL, or git URL,
+ * caches unique chapter snapshots, and opens the folder when needed.
+ *
+ * Snapshot download uses the same progress notification as workspace creation.
  *
  * Shared by the command palette flow and browser / OS deep links.
  *
@@ -60,39 +68,81 @@ export async function openCourse(options: OpenCourseOptions): Promise<string | u
   let learningRoot: string | undefined;
   for (;;) {
     let blockedRoot: string | undefined;
+    /**
+     * Creates the learning workspace and caches unique chapter snapshots in one notification.
+     *
+     * @param progress - Opening-course progress reporter
+     */
+    async function createWorkspaceAndPrefetchSnapshots(
+      progress: vscode.Progress<{ message?: string; increment?: number }>,
+    ): Promise<void> {
+      /**
+       * Logs a clone/materialize line and shows it on the progress notification.
+       *
+       * @param line - Message from workspace creation
+       */
+      const onCreateLog = (line: string): void => {
+        output.appendLine(line);
+        progress.report({ message: line });
+      };
+      /**
+       * Appends a prefetch log line to the LearnByDiff output channel.
+       *
+       * @param line - Message from snapshot prefetch
+       */
+      const onPrefetchLog = (line: string): void => {
+        output.appendLine(line);
+      };
+      /**
+       * Updates the opening-course notification as each unique source tree is cached.
+       *
+       * @param info - Trees completed, total, and the subtree just written
+       */
+      const onPrefetchProgress = (info: SnapshotPrefetchProgress): void => {
+        reportSnapshotPrefetchProgress(progress, info);
+      };
+      try {
+        const created = await createLearningWorkspace({
+          courseRepoUrl: url,
+          inPlaceRoot,
+          parentDir,
+          git,
+          onLog: onCreateLog,
+        });
+        learningRoot = created.learningRoot;
+        const session = await loadLearningSession(created.learningRoot);
+        if (session === undefined) {
+          return;
+        }
+        await prefetchAllChapterSnapshots(git, session, {
+          onLog: onPrefetchLog,
+          onProgress: onPrefetchProgress,
+        });
+      } catch (error) {
+        if (error instanceof NonEmptyLearningTargetError) {
+          blockedRoot = error.learningRoot;
+          return;
+        }
+        if (error instanceof ProtocolError) {
+          void vscode.window.showErrorMessage(
+            vscode.l10n.t(
+              "This repository has no valid Learning Course Protocol config.\n{0}",
+              error.message,
+            ),
+          );
+          return;
+        }
+        showError(error);
+      }
+    }
+
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
         title: vscode.l10n.t("LearnByDiff: opening course"),
         cancellable: false,
       },
-      async () => {
-        try {
-          const created = await createLearningWorkspace({
-            courseRepoUrl: url,
-            inPlaceRoot,
-            parentDir,
-            git,
-            onLog: (line) => output.appendLine(line),
-          });
-          learningRoot = created.learningRoot;
-        } catch (error) {
-          if (error instanceof NonEmptyLearningTargetError) {
-            blockedRoot = error.learningRoot;
-            return;
-          }
-          if (error instanceof ProtocolError) {
-            void vscode.window.showErrorMessage(
-              vscode.l10n.t(
-                "This repository has no valid Learning Course Protocol config.\n{0}",
-                error.message,
-              ),
-            );
-            return;
-          }
-          showError(error);
-        }
-      },
+      createWorkspaceAndPrefetchSnapshots,
     );
 
     if (learningRoot !== undefined) {

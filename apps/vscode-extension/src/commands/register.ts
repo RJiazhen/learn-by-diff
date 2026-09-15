@@ -5,6 +5,12 @@ import type { CourseTreeItem, CourseTreeProvider } from "../ui/explorerView.ts";
 import { localizedSnapshotStatus } from "../ui/labels.ts";
 import { openChapterDocs } from "../ui/openDocs.ts";
 import { chapterSearchPicks, type ChapterSearchPick } from "../ui/searchChapter.ts";
+import {
+  startBackgroundSnapshotPrefetch,
+  stopBackgroundSnapshotPrefetch,
+  type SnapshotPrefetchProgress,
+} from "../snapshot/prefetch.ts";
+import { reportSnapshotPrefetchProgress } from "../snapshot/prefetchProgress.ts";
 import { DirtyWorkspaceError } from "../workspace/errors.ts";
 import {
   findLearningWorkspaceRoot,
@@ -43,9 +49,18 @@ export function registerCommands(
   setSession: (session: LearningSession | undefined) => void,
 ): void {
   const output = vscode.window.createOutputChannel("LearnByDiff");
-  context.subscriptions.push(output);
+  context.subscriptions.push(output, {
+    /**
+     * Cancels background snapshot prefetch when the extension deactivates.
+     */
+    dispose: () => {
+      stopBackgroundSnapshotPrefetch();
+    },
+  });
   const isDevHost = context.extensionMode === vscode.ExtensionMode.Development;
   const defaultCourseUrl = isDevHost ? demoCoursePath(context.extensionPath) : undefined;
+  /** Learning root last pushed into the UI; used so folder-change restore can re-check snapshots without resetting Explorer. */
+  let appliedWorkspaceRoot: string | undefined;
 
   /**
    * Returns the learning workspace folder path when one is open.
@@ -62,13 +77,15 @@ export function registerCommands(
    *
    * Leaves `learnByDiff.ready` unset when the host is about to reload into the
    * learning workspace file, so Open Course does not flash during the switch.
+   * Re-checks snapshot cache whenever a learning workspace is (still) open so
+   * Open Recent / folder-mode opens download any missing trees.
    */
   async function restore(): Promise<LearningSession | undefined> {
     let awaitingHostReload = false;
     try {
       const root = await workspaceRoot();
       if (root === undefined) {
-        setSession(undefined);
+        applySession(undefined);
         return undefined;
       }
       try {
@@ -77,10 +94,14 @@ export function registerCommands(
           return undefined;
         }
         const session = await loadLearningSession(root);
-        setSession(session);
+        if (session !== undefined && appliedWorkspaceRoot === session.workspaceRoot) {
+          startSnapshotPrefetch(session);
+          return session;
+        }
+        applySession(session);
         return session;
       } catch (error) {
-        setSession(undefined);
+        applySession(undefined);
         showError(error);
         return undefined;
       }
@@ -91,7 +112,107 @@ export function registerCommands(
     }
   }
 
-  registerUriHandler(context, git, output, setSession);
+  /**
+   * Appends a background prefetch log line to the LearnByDiff output channel.
+   *
+   * @param line - Message to append
+   */
+  function onPrefetchLog(line: string): void {
+    output.appendLine(line);
+  }
+
+  /**
+   * Checks `.learn/snapshots` and downloads any missing unique source trees.
+   *
+   * Safe to call on every workspace open; no-ops when a run for this root is
+   * already in progress, and skips the notification when the cache is complete.
+   *
+   * @param session - Active learning session
+   */
+  function startSnapshotPrefetch(session: LearningSession): void {
+    startBackgroundSnapshotPrefetch(git, session, {
+      onLog: onPrefetchLog,
+      runProgress: runSnapshotDownloadProgress,
+    });
+  }
+
+  /**
+   * Pushes session into the UI and starts background chapter-snapshot prefetch.
+   *
+   * Prefetch is skipped when `session` is undefined (not a learning workspace).
+   *
+   * @param session - Active learning session, or `undefined` to clear
+   */
+  function applySession(session: LearningSession | undefined): void {
+    appliedWorkspaceRoot = session?.workspaceRoot;
+    setSession(session);
+    if (session === undefined) {
+      stopBackgroundSnapshotPrefetch();
+      return;
+    }
+    startSnapshotPrefetch(session);
+  }
+
+  /**
+   * Shows a notification while unique chapter snapshots download.
+   *
+   * Uses the same “opening course” title as Open Course so create + prefetch
+   * never appear as two stacked popups. Skipped when the cache is already complete.
+   *
+   * @param work - Prefetch body that reports per-tree progress
+   * @param abort - Controller cancelled when the extension deactivates
+   */
+  async function runSnapshotDownloadProgress(
+    work: (
+      onProgress: (progress: SnapshotPrefetchProgress) => void,
+      signal: AbortSignal,
+    ) => Promise<void>,
+    abort: AbortController,
+  ): Promise<void> {
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: vscode.l10n.t("LearnByDiff: opening course"),
+        cancellable: false,
+      },
+      reportSnapshotDownload,
+    );
+
+    /**
+     * Drives the download notification while unique source trees are cached.
+     *
+     * @param progress - VS Code progress reporter
+     */
+    async function reportSnapshotDownload(
+      progress: vscode.Progress<{ message?: string; increment?: number }>,
+    ): Promise<void> {
+      /**
+       * Updates the notification message and bar as each unique source tree is cached.
+       *
+       * @param info - Trees completed, total, and the subtree just written
+       */
+      const onProgress = (info: SnapshotPrefetchProgress): void => {
+        reportSnapshotPrefetchProgress(progress, info);
+      };
+      await work(onProgress, abort.signal);
+    }
+  }
+
+  registerUriHandler(context, git, output, applySession);
+
+  /**
+   * Re-loads session and re-checks snapshot cache when Explorer roots change.
+   *
+   * Covers Open Recent, folder-mode opens, and extra chapter-ref folders. Same
+   * learning root only re-prefetches missing trees (does not reset the tree UI).
+   */
+  function onWorkspaceFoldersChanged(): void {
+    void restore();
+  }
+
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeWorkspaceFolders(onWorkspaceFoldersChanged),
+  );
 
   context.subscriptions.push(
     vscode.commands.registerCommand("learnByDiff.openCourse", async () => {
@@ -116,7 +237,7 @@ export function registerCommands(
         courseRepoUrl: url.trim(),
         git,
         output,
-        onSession: setSession,
+        onSession: applySession,
       });
     }),
   );
