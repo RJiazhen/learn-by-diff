@@ -20,6 +20,8 @@
   "Open in New Window": "Open in New Window",
   "File {0} is not an entry file for chapter {1}.": "File {0} is not an entry file for chapter {1}.",
   "LearnByDiff: Next Chapter": "LearnByDiff: Next Chapter",
+  "LearnByDiff: Search Chapter": "LearnByDiff: Search Chapter",
+  "Filter by chapter title or id": "Filter by chapter title or id",
   "Open File Diff": "Open File Diff",
   "Docs: {0}": "Docs: {0}",
   "Added in chapter goal": "Added in chapter goal",
