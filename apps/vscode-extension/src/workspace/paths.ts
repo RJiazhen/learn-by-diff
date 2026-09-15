@@ -48,19 +48,21 @@ export function learningPaths(workspaceRoot: string) {
 }
 
 /**
- * Returns the snapshot directories for one chapter.
+ * Returns the cached snapshot directory for one source subtree.
  *
- * @param workspaceRoot - Learning repository root
- * @param chapterId - Chapter identifier
+ * Empty `fromDir`/`toDir` share `.learn/snapshots/empty`. Named trees live under
+ * `.learn/snapshots/dirs/<posix path>` so chapters that reuse the same snapshot
+ * share one copy on disk.
+ *
+ * @param workspaceRoot - Learning workspace root
+ * @param subtree - Source-repo-relative directory, or `undefined` for an empty tree
  */
-export function chapterSnapshotPaths(workspaceRoot: string, chapterId: string) {
+export function sourceSnapshotDir(workspaceRoot: string, subtree: string | undefined): string {
   const { snapshotsDir } = learningPaths(workspaceRoot);
-  const chapterDir = path.join(snapshotsDir, chapterId);
-  return {
-    chapterDir,
-    fromDir: path.join(chapterDir, "from"),
-    toDir: path.join(chapterDir, "to"),
-  };
+  if (subtree === undefined || subtree.trim() === "") {
+    return path.join(snapshotsDir, "empty");
+  }
+  return path.join(snapshotsDir, "dirs", ...subtree.split("/"));
 }
 
 /**

@@ -12,6 +12,7 @@ import {
   type Course,
 } from "@learn-by-diff/protocol";
 import type { GitClient } from "../git/client.ts";
+import { writeChapterArchives } from "../snapshot/archive.ts";
 import { isEmptyLearningTarget } from "./emptyTarget.ts";
 import { NonEmptyLearningTargetError } from "./errors.ts";
 import { isCodeWorkspaceFileName, learningPaths } from "./paths.ts";
@@ -20,6 +21,7 @@ import { githubCloneBranch, parseCourseConfigUrl } from "./parseCourseConfigUrl.
 import { isRemoteGitUrl, localCourseOrigin, resolveSourceRepository } from "./resolveRepo.ts";
 import {
   assertSourceSubtree,
+  copyDirectoryChildren,
   directoryExists,
   exportSourceSubtree,
   materializeSourceStore,
@@ -300,9 +302,11 @@ function joinConfigRelative(configDir: string, relativePosix: string): string {
 /**
  * Replaces the student tree with a chapter start (`fromDir`) or finish (`toDir`).
  *
- * Preserves the workspace `.gitignore` and gitignored folders such as
- * `node_modules/` across the export so regenerable `.learn` paths stay ignored
- * and course config under `.learn/course` remains commit-able.
+ * Copies from `.learn/snapshots` (writing that cache first when missing) so
+ * chapter switches stay local after background prefetch. Preserves the workspace
+ * `.gitignore` and gitignored folders such as `node_modules/` across the export
+ * so regenerable `.learn` paths stay ignored and course config under `.learn/course`
+ * remains commit-able.
  *
  * @param git - Git client
  * @param workspaceRoot - Learning repository root
@@ -321,19 +325,48 @@ export async function checkoutChapter(
   if (chapter === undefined) {
     throw new Error(`unknown chapter: ${chapterId}`);
   }
-  const snapshotDir = side === "finish" ? chapter.toDir : chapter.fromDir;
   const { sourceMirror } = learningPaths(workspaceRoot);
-  await replaceStudentTreeFromSource(
+  const archives = await writeChapterArchives(
     git,
-    workspaceRoot,
     sourceMirror,
-    resolveSourceSubtreePath(course.config.source, snapshotDir),
+    workspaceRoot,
+    chapter.fromDir,
+    chapter.toDir,
+    course.config.source,
   );
+  const snapshotRoot = side === "finish" ? archives.toDir : archives.fromDir;
+  await replaceStudentTreeFromDirectory(git, workspaceRoot, snapshotRoot);
   await writeProgress(workspaceRoot, {
     chapter: chapterId,
     completed: false,
     appliedSide: side,
   });
+}
+
+/**
+ * Clears the student tree and copies children from a cached snapshot directory.
+ *
+ * Chapter snapshots may include a `.gitignore`; that must not replace the learner's
+ * file. Learn-related ignore rules are merged afterward via {@link ensureLearnGitignore}.
+ * Gitignored top-level paths such as `node_modules/` are left in place so chapter
+ * switches do not wipe regenerable installs.
+ *
+ * @param git - Git client
+ * @param workspaceRoot - Learning workspace root
+ * @param snapshotRoot - Cached `from` or `to` snapshot directory
+ */
+async function replaceStudentTreeFromDirectory(
+  git: GitClient,
+  workspaceRoot: string,
+  snapshotRoot: string,
+): Promise<void> {
+  const preservedGitignore = await readGitignore(workspaceRoot);
+  await clearStudentTree(git, workspaceRoot);
+  await copyDirectoryChildren(snapshotRoot, workspaceRoot);
+  if (preservedGitignore !== undefined) {
+    await writeFile(path.join(workspaceRoot, ".gitignore"), preservedGitignore, "utf8");
+  }
+  await ensureLearnGitignore(workspaceRoot);
 }
 
 /**

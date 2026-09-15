@@ -84,6 +84,15 @@ async function walkFiles(absDir: string, relativePrefix: string): Promise<string
 }
 
 /**
+ * Recursively lists relative POSIX file paths under `absDir`.
+ *
+ * @param absDir - Absolute directory to walk
+ */
+export async function listDirectoryFiles(absDir: string): Promise<string[]> {
+  return walkFiles(absDir, "");
+}
+
+/**
  * Lists file paths under a source-store subdirectory (relative to that subdirectory).
  *
  * @param git - Git client
@@ -250,7 +259,7 @@ export async function assertSourceSubtree(
  * @param fromDir - Source directory whose children are copied
  * @param destDir - Destination directory (created if missing)
  */
-async function copyChildrenReplacing(fromDir: string, destDir: string): Promise<void> {
+export async function copyDirectoryChildren(fromDir: string, destDir: string): Promise<void> {
   await mkdir(destDir, { recursive: true });
   const entries = await readdir(fromDir);
   for (const name of entries) {
@@ -286,12 +295,12 @@ export async function exportSourceSubtree(
     const staging = await mkdtemp(path.join(tmpdir(), "learn-by-diff-export-"));
     try {
       await git.archiveSubtree(storePath, subdir, staging);
-      await copyChildrenReplacing(staging, destDir);
+      await copyDirectoryChildren(staging, destDir);
     } finally {
       await rm(staging, { recursive: true, force: true });
     }
     return;
   }
   const from = path.join(storePath, ...subdir.split(/[/\\]/).filter(Boolean));
-  await copyChildrenReplacing(from, destDir);
+  await copyDirectoryChildren(from, destDir);
 }

@@ -35,5 +35,7 @@
   "(no chapter snapshot dirs)": "（章のスナップショットディレクトリなし）",
   "Docs file not found for chapter {0}: {1} (looked in {2})": "章 {0} のドキュメントファイルが見つかりません: {1}（検索先: {2}）",
   "git was not found on PATH. Install Git and reopen the window.": "PATH 上に git が見つかりません。Git をインストールしてウィンドウを開き直してください。",
-  "Deep link: open course {0}": "ディープリンク: コース {0} を開く"
+  "Deep link: open course {0}": "ディープリンク: コース {0} を開く",
+  "{0} ({1} of {2})": "{0}（{1}/{2}）",
+  "(empty tree)": "（空のツリー）"
 }
