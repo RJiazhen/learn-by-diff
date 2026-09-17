@@ -11,7 +11,7 @@ import {
   normalizeSourceDirPath,
   resolveSourceSubtreePath,
 } from "../src/sourcePath.ts";
-import { ProtocolError } from "../src/types.ts";
+import { ProtocolError, type ChapterChangeKind } from "../src/types.ts";
 import { validateCourse } from "../src/validate.ts";
 
 const validConfig = {
@@ -137,6 +137,17 @@ describe("parseChapterYaml", () => {
     expect(chapter.docs).toBe("https://example.com/lesson");
   });
 
+  test("parses optional changedFiles including an empty list", () => {
+    const withFiles = parseChapterYaml(
+      ["changedFiles:", "  - path: src/a.ts", "    kind: M", ""].join("\n"),
+      "chapters/001-hello.yml",
+      "001-hello.yml",
+    );
+    expect(withFiles.changedFiles).toEqual([{ path: "src/a.ts", kind: "M" }]);
+    const empty = parseChapterYaml("changedFiles: []\n", "chapters/001-hello.yml", "001-hello.yml");
+    expect(empty.changedFiles).toEqual([]);
+  });
+
   test("allows empty fromDir and toDir", () => {
     const chapter = parseChapterYaml("{}\n", "chapters/001-concept.yml", "001-concept.yml");
     expect(chapter.id).toBe("concept");
@@ -236,8 +247,76 @@ describe("validateCourse", () => {
     expect(course.chapters[0]?.entryFiles).toBeUndefined();
   });
 
+  test("accepts author-declared changedFiles including an empty list", () => {
+    const withFiles = validateCourse(
+      validConfig,
+      [
+        {
+          ...validChapter,
+          changedFiles: [
+            { path: "src/a.ts", kind: "M" },
+            { path: "src/b.ts", kind: "U" },
+            { path: "src/c.ts", kind: "D" },
+          ],
+        },
+      ],
+      "/tmp/config",
+    );
+    expect(withFiles.chapters[0]?.changedFiles).toHaveLength(3);
+    const empty = validateCourse(
+      validConfig,
+      [{ ...validChapter, changedFiles: [] }],
+      "/tmp/config",
+    );
+    expect(empty.chapters[0]?.changedFiles).toEqual([]);
+  });
+
   test("rejects empty chapter lists", () => {
     expect(() => validateCourse(validConfig, [], "/tmp/config")).toThrow(ProtocolError);
+  });
+
+  test("rejects invalid changedFiles rows", () => {
+    expect(() =>
+      validateCourse(
+        validConfig,
+        [{ ...validChapter, changedFiles: [{ path: "", kind: "M" }] }],
+        "/tmp/config",
+      ),
+    ).toThrow(/changedFiles/);
+    expect(() =>
+      validateCourse(
+        validConfig,
+        [{ ...validChapter, changedFiles: [{ path: "../secret.ts", kind: "M" }] }],
+        "/tmp/config",
+      ),
+    ).toThrow(/changedFiles/);
+    expect(() =>
+      validateCourse(
+        validConfig,
+        [
+          {
+            ...validChapter,
+            changedFiles: [{ path: "src/a.ts", kind: "X" as ChapterChangeKind }],
+          },
+        ],
+        "/tmp/config",
+      ),
+    ).toThrow(/kind/);
+    expect(() =>
+      validateCourse(
+        validConfig,
+        [
+          {
+            ...validChapter,
+            changedFiles: [
+              { path: "src/a.ts", kind: "M" },
+              { path: "src/a.ts", kind: "U" },
+            ],
+          },
+        ],
+        "/tmp/config",
+      ),
+    ).toThrow(/duplicate/);
   });
 
   test("rejects blank entry file paths when listed", () => {

@@ -1,8 +1,8 @@
 import { parse } from "yaml";
 import { chapterIdFromFileName } from "./chapterDefaults.ts";
 import type { ParsedCourseFields } from "./courseDefaults.ts";
-import type { ChapterConfig } from "./types.ts";
-import { ProtocolError } from "./types.ts";
+import type { ChapterChangedFile, ChapterConfig } from "./types.ts";
+import { isChapterChangeKind, ProtocolError } from "./types.ts";
 
 /**
  * Parses a YAML document into an unknown object graph.
@@ -68,6 +68,9 @@ export function parseChapterYaml(text: string, path: string, fileName: string): 
   const id = asString(value.id) || defaultId;
   const title = asString(value.title) || id;
   const entryFiles = Array.isArray(value.entryFiles) ? asStringArray(value.entryFiles) : undefined;
+  const changedFiles = Array.isArray(value.changedFiles)
+    ? parseChangedFiles(value.changedFiles)
+    : undefined;
   const docs = asString(value.docs).trim();
   return {
     id,
@@ -75,12 +78,36 @@ export function parseChapterYaml(text: string, path: string, fileName: string): 
     fromDir: asString(value.fromDir),
     toDir: asString(value.toDir),
     ...(entryFiles !== undefined ? { entryFiles } : {}),
+    ...(changedFiles !== undefined ? { changedFiles } : {}),
     ...(docs !== "" ? { docs } : {}),
   };
 }
 
 /**
+ * Parses `changedFiles` mappings; non-objects become empty-path rows so validate can reject them.
+ *
+ * @param value - YAML sequence under `changedFiles`
+ */
+function parseChangedFiles(value: unknown[]): ChapterChangedFile[] {
+  const files: ChapterChangedFile[] = [];
+  for (const item of value) {
+    if (!isRecord(item)) {
+      files.push({ path: "", kind: "U" });
+      continue;
+    }
+    const kindRaw = asString(item.kind);
+    files.push({
+      path: asString(item.path),
+      kind: isChapterChangeKind(kindRaw) ? kindRaw : (kindRaw as ChapterChangedFile["kind"]),
+    });
+  }
+  return files;
+}
+
+/**
  * Builds a chapter config with only filename-based defaults.
+ *
+ * @param fileName - Chapter file basename
  */
 function emptyChapter(fileName: string): ChapterConfig {
   const id = chapterIdFromFileName(fileName);

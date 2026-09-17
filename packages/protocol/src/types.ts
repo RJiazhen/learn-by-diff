@@ -7,6 +7,33 @@ export const COURSE_FILE_NAME = "course.yml";
 /** Default directory of per-chapter YAML next to `course.yml` (`chaptersDir` when omitted). */
 export const CHAPTERS_DIR_NAME = "chapters";
 
+/** SCM-style letters for an author-declared from/to file difference. */
+export const CHAPTER_CHANGE_KINDS = ["U", "M", "D"] as const;
+
+/** `U` added in `toDir`, `M` modified, `D` deleted from `fromDir`. */
+export type ChapterChangeKind = (typeof CHAPTER_CHANGE_KINDS)[number];
+
+/**
+ * One file that differs between a chapter's `fromDir` and `toDir`.
+ *
+ * Filled when the course is created so Open Course can skip snapshot comparison.
+ */
+export interface ChapterChangedFile {
+  /** Path relative to the chapter snapshot tree root. */
+  path: string;
+  /** How the file changes from start to goal. */
+  kind: ChapterChangeKind;
+}
+
+/**
+ * Returns whether `value` is a {@link ChapterChangeKind}.
+ *
+ * @param value - Raw YAML kind string
+ */
+export function isChapterChangeKind(value: string): value is ChapterChangeKind {
+  return (CHAPTER_CHANGE_KINDS as readonly string[]).includes(value);
+}
+
 /** Source repository pointer in `course.yml`. */
 export interface CourseSource {
   /** Git URL or path to the source repository (relative paths resolve from the course home). */
@@ -48,6 +75,7 @@ export interface CourseConfig {
  * - `title` ← `id`
  * - `fromDir` / `toDir` ← `""` (empty snapshot tree)
  * - `entryFiles` ← omitted means discover all files under `toDir` at runtime
+ * - `changedFiles` ← omitted means classify from/to at runtime; `[]` means unchanged
  * - `docs` ← omitted means no documentation button
  */
 export interface ChapterConfig {
@@ -68,6 +96,11 @@ export interface ChapterConfig {
    * `undefined` = auto-discover all files under `toDir` at runtime.
    */
   entryFiles?: string[];
+  /**
+   * Author-supplied from/to diffs relative to the chapter tree root.
+   * `undefined` = classify at runtime; empty = the chapter did not change.
+   */
+  changedFiles?: ChapterChangedFile[];
   /**
    * Optional chapter documentation: an `http(s)` URL, or a file path relative to the
    * chapter snapshot tree (`toDir`, then `fromDir`) such as `README.md` or `notes/guide.pdf`.

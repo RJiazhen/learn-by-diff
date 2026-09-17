@@ -42,6 +42,7 @@ export function learningPaths(workspaceRoot: string) {
     courseDir: path.join(learnDir, "course"),
     snapshotsDir: path.join(learnDir, "snapshots"),
     refsDir: path.join(learnDir, "refs"),
+    chapterChangesFile: path.join(learnDir, "chapter-changes.json"),
     workspaceFile: path.join(workspaceRoot, learningWorkspaceFileName(workspaceRoot)),
     legacyWorkspaceFile: path.join(learnDir, LEGACY_LEARN_WORKSPACE_FILE_NAME),
   };
