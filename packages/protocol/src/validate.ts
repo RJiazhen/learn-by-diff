@@ -1,5 +1,11 @@
-import type { ChapterConfig, Course, CourseConfig, ProtocolIssue } from "./types.ts";
-import { ProtocolError } from "./types.ts";
+import type {
+  ChapterChangedFile,
+  ChapterConfig,
+  Course,
+  CourseConfig,
+  ProtocolIssue,
+} from "./types.ts";
+import { isChapterChangeKind, ProtocolError } from "./types.ts";
 import { isHttpUrl, normalizeRelativeFilePath, normalizeSourceDirPath } from "./sourcePath.ts";
 
 /**
@@ -81,6 +87,9 @@ function validateChapters(
         }
       }
     }
+    if (chapter.changedFiles !== undefined) {
+      validateChangedFiles(issues, `${prefix}.changedFiles`, chapter.changedFiles);
+    }
     if (chapter.docs !== undefined && chapter.docs.trim() !== "") {
       requireDocsRef(issues, `${prefix}.docs`, chapter.docs);
     }
@@ -98,7 +107,54 @@ function validateChapters(
 }
 
 /**
+ * Collects issues for an author-declared from/to changed-file list.
+ *
+ * @param issues - Accumulator
+ * @param prefix - Field path prefix (`chapters[n].changedFiles`)
+ * @param files - Parsed `changedFiles` rows
+ */
+function validateChangedFiles(
+  issues: ProtocolIssue[],
+  prefix: string,
+  files: readonly ChapterChangedFile[],
+): void {
+  const seenPaths = new Set<string>();
+  for (const [fileIndex, file] of files.entries()) {
+    const itemPath = `${prefix}[${String(fileIndex)}]`;
+    if (file.path.trim() === "") {
+      issues.push({ path: `${itemPath}.path`, message: "must not be empty" });
+    } else {
+      const normalized = normalizeRelativeFilePath(file.path);
+      if (normalized === undefined) {
+        issues.push({
+          path: `${itemPath}.path`,
+          message:
+            "must be a relative file path under the chapter snapshot (no '..' or absolute paths)",
+        });
+      } else if (seenPaths.has(normalized)) {
+        issues.push({
+          path: `${itemPath}.path`,
+          message: `duplicate changed file path "${normalized}"`,
+        });
+      } else {
+        seenPaths.add(normalized);
+      }
+    }
+    if (!isChapterChangeKind(file.kind)) {
+      issues.push({
+        path: `${itemPath}.kind`,
+        message: 'must be "U", "M", or "D"',
+      });
+    }
+  }
+}
+
+/**
  * Pushes an issue when `value` is empty or whitespace.
+ *
+ * @param issues - Accumulator
+ * @param path - Field path for the issue
+ * @param value - Candidate string
  */
 function requireNonEmpty(issues: ProtocolIssue[], path: string, value: string): void {
   if (value.trim() === "") {

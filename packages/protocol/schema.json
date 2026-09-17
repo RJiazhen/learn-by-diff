@@ -22,6 +22,23 @@
       "description": "File path relative to the chapter snapshot tree root (inside fromDir / toDir).",
       "pattern": "\\S"
     },
+    "changedFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "kind"],
+      "description": "One file that differs between fromDir and toDir.",
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/relativeFilePath",
+          "description": "Path relative to the chapter snapshot tree root."
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["U", "M", "D"],
+          "description": "U added in toDir, M modified, D deleted from fromDir."
+        }
+      }
+    },
     "courseSource": {
       "type": "object",
       "additionalProperties": false,
@@ -62,7 +79,7 @@
     "chapter": {
       "type": "object",
       "additionalProperties": false,
-      "description": "All fields optional. Defaults: id from filename (strip numeric prefix), title=id, empty fromDir/toDir = empty trees, omitted entryFiles = all files under toDir.",
+      "description": "All fields optional. Defaults: id from filename (strip numeric prefix), title=id, empty fromDir/toDir = empty trees, omitted entryFiles = all files under toDir, omitted changedFiles = classify at runtime.",
       "properties": {
         "id": {
           "$ref": "#/$defs/nonEmptyString",
@@ -86,6 +103,13 @@
           "description": "Optional paths relative to the chapter snapshot tree root. When omitted, all files under toDir are used.",
           "items": {
             "$ref": "#/$defs/relativeFilePath"
+          }
+        },
+        "changedFiles": {
+          "type": "array",
+          "description": "Optional from/to diffs (path + U/M/D) filled when creating the course. Omitted = classify at runtime. Empty = chapter unchanged.",
+          "items": {
+            "$ref": "#/$defs/changedFile"
           }
         },
         "docs": {
