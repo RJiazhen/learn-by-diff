@@ -79,6 +79,136 @@ export async function classifySnapshotEntryChange(
 }
 
 /**
+ * Returns whether a chapter's `fromDir` and `toDir` resolve to the same snapshot tree.
+ *
+ * Identical dirs cannot produce entry-file diffs, so the chapter is unchanged.
+ *
+ * @param source - Course source block (applies optional `root`)
+ * @param chapter - Chapter whose snapshot dirs are compared
+ */
+export function chapterFromToShareSnapshot(source: CourseSource, chapter: ChapterConfig): boolean {
+  return (
+    resolveSourceSubtreePath(source, chapter.fromDir) ===
+    resolveSourceSubtreePath(source, chapter.toDir)
+  );
+}
+
+/**
+ * Returns whether two path lists name the same set of relative files.
+ *
+ * @param left - First file list
+ * @param right - Second file list
+ */
+function fileListsMatch(left: readonly string[], right: readonly string[]): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+  const rightSet = new Set(right);
+  for (const item of left) {
+    if (!rightSet.has(item)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Returns whether one relative file's UTF-8 content differs between snapshot dirs.
+ *
+ * @param fromRoot - Cached start snapshot directory
+ * @param toRoot - Cached goal snapshot directory
+ * @param relativePath - Path relative to the chapter tree root
+ */
+async function snapshotFileContentsDiffer(
+  fromRoot: string,
+  toRoot: string,
+  relativePath: string,
+): Promise<boolean> {
+  const fromText = await readFile(snapshotRelativeFile(fromRoot, relativePath), "utf8");
+  const toText = await readFile(snapshotRelativeFile(toRoot, relativePath), "utf8");
+  return fromText !== toText;
+}
+
+/**
+ * Returns whether explicit `entryFiles` differ between snapshots, stopping at the first proof.
+ *
+ * Existence mismatch (added/deleted) counts as a different file list. Matching
+ * paths are compared sequentially and stop at the first content mismatch.
+ *
+ * @param fromRoot - Cached start snapshot directory
+ * @param toRoot - Cached goal snapshot directory
+ * @param entryFiles - Chapter `entryFiles`
+ */
+async function entryFilesHaveAnyChange(
+  fromRoot: string,
+  toRoot: string,
+  entryFiles: readonly string[],
+): Promise<boolean> {
+  for (const relativePath of entryFiles) {
+    const normalized = relativePath.split(/[/\\]/).join("/");
+    const fromExists = await isFile(snapshotRelativeFile(fromRoot, normalized));
+    const toExists = await isFile(snapshotRelativeFile(toRoot, normalized));
+    if (fromExists !== toExists) {
+      return true;
+    }
+    if (!fromExists) {
+      continue;
+    }
+    if (await snapshotFileContentsDiffer(fromRoot, toRoot, normalized)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Returns whether discovered snapshot trees differ, stopping at the first proof.
+ *
+ * Compares the two directory file lists first. Equal lists are then compared
+ * file-by-file until one content mismatch.
+ *
+ * @param fromRoot - Cached start snapshot directory
+ * @param toRoot - Cached goal snapshot directory
+ */
+async function discoveredTreesHaveAnyChange(fromRoot: string, toRoot: string): Promise<boolean> {
+  const fromFiles = await listDirectoryFiles(fromRoot);
+  const toFiles = await listDirectoryFiles(toRoot);
+  if (!fileListsMatch(fromFiles, toFiles)) {
+    return true;
+  }
+  for (const relativePath of fromFiles) {
+    if (await snapshotFileContentsDiffer(fromRoot, toRoot, relativePath)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Returns whether two snapshot trees have any file difference, without classifying every file.
+ *
+ * Same on-disk root is unchanged. Otherwise stops as soon as the file lists differ
+ * or one file's content differs. Full U/M/D listing is left to expand.
+ *
+ * @param fromRoot - Cached start snapshot directory
+ * @param toRoot - Cached goal snapshot directory
+ * @param entryFiles - Explicit chapter entry files, or `undefined` to discover both trees
+ */
+export async function snapshotsHaveAnyChange(
+  fromRoot: string,
+  toRoot: string,
+  entryFiles?: string[],
+): Promise<boolean> {
+  if (path.resolve(fromRoot) === path.resolve(toRoot)) {
+    return false;
+  }
+  if (entryFiles !== undefined) {
+    return entryFilesHaveAnyChange(fromRoot, toRoot, entryFiles);
+  }
+  return discoveredTreesHaveAnyChange(fromRoot, toRoot);
+}
+
+/**
  * Lists entry files that differ between two cached snapshot directories.
  *
  * When `entryFiles` is omitted, discovers files under the goal snapshot (`toRoot`).

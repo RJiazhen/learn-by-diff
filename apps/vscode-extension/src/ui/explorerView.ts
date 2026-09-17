@@ -4,14 +4,25 @@ import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
 import { writeChapterArchives } from "../snapshot/archive.ts";
 import {
+  chapterFromToShareSnapshot,
   listChangedFilesInSnapshots,
+  snapshotsHaveAnyChange,
   type ChangedEntryFile,
   type EntryChangeKind,
 } from "../workspace/entryChange.ts";
 import type { LearningSession } from "../workspace/loader.ts";
 import { learningPaths } from "../workspace/paths.ts";
+import {
+  cacheEntryMatchesChapter,
+  readChapterChangeCache,
+  sourceStoreRevision,
+  upsertCachedChapterChange,
+  writeChapterChangeCache,
+  type ChapterChangeCacheFile,
+} from "../workspace/chapterChangeCache.ts";
 import { chapterOrdinal, currentChapter } from "../workspace/session.ts";
 import { appliedSnapshotSide, type ChapterSnapshotSide } from "../workspace/state.ts";
+import { chapterRowIsExpandable } from "./chapterRow.ts";
 import { localizedSnapshotStatus } from "./labels.ts";
 
 /** URI scheme used to decorate chapter rows. */
@@ -48,8 +59,12 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
   private readonly chapterElements = new Map<string, CourseTreeItem>();
   /** Chapter ids the user (or reveal) has expanded — used to auto-expand folder trees. */
   private readonly expandedChapterIds = new Set<string>();
-  /** Per-chapter changed-file lists, keyed by chapter id (invalidated on session change). */
+  /** Per-chapter changed-file lists, keyed by chapter id (loaded on expand). */
   private readonly changedFiles = new Map<string, Promise<ChangedEntryFile[]>>();
+  /** Cheap from/to result; missing keys mean the check has not finished. */
+  private readonly knownHasChanges = new Map<string, boolean>();
+  /** Persisted compare cache for the current source revision. */
+  private diskChangeCache: ChapterChangeCacheFile | undefined;
   private readonly emitter = new vscode.EventEmitter<CourseTreeItem | undefined>();
 
   /**
@@ -120,9 +135,12 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
     this.chapterElements.clear();
     this.expandedChapterIds.clear();
     this.changedFiles.clear();
+    this.knownHasChanges.clear();
+    this.diskChangeCache = undefined;
     this.emitter.fire(undefined);
     if (session !== undefined) {
       void this.revealCurrentChapter();
+      void this.hideUnchangedChapterChevrons();
     }
   }
 
@@ -267,6 +285,14 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
     }
     const changed = await this.listChangedEntryFiles(chapter);
     if (element.kind === "chapter") {
+      if (changed.length === 0) {
+        this.expandedChapterIds.delete(chapter.id);
+        this.knownHasChanges.set(chapter.id, false);
+        queueMicrotask(() => {
+          this.emitter.fire(undefined);
+        });
+        return [];
+      }
       // getChildren runs when the chapter is (being) expanded — mark before building folders
       // so tree-mode folders default to Expanded under open chapters.
       this.expandedChapterIds.add(chapter.id);
@@ -280,12 +306,18 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
   /**
    * Lists entry files that differ between a chapter's from/to snapshots.
    *
-   * Reads the shared `.learn/snapshots` cache (materializing those trees if needed)
-   * instead of spawning git per file. Nested folder expands reuse the same list.
+   * Uses author-declared `changedFiles` when present. Otherwise reads the shared
+   * `.learn/snapshots` cache (materializing those trees if needed). Nested folder
+   * expands reuse the same list.
    *
    * @param chapter - Chapter config
    */
   private async listChangedEntryFiles(chapter: ChapterConfig): Promise<ChangedEntryFile[]> {
+    const declared = declaredChangedEntryFiles(chapter);
+    if (declared !== undefined) {
+      this.knownHasChanges.set(chapter.id, declared.length > 0);
+      return declared;
+    }
     const cached = this.changedFiles.get(chapter.id);
     if (cached !== undefined) {
       return cached;
@@ -293,15 +325,231 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
     /**
      * Drops a failed load so a later expand can retry.
      *
+     * Ignores stale results after `setSession` replaced the pending promise.
+     *
      * @param error - Snapshot export or classification failure
      */
     const forgetOnFailure = (error: unknown): Promise<ChangedEntryFile[]> => {
-      this.changedFiles.delete(chapter.id);
+      if (this.changedFiles.get(chapter.id) === pending) {
+        this.changedFiles.delete(chapter.id);
+      }
       return Promise.reject(error);
     };
-    const pending = this.loadChangedEntryFiles(chapter).catch(forgetOnFailure);
+    /**
+     * Records whether expand found any diffs (full U/M/D listing is expand-only).
+     *
+     * @param files - From/to file diffs for this chapter
+     */
+    const remember = (files: ChangedEntryFile[]): ChangedEntryFile[] => {
+      if (this.changedFiles.get(chapter.id) === pending) {
+        this.knownHasChanges.set(chapter.id, files.length > 0);
+        this.persistChapterChange(chapter, { hasChanges: files.length > 0, files });
+        if (this.session !== undefined) {
+          void this.flushDiskChangeCache(this.session.workspaceRoot);
+        }
+      }
+      return files;
+    };
+    let pending: Promise<ChangedEntryFile[]>;
+    pending = this.loadChangedEntryFiles(chapter).then(remember).catch(forgetOnFailure);
     this.changedFiles.set(chapter.id, pending);
     return pending;
+  }
+
+  /**
+   * Cheap-checks each chapter's from/to trees and hides expand chevrons on unchanged chapters.
+   *
+   * Skips snapshot IO when `changedFiles` is declared or a matching `.learn` cache
+   * row exists. Full U/M/D listing waits until expand. No-ops when a later
+   * `setSession` replaced this session.
+   */
+  private async hideUnchangedChapterChevrons(): Promise<void> {
+    const session = this.session;
+    if (session === undefined) {
+      return;
+    }
+    await this.loadDiskChangeCache(session.workspaceRoot);
+    /**
+     * Records whether one chapter has any from/to diff, ignoring load failures.
+     *
+     * @param chapter - Chapter whose snapshots should be cheap-checked
+     */
+    const detectChapter = async (chapter: ChapterConfig): Promise<void> => {
+      if (chapter.changedFiles !== undefined) {
+        this.knownHasChanges.set(chapter.id, chapter.changedFiles.length > 0);
+        return;
+      }
+      if (chapter.entryFiles !== undefined && chapter.entryFiles.length === 0) {
+        this.knownHasChanges.set(chapter.id, false);
+        return;
+      }
+      if (chapterFromToShareSnapshot(session.course.config.source, chapter)) {
+        this.knownHasChanges.set(chapter.id, false);
+        return;
+      }
+      if (this.applyDiskChangeHit(chapter)) {
+        return;
+      }
+      try {
+        const hasChanges = await this.detectChapterHasChanges(chapter);
+        if (this.session !== session) {
+          return;
+        }
+        this.knownHasChanges.set(chapter.id, hasChanges);
+        this.persistChapterChange(chapter, {
+          hasChanges,
+          files: hasChanges ? undefined : [],
+        });
+      } catch {
+        // Leave the chevron; expanding later retries the load.
+      }
+    };
+    await Promise.all(session.course.chapters.map(detectChapter));
+    if (this.session !== session) {
+      return;
+    }
+    await this.flushDiskChangeCache(session.workspaceRoot);
+    if (!this.unchangedChapterChevronNeedsRefresh()) {
+      return;
+    }
+    this.emitter.fire(undefined);
+  }
+
+  /**
+   * Loads `.learn/chapter-changes.json` when it matches the current source revision.
+   *
+   * @param workspaceRoot - Learning workspace root
+   */
+  private async loadDiskChangeCache(workspaceRoot: string): Promise<void> {
+    try {
+      const { sourceMirror } = learningPaths(workspaceRoot);
+      const sourceRev = await sourceStoreRevision(this.git, sourceMirror);
+      const disk = await readChapterChangeCache(workspaceRoot);
+      this.diskChangeCache =
+        disk !== undefined && disk.sourceRev === sourceRev ? disk : { sourceRev, chapters: {} };
+    } catch {
+      this.diskChangeCache = undefined;
+    }
+  }
+
+  /**
+   * Applies a matching disk-cache row into memory. Returns whether a hit was used.
+   *
+   * @param chapter - Chapter to look up
+   */
+  private applyDiskChangeHit(chapter: ChapterConfig): boolean {
+    const cache = this.diskChangeCache;
+    if (cache === undefined) {
+      return false;
+    }
+    const hit = cache.chapters[chapter.id];
+    if (hit === undefined || !cacheEntryMatchesChapter(chapter, hit)) {
+      return false;
+    }
+    this.knownHasChanges.set(chapter.id, hit.hasChanges);
+    if (hit.files !== undefined) {
+      this.changedFiles.set(chapter.id, Promise.resolve(hit.files));
+    }
+    return true;
+  }
+
+  /**
+   * Records a compare result on the in-memory disk cache (call {@link flushDiskChangeCache} to write).
+   *
+   * @param chapter - Chapter whose identity is stored
+   * @param result - Boolean and optional U/M/D list
+   */
+  private persistChapterChange(
+    chapter: ChapterConfig,
+    result: { hasChanges: boolean; files?: ChangedEntryFile[] },
+  ): void {
+    if (this.diskChangeCache === undefined || chapter.changedFiles !== undefined) {
+      return;
+    }
+    upsertCachedChapterChange(this.diskChangeCache, chapter, result);
+  }
+
+  /**
+   * Writes the in-memory compare cache to `.learn/chapter-changes.json`.
+   *
+   * @param workspaceRoot - Learning workspace root
+   */
+  private async flushDiskChangeCache(workspaceRoot: string): Promise<void> {
+    if (this.diskChangeCache === undefined) {
+      return;
+    }
+    try {
+      await writeChapterChangeCache(workspaceRoot, this.diskChangeCache);
+    } catch {
+      // Cache is optional; chevrons still update from memory.
+    }
+  }
+
+  /**
+   * Materializes this chapter's snapshot dirs and stops at the first from/to difference.
+   *
+   * @param chapter - Chapter config
+   */
+  private async detectChapterHasChanges(chapter: ChapterConfig): Promise<boolean> {
+    if (this.session === undefined) {
+      return false;
+    }
+    const { sourceMirror } = learningPaths(this.session.workspaceRoot);
+    const archives = await writeChapterArchives(
+      this.git,
+      sourceMirror,
+      this.session.workspaceRoot,
+      chapter.fromDir,
+      chapter.toDir,
+      this.session.course.config.source,
+    );
+    return snapshotsHaveAnyChange(archives.fromDir, archives.toDir, chapter.entryFiles);
+  }
+
+  /**
+   * Returns whether any painted chapter row still shows an expand chevron that
+   * the cheap from/to check has now proven should be hidden (or the reverse).
+   */
+  private unchangedChapterChevronNeedsRefresh(): boolean {
+    if (this.session === undefined) {
+      return false;
+    }
+    for (const chapter of this.session.course.chapters) {
+      const item = this.chapterElements.get(chapter.id);
+      if (item === undefined) {
+        continue;
+      }
+      const expandable = chapterRowIsExpandable(
+        chapter.entryFiles,
+        this.chapterHasKnownChanges(chapter),
+        chapter.changedFiles,
+      );
+      const showing = item.collapsibleState !== vscode.TreeItemCollapsibleState.None;
+      if (expandable !== showing) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns the cheap from/to result for a chapter row, or `undefined` while loading.
+   *
+   * Author-declared `changedFiles` and same `fromDir`/`toDir` need no snapshot IO.
+   *
+   * @param chapter - Chapter config
+   */
+  private chapterHasKnownChanges(chapter: ChapterConfig): boolean | undefined {
+    if (chapter.changedFiles !== undefined) {
+      return chapter.changedFiles.length > 0;
+    }
+    if (
+      this.session !== undefined &&
+      chapterFromToShareSnapshot(this.session.course.config.source, chapter)
+    ) {
+      return false;
+    }
+    return this.knownHasChanges.get(chapter.id);
   }
 
   /**
@@ -364,7 +612,10 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
   }
 
   /**
-   * Builds a collapsible chapter row with a zero-padded ordinal prefix.
+   * Builds a chapter row with a zero-padded ordinal prefix.
+   *
+   * The row is collapsible only when the chapter has from/to file diffs (or
+   * classification is still pending). Unchanged chapters have no expand chevron.
    *
    * @param chapter - Chapter config
    * @param appliedSide - Snapshot side when this chapter is applied to the student tree
@@ -378,11 +629,15 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
     total: number,
   ): CourseTreeItem {
     const ordinal = chapterOrdinal(Math.max(index, 0), total);
-    const hasEntries = chapter.entryFiles === undefined || chapter.entryFiles.length > 0;
+    const expandable = chapterRowIsExpandable(
+      chapter.entryFiles,
+      this.chapterHasKnownChanges(chapter),
+      chapter.changedFiles,
+    );
     const expanded = this.expandedChapterIds.has(chapter.id);
     const item = new vscode.TreeItem(
       `${ordinal}-${chapter.title}`,
-      !hasEntries
+      !expandable
         ? vscode.TreeItemCollapsibleState.None
         : expanded
           ? vscode.TreeItemCollapsibleState.Expanded
@@ -471,6 +726,21 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
     };
     return item;
   }
+}
+
+/**
+ * Maps author-declared `changedFiles` to explorer rows, or `undefined` to classify at runtime.
+ *
+ * @param chapter - Chapter config
+ */
+function declaredChangedEntryFiles(chapter: ChapterConfig): ChangedEntryFile[] | undefined {
+  if (chapter.changedFiles === undefined) {
+    return undefined;
+  }
+  return chapter.changedFiles.map((file) => ({
+    relativePath: file.path,
+    changeKind: file.kind,
+  }));
 }
 
 /**
