@@ -78,6 +78,7 @@ docs: README.md
 - `fromDir`（任意）: 章の開始スナップショット。`source.repository` からの相対（`source.root` があればその下）。空なら空のツリー。`..` と絶対パスは不可。
 - `toDir`（任意）: 章の目標スナップショット。パス規則は `fromDir` と同じ。空なら空のツリー。
 - `entryFiles`（任意）: 注目するファイル。章スナップショットのルート（`toDir`）からの相対。省略時は `toDir` 以下の全ファイル。
+- `changedFiles`（任意）: `fromDir` から `toDir` への差分（`path` と `U` 追加 / `M` 変更 / `D` 削除）。書くと Open Course はスナップショット比較を省略します。省略時は実行時に分類。空配列は章に変更なし。generate-course-config はスキャフォールド時に埋めます。
 - `docs`（任意）: 章のドキュメント。`http(s)` URL、またはスナップショット内のファイル（先に `toDir`、次に `fromDir`）。例: `README.md`。省略時はドキュメントボタンなし。
 
 ### 残すファイル

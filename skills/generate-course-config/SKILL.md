@@ -60,7 +60,7 @@ node scripts/detect-chapter-dirs.mjs --dirs start,hello,world [sourceRoot]
 
 Script JSON stdout (when used):
 
-- `ok: true` → use `snapshots` / `chapters` / `courseId`
+- `ok: true` → use `snapshots` / `chapters` / `courseId` (`chapters[].changedFiles` is the U/M/D list to write)
 - `ok: false` → treat like a failed built-in detection
 
 **If detection fails** (built-in or script): **stop**. Do not invent directories. Ask the user for concrete snapshot dirs (and optional source root).
@@ -73,6 +73,7 @@ For ordered snapshots `D0, D1, … Dn` create **n** chapters:
 
 - Chapter `k`: `fromDir: Dk-1`, `toDir: Dk` (omit either for an empty snapshot)
 - Prefer detector / exploration results for `id`, `title`, optional `entryFiles`
+- **Always write `changedFiles`**: compare `fromDir` vs `toDir` (path + `U` added / `M` modified / `D` deleted). Use the detector JSON `chapters[].changedFiles` when the script ran; otherwise walk both trees the same way. Write `changedFiles: []` when nothing differs.
 - Omit `entryFiles` unless you need a subset; runtime auto-discovers all files under `toDir`
 - Do **not** write a `tests` field (not in the protocol yet)
 
@@ -122,12 +123,15 @@ id: <id>
 title: <title>
 fromDir: <fromDir>
 toDir: <toDir>
+changedFiles:
+  - path: src/index.ts
+    kind: M
 # entryFiles:   # optional; omit to auto-discover
 #   - src/index.ts
 # docs: README.md   # optional http(s) URL or path under toDir/fromDir
 ```
 
-Number chapter filenames `001-`, `002-`, … (sort order = course order). Empty `fromDir` / `toDir` are allowed (empty trees).
+Always include `changedFiles` (use `[]` when the chapter did not change). Number chapter filenames `001-`, `002-`, … (sort order = course order). Empty `fromDir` / `toDir` are allowed (empty trees).
 
 Do **not** overwrite existing `.course-config` without asking.
 

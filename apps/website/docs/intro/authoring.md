@@ -78,6 +78,7 @@ Fields in each chapter file:
 - `fromDir` (optional): Start snapshot directory, relative to `source.repository` (or to `source.root` when that is set). Empty means an empty tree. No `..` or absolute paths.
 - `toDir` (optional): Goal snapshot directory; same path rules as `fromDir`. Empty means an empty tree.
 - `entryFiles` (optional): Files to highlight, relative to the chapter snapshot tree (`toDir`). Omitted means every file under `toDir`.
+- `changedFiles` (optional): From/to diffs (`path` plus `U` added, `M` modified, `D` deleted). Open Course uses this instead of comparing snapshots. Omitted means classify at runtime. An empty list means the chapter did not change. The generate-course-config skill fills this when scaffolding.
 - `docs` (optional): Chapter documentation: an `http(s)` URL, or a file path in the snapshot tree (`toDir` first, then `fromDir`), for example `README.md`. Omitted means no docs button.
 
 ### Retained files

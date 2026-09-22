@@ -18,14 +18,15 @@ There is no `protocolVersion` or `workspace` block yet — the protocol only add
 
 No field is required in the YAML file.
 
-| Field        | Default                                                     | Notes                                                                       |
-| ------------ | ----------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `id`         | filename without numeric prefix (`001-hello.yml` → `hello`) | Unique within the course                                                    |
-| `title`      | same as `id`                                                | Display name                                                                |
-| `fromDir`    | `""` (empty tree)                                           | Start snapshot under source (or `source.root`)                              |
-| `toDir`      | `""` (empty tree)                                           | Goal snapshot; empty = no implementation target                             |
-| `entryFiles` | auto (all files under `toDir`)                              | Optional explicit list relative to the chapter tree root                    |
-| `docs`       | _(none)_                                                    | `http(s)` URL or relative file under chapter snapshot (`toDir` / `fromDir`) |
+| Field          | Default                                                     | Notes                                                                                 |
+| -------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `id`           | filename without numeric prefix (`001-hello.yml` → `hello`) | Unique within the course                                                              |
+| `title`        | same as `id`                                                | Display name                                                                          |
+| `fromDir`      | `""` (empty tree)                                           | Start snapshot under source (or `source.root`)                                        |
+| `toDir`        | `""` (empty tree)                                           | Goal snapshot; empty = no implementation target                                       |
+| `entryFiles`   | auto (all files under `toDir`)                              | Optional explicit list relative to the chapter tree root                              |
+| `changedFiles` | classify from/to at runtime; `[]` means unchanged           | Optional path + `U`/`M`/`D`; fill when scaffolding so Open Course can skip comparison |
+| `docs`         | _(none)_                                                    | `http(s)` URL or relative file under chapter snapshot (`toDir` / `fromDir`)           |
 
 Load order = chapter **file name** sort order. There is no `tests` field yet.
 

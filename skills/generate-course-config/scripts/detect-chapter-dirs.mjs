@@ -491,6 +491,53 @@ function buildChapters(snapshots) {
 }
 
 /**
+ * Classifies U/M/D file differences between two snapshot directories under `root`.
+ *
+ * @param {string} root - Source root
+ * @param {string} fromDir - Start snapshot (empty string = empty tree)
+ * @param {string} toDir - Goal snapshot (empty string = empty tree)
+ */
+async function changedFilesBetween(root, fromDir, toDir) {
+  const fromAbs = fromDir === "" ? "" : path.join(root, fromDir);
+  const toAbs = toDir === "" ? "" : path.join(root, toDir);
+  const fromFiles = fromDir === "" ? [] : await listFiles(fromAbs);
+  const toFiles = toDir === "" ? [] : await listFiles(toAbs);
+  const fromSet = new Set(fromFiles);
+  const toSet = new Set(toFiles);
+  const all = [...new Set([...fromFiles, ...toFiles])].sort();
+  /** @type {{ path: string, kind: "U" | "M" | "D" }[]} */
+  const files = [];
+  for (const relative of all) {
+    const inFrom = fromSet.has(relative);
+    const inTo = toSet.has(relative);
+    if (!inFrom && inTo) {
+      files.push({ path: relative, kind: "U" });
+      continue;
+    }
+    if (inFrom && !inTo) {
+      files.push({ path: relative, kind: "D" });
+      continue;
+    }
+    let leftText;
+    let rightText;
+    try {
+      leftText = await readFile(path.join(fromAbs, ...relative.split("/")), "utf8");
+    } catch {
+      leftText = undefined;
+    }
+    try {
+      rightText = await readFile(path.join(toAbs, ...relative.split("/")), "utf8");
+    } catch {
+      rightText = undefined;
+    }
+    if (leftText !== rightText) {
+      files.push({ path: relative, kind: "M" });
+    }
+  }
+  return files;
+}
+
+/**
  * CLI entry.
  */
 async function main() {
@@ -564,6 +611,10 @@ async function main() {
     );
     process.exitCode = 1;
     return;
+  }
+
+  for (const chapter of chapters) {
+    chapter.changedFiles = await changedFilesBetween(root, chapter.fromDir, chapter.toDir);
   }
 
   console.log(

@@ -78,6 +78,7 @@ docs: README.md
 - `fromDir`(可选)：本章开始时的源码快照目录，相对 `source.repository`（若写了 `source.root`，则相对那一层）。默认值为空，表示空目录。不允许 `..` 或绝对路径。
 - `toDir`(可选)：本章目标快照目录，相对规则同 `fromDir`。默认值为空，表示空目录。
 - `entryFiles`(可选)：本章要关注的文件列表，路径相对章节快照树根（`toDir`）。默认值为所有 `toDir` 下的文件。
+- `changedFiles`(可选)：从 `fromDir` 到 `toDir` 的文件差异（`path` 加上 `U` 新增、`M` 修改、`D` 删除）。填写后打开课程时不必再对比快照。不写则运行时分类；空列表表示本章没有变化。generate-course-config 脚手架会自动填写。
 - `docs`(可选)：本章文档。可以是 `http(s)` URL，也可以是快照树里的文件路径（先找 `toDir`，再找 `fromDir`），例如 `README.md`。默认值为空，表示没有文档按钮。
 
 更多详细配置说明见 [课程配置](../course-config/)。

@@ -63,6 +63,7 @@ No `protocolVersion`, no `workspace` block.
 | `fromDir` / `toDir` | `""` (empty tree)                                                                   |
 | `entryFiles`        | Discover all files under `toDir` at runtime                                         |
 | `docs`              | none — `http(s)` URL or path relative to chapter snapshot (`toDir`, then `fromDir`) |
+| `changedFiles`      | omitted — classify from/to at runtime; `[]` means unchanged                         |
 
 Wire editors with:
 
