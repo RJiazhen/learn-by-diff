@@ -37,5 +37,11 @@
   "git was not found on PATH. Install Git and reopen the window.": "在 PATH 中找不到 git。請安裝 Git 後重新開啟視窗。",
   "Deep link: open course {0}": "深層連結：開啟課程 {0}",
   "{0} ({1} of {2})": "{0}（{1}/{2}）",
-  "(empty tree)": "（空目錄）"
+  "(empty tree)": "（空目錄）",
+  "LearnByDiff: Copy Open Course Link": "LearnByDiff: 複製課程一鍵開啟連結",
+  "Choose the url source for the one-click open link": "選擇一鍵開啟連結的 url 來源",
+  "Copied one-click open link to the clipboard.": "已將一鍵開啟連結複製到剪貼簿。",
+  "Local course.yml path": "本機 course.yml 路徑",
+  "Remote git URL": "遠端 git URL",
+  "GitHub course.yml URL": "GitHub course.yml 連結"
 }

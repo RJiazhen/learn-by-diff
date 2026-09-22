@@ -79,6 +79,7 @@ Under a learning workspace root:
 | ---------------------------------------- | ---------------------------------------------------------------------------------- |
 | `.learn/progress.json`                   | Applied chapter id / start or finish snapshot                                      |
 | `.learn/course/`                         | Copy of course config                                                              |
+| `.learn/origin.json`                     | Open Course origin for copy-link (gitignored)                                      |
 | `.learn/source.git/`                     | Materialized source store (mirror)                                                 |
 | `.learn/snapshots/dirs/<source-dir>/`    | Cached source trees (one copy per unique `fromDir`/`toDir`; prefetched after open) |
 | `.learn/refs/<ordinal>-<title> (status)` | Runnable copy; folder name matches Explorer                                        |

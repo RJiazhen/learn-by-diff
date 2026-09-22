@@ -18,6 +18,10 @@ import {
   type LearningSession,
 } from "../workspace/loader.ts";
 import { openCourse } from "../workspace/openCourse.ts";
+import {
+  collectOpenCourseLinkSources,
+  type OpenCourseLinkKind,
+} from "../workspace/openCourseLink.ts";
 import { materializeChapterRef, chapterRefWorkspaceName } from "../workspace/refs.ts";
 import { demoCoursePath } from "../workspace/resolveRepo.ts";
 import {
@@ -31,6 +35,7 @@ import {
   addOrOpenWorkspaceFolder,
   openLearningWorkspaceIfNeeded,
 } from "../workspace/workspaceFolders.ts";
+import { formatOpenCourseDeepLinks } from "../uri/formatOpenCourseLink.ts";
 import { registerUriHandler } from "../uri/registerUriHandler.ts";
 import { showError } from "./showError.ts";
 
@@ -315,6 +320,44 @@ export function registerCommands(
   );
 
   /**
+   * Copies vscode and cursor one-click open links for a chosen course URL source.
+   */
+  async function onCopyOpenCourseLink(): Promise<void> {
+    const session = await loadFromRoot();
+    if (session === undefined) {
+      return;
+    }
+    const sources = await collectOpenCourseLinkSources(git, session.workspaceRoot);
+    /**
+     * Maps a URL source to a QuickPick row.
+     *
+     * @param source - Local, git, or GitHub `url=` value
+     */
+    function toPick(source: (typeof sources)[number]): vscode.QuickPickItem & { url: string } {
+      return {
+        label: openCourseLinkKindLabel(source.kind),
+        description: source.url,
+        url: source.url,
+      };
+    }
+    const selected = await vscode.window.showQuickPick(sources.map(toPick), {
+      title: vscode.l10n.t("LearnByDiff: Copy Open Course Link"),
+      placeHolder: vscode.l10n.t("Choose the url source for the one-click open link"),
+    });
+    if (selected === undefined) {
+      return;
+    }
+    await vscode.env.clipboard.writeText(formatOpenCourseDeepLinks(selected.url));
+    void vscode.window.showInformationMessage(
+      vscode.l10n.t("Copied one-click open link to the clipboard."),
+    );
+  }
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("learnByDiff.copyOpenCourseLink", onCopyOpenCourseLink),
+  );
+
+  /**
    * Applies the start snapshot for the chapter row the user clicked.
    *
    * @param item - Explorer chapter row
@@ -558,4 +601,20 @@ export function registerCommands(
   }
 
   void restore();
+}
+
+/**
+ * Returns the QuickPick label for a one-click open-link URL source.
+ *
+ * @param kind - Local path, git URL, or GitHub file URL
+ */
+function openCourseLinkKindLabel(kind: OpenCourseLinkKind): string {
+  switch (kind) {
+    case "local":
+      return vscode.l10n.t("Local course.yml path");
+    case "git":
+      return vscode.l10n.t("Remote git URL");
+    case "github":
+      return vscode.l10n.t("GitHub course.yml URL");
+  }
 }
