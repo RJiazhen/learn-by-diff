@@ -45,8 +45,8 @@ chaptersDir: chapters
 - `title`（可選）：課程顯示名。預設為 `id`。
 - `source.repository`（可選）：原始碼所在位置，允許以下三種寫法：
   - git 倉庫位址：例如 `https://github.com/org/repo.git`，代表原始碼所屬的 git 倉庫；
-  - 本機路徑：本機上的原始碼目錄，可以是絕對路徑，也可以是相對於 `course.yml` 的相對路徑；
-  - 預設值：空，表示原始碼就在 `course.yml` 所在倉庫或同一目錄。
+  - 本機路徑：本機上的原始碼目錄，可以是絕對路徑，也可以是相對於 `course.yml` 所在目錄的相對路徑；
+  - 預設值：空，表示原始碼就在 `course.yml` 所在目錄。
 - `source.root`（可選）：原始碼在 `source.repository` 中的相對路徑，預設為空，表示原始碼就在 `source.repository` 的根目錄。
 - `chaptersDir`（可選）：章節 YAML 所在目錄，相對 `course.yml` 檔案的位址。預設為 `chapters`，即章節設定檔在 `course.yml` 所在目錄的 `chapters` 目錄下。
 

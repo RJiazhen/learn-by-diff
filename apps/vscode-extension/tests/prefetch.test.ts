@@ -58,7 +58,9 @@ async function createTwoChapterWorkspace(): Promise<{
   await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
   await writeFile(
     path.join(courseDir, ".course-config", "course.yml"),
-    ["id: prefetch", "title: Prefetch", "source:", "  repository: ../demo-source", ""].join("\n"),
+    ["id: prefetch", "title: Prefetch", "source:", "  repository: ../../demo-source", ""].join(
+      "\n",
+    ),
     "utf8",
   );
   await writeFile(

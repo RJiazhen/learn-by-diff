@@ -46,7 +46,7 @@
         "repository": {
           "type": "string",
           "minLength": 1,
-          "description": "Git URL or filesystem path to the source repository. Defaults to `.` (the course home: parent of `.course-config`, or the directory that contains a root-level course.yml). Relative paths resolve from the course home."
+          "description": "Git repository URL (clone remote only; do not append a subdirectory), local filesystem path, or omit. Defaults to `.` (the directory that contains course.yml). Relative local paths resolve from that same directory."
         },
         "root": {
           "$ref": "#/$defs/sourceDirPath",
@@ -57,7 +57,7 @@
     "course": {
       "type": "object",
       "additionalProperties": false,
-      "description": "All fields optional. Defaults: id from course home (or `{repo}-learn` at a git root), title=id, source.repository=`.`, chaptersDir=`chapters` (next to course.yml).",
+      "description": "All fields optional. Defaults: id from course home (or `{repo}-learn` at a git root), title=id, source.repository=`.` (directory that contains course.yml), chaptersDir=`chapters` (next to course.yml).",
       "properties": {
         "id": {
           "$ref": "#/$defs/nonEmptyString",

@@ -36,7 +36,10 @@ export function isChapterChangeKind(value: string): value is ChapterChangeKind {
 
 /** Source repository pointer in `course.yml`. */
 export interface CourseSource {
-  /** Git URL or path to the source repository (relative paths resolve from the course home). */
+  /**
+   * Git repository URL, local filesystem path, or `.` for the directory that contains `course.yml`.
+   * Relative local paths resolve from that same directory. Do not append a subdirectory to a git URL.
+   */
   repository: string;
   /**
    * Optional subdirectory under `repository` that prefixes every chapter `fromDir` / `toDir`.
@@ -51,7 +54,7 @@ export interface CourseSource {
  * No field is required in the YAML file. Defaults:
  * - `id` ← course home folder, or `{repoName}-learn` when that home is a git root
  * - `title` ← `id`
- * - `source.repository` ← `.` (course home)
+ * - `source.repository` ← `.` (directory that contains `course.yml`)
  * - `chaptersDir` ← `chapters` (next to `course.yml`)
  *
  * Protocol evolves by adding optional fields only; there is no `protocolVersion` gate.

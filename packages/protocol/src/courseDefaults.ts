@@ -55,7 +55,7 @@ export function defaultCourseId(configDir: string): string {
  *
  * - `id` ← course home folder (or `{repo}-learn` at a git root); for `.learn/course`, learning folder name
  * - `title` ← `id`
- * - `source.repository` ← `.` (course home)
+ * - `source.repository` ← `.` (directory that contains `course.yml`)
  * - `chaptersDir` ← `chapters` (directory next to `course.yml`)
  *
  * @param partial - Parsed fields (empty strings mean omitted)

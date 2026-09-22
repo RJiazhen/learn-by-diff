@@ -90,7 +90,7 @@ async function createTwoChapterWorkspace(): Promise<{
   await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
   await writeFile(
     path.join(courseDir, ".course-config", "course.yml"),
-    ["id: twochap", "title: Two", "source:", "  repository: ../demo-source", ""].join("\n"),
+    ["id: twochap", "title: Two", "source:", "  repository: ../../demo-source", ""].join("\n"),
     "utf8",
   );
   await writeFile(
@@ -246,7 +246,7 @@ describe("learning workspace", () => {
     );
     await writeFile(
       path.join(courseDir, ".course-config", "course.yml"),
-      ["id: from-nested", "title: Nested", "source:", "  repository: ../demo-source", ""].join(
+      ["id: from-nested", "title: Nested", "source:", "  repository: ../../demo-source", ""].join(
         "\n",
       ),
       "utf8",
@@ -273,6 +273,32 @@ describe("learning workspace", () => {
     await expect(access(path.join(copied, ".course-config"))).rejects.toMatchObject({
       code: "ENOENT",
     });
+  });
+
+  test("omitted source.repository uses the directory that contains course.yml", async () => {
+    const courseDir = await tempDir("lbd-omit-repo-");
+    const configDir = path.join(courseDir, ".course-config");
+    await mkdir(path.join(configDir, "start"), { recursive: true });
+    await mkdir(path.join(configDir, "done"), { recursive: true });
+    await mkdir(path.join(configDir, "chapters"), { recursive: true });
+    await writeFile(path.join(configDir, "start", "a.ts"), "export const a = 1;\n", "utf8");
+    await writeFile(path.join(configDir, "done", "a.ts"), "export const a = 2;\n", "utf8");
+    await writeFile(path.join(configDir, "course.yml"), "id: omit-repo\ntitle: Omit\n", "utf8");
+    await writeFile(
+      path.join(configDir, "chapters", "001.yml"),
+      ["id: one", "title: One", "fromDir: start", "toDir: done", ""].join("\n"),
+      "utf8",
+    );
+
+    const created = await createLearningWorkspace({
+      courseRepoUrl: path.join(configDir, "course.yml"),
+      parentDir: await tempDir("lbd-omit-parent-"),
+      git,
+    });
+    expect(created.course.config.source.repository).toBe(".");
+    expect(await readFile(path.join(created.learningRoot, "a.ts"), "utf8")).toBe(
+      "export const a = 1;\n",
+    );
   });
 
   test("rejects a local directory instead of a course.yml file", async () => {
@@ -309,7 +335,7 @@ describe("learning workspace", () => {
         "id: lessons-course",
         "title: Lessons",
         "source:",
-        "  repository: ../demo-source",
+        "  repository: ../../demo-source",
         "chaptersDir: lessons",
         "",
       ].join("\n"),
@@ -390,7 +416,7 @@ describe("learning workspace", () => {
     await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
     await writeFile(
       path.join(courseDir, ".course-config", "course.yml"),
-      ["id: plain", "title: Plain", "source:", "  repository: ../demo-source", ""].join("\n"),
+      ["id: plain", "title: Plain", "source:", "  repository: ../../demo-source", ""].join("\n"),
       "utf8",
     );
     await writeFile(
@@ -441,7 +467,7 @@ describe("learning workspace", () => {
     await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
     await writeFile(
       path.join(courseDir, ".course-config", "course.yml"),
-      ["id: mergegi", "title: Merge", "source:", "  repository: ../demo-source", ""].join("\n"),
+      ["id: mergegi", "title: Merge", "source:", "  repository: ../../demo-source", ""].join("\n"),
       "utf8",
     );
     await writeFile(
@@ -499,7 +525,7 @@ describe("learning workspace", () => {
     await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
     await writeFile(
       path.join(courseDir, ".course-config", "course.yml"),
-      ["id: gi", "title: Gitignore", "source:", "  repository: ../demo-source", ""].join("\n"),
+      ["id: gi", "title: Gitignore", "source:", "  repository: ../../demo-source", ""].join("\n"),
       "utf8",
     );
     await writeFile(
@@ -616,7 +642,9 @@ describe("learning workspace", () => {
     await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
     await writeFile(
       path.join(courseDir, ".course-config", "course.yml"),
-      ["id: replace", "title: Replace", "source:", "  repository: ../demo-source", ""].join("\n"),
+      ["id: replace", "title: Replace", "source:", "  repository: ../../demo-source", ""].join(
+        "\n",
+      ),
       "utf8",
     );
     await writeFile(

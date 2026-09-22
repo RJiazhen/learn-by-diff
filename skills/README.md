@@ -65,7 +65,7 @@ cursor://RuanJiazhen.learn-by-diff/open?url=<urlencoded-absolute-course.yml>
 
 ## Protocol notes
 
-- `course.yml` fields are all optional (`id` / `title` / `source.repository` have path-based defaults; optional `source.root` and `chaptersDir`, which defaults to `chapters` next to `course.yml`).
+- `course.yml` fields are all optional (`id` / `title` / `source.repository` have path-based defaults; omitted `source.repository` is the directory that contains `course.yml`; optional `source.root` and `chaptersDir`, which defaults to `chapters` next to `course.yml`).
 - Chapter fields are all optional (`id`/`title` from filename; empty `fromDir`/`toDir` = empty trees; omit `entryFiles` to auto-discover files under `toDir`; optional `docs` URL or relative doc path).
 - No `workspace`, `protocolVersion`, or `tests` fields yet (protocol only adds optional fields over time).
 - Schema: [`packages/protocol/schema.json`](../packages/protocol/schema.json).

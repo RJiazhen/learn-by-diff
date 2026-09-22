@@ -45,8 +45,8 @@ Fields in `course.yml`:
 - `title` (optional): Human-readable display name. Defaults to `id`.
 - `source.repository` (optional): Where the source lives. Three forms:
   - Git repository URL, for example `https://github.com/org/repo.git`.
-  - Local path: absolute, or relative to the `course.yml` file.
-  - Omitted: source is the same repository or directory as `course.yml`.
+  - Local path: absolute, or relative to the directory that contains `course.yml`.
+  - Omitted: source is the directory that contains `course.yml`.
 - `source.root` (optional): Path of the source tree inside `source.repository`. Omitted means the repository root.
 - `chaptersDir` (optional): Directory of chapter YAML files, relative to `course.yml`. Defaults to `chapters` next to `course.yml`.
 

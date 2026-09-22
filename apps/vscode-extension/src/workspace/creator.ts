@@ -4,7 +4,6 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import {
   COURSE_FILE_NAME,
-  courseHomeDir,
   findCourseConfigDir,
   loadCourseFromConfigDir,
   ProtocolError,
@@ -66,7 +65,6 @@ export async function createLearningWorkspace(
   const courseConfigSource = await resolveCourseConfigDir(git, courseRepoUrl, onLog);
   try {
     const preview = await loadCourseFromConfigDir(courseConfigSource.configDir);
-    const courseHome = courseHomeDir(courseConfigSource.configDir);
     const learningRoot =
       inPlaceRoot ??
       (parentDir !== undefined ? path.join(parentDir, preview.config.id) : undefined);
@@ -89,7 +87,10 @@ export async function createLearningWorkspace(
 
     const course = await loadCourseFromConfigDir(paths.courseDir);
 
-    const sourceRepository = resolveSourceRepository(course.config.source.repository, courseHome);
+    const sourceRepository = resolveSourceRepository(
+      course.config.source.repository,
+      courseConfigSource.configDir,
+    );
     await materializeSourceStore(git, sourceRepository, paths.sourceMirror, onLog);
 
     const first = course.chapters[0];

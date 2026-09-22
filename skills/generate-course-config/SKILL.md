@@ -15,12 +15,12 @@ Creates `.course-config/course.yml` and `.course-config/chapters/*.yml` for Lear
 
 User may pass any of:
 
-| Input               | Meaning                                                                                                 |
-| ------------------- | ------------------------------------------------------------------------------------------------------- |
-| Source root         | Directory that contains snapshot folders (default: current workspace / git root)                        |
-| Snapshot dirs       | Explicit ordered list, e.g. `start,hello,world` or `intro/start,intro/hello`                            |
-| Course output       | Where to write `.course-config` (default: cwd, or ask if cwd is clearly the source-only tree)           |
-| `source.repository` | Git URL or relative path written into `course.yml` (default: `.` or relative path from course → source) |
+| Input               | Meaning                                                                                                                                                     |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Source root         | Directory that contains snapshot folders (default: current workspace / git root)                                                                            |
+| Snapshot dirs       | Explicit ordered list, e.g. `start,hello,world` or `intro/start,intro/hello`                                                                                |
+| Course output       | Where to write `.course-config` (default: cwd, or ask if cwd is clearly the source-only tree)                                                               |
+| `source.repository` | Git URL or relative path written into `course.yml` (default: omit / `.` = directory that contains `course.yml`; relative paths resolve from that directory) |
 
 ## Workflow
 
@@ -97,12 +97,14 @@ Layout:
 # yaml-language-server: $schema=<relative-path-to>/packages/protocol/schema.json#/$defs/course
 # id / title default from the `.course-config` parent folder (or `{repo}-learn` at a git root)
 source:
-  repository: <url-or-relative-path> # default: .
+  repository: <url-or-relative-path> # omit or `.` = directory that contains this file
   # root: <optional prefix under repository>
 # chaptersDir: chapters   # optional; default is `chapters` next to this file
 ```
 
-Only set `source.repository` when it is not the course home (`.`). Do not emit `protocolVersion` or `workspace`.
+`source.repository` is a git URL, a local path, or omitted. Relative local paths resolve from the directory that contains `course.yml` (for this skill: `.course-config/`). Do not glue a subdirectory onto a git URL — use `source.root` instead.
+
+When `.course-config` sits **inside** the source tree, write `repository: ..` (parent of the config dir). When course output and source are different directories, write the posix relative path from `.course-config` to the source root (e.g. `../../demo-source`). Omit `source.repository` only when snapshots live in the same directory as `course.yml`. Do not emit `protocolVersion` or `workspace`.
 
 Minimal chapter file (defaults fill the rest):
 
