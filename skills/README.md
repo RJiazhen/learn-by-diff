@@ -42,15 +42,14 @@ cp -R skills/generate-course-config ~/.cursor/skills/generate-course-config
 2. Run the skill.
 3. Optional arguments you can give the agent:
    - Source root (default: current workspace)
-   - Ordered snapshot dirs, e.g. `start,hello,world` or `intro/start,intro/hello`
+   - Chapter `fromDir` / `toDir` pairs (need not be consecutive snapshots)
    - Where to write `.course-config` and what `source.repository` should be
 
-**Without dirs specified**, the agent **first** uses its built-in project tools (Glob / directory listing / etc.) to find chapter-like sibling folders. The script [`generate-course-config/scripts/detect-chapter-dirs.mjs`](generate-course-config/scripts/detect-chapter-dirs.mjs) is a **fallback** when those tools are missing. If nothing reliable is found, the skill **stops** and asks you for paths instead of inventing them.
+The agent **writes** basic `chapters/*.yml`, then **runs** [`generate-course-config/scripts/detect-chapter-dirs.mjs`](generate-course-config/scripts/detect-chapter-dirs.mjs) so it **fills** `changedFiles` (`--out`, `--depth`). Stdout is `{ok,wrote,failed}` plus `result` only on failure. `detect-chapter-dirs.result.json` lists **failures only** (read it when `ok` is false, then **delete** it). One chapter failure does not stop the rest. If Node is missing, it implements the same filler locally — it does not paste compare results into the chat.
 
 ```bash
-# Optional: run the fallback detector yourself
-node skills/generate-course-config/scripts/detect-chapter-dirs.mjs .
-node skills/generate-course-config/scripts/detect-chapter-dirs.mjs --dirs start,hello,world .
+node skills/generate-course-config/scripts/detect-chapter-dirs.mjs --out .course-config .
+node skills/generate-course-config/scripts/detect-chapter-dirs.mjs --out .course-config --depth 8 .
 ```
 
 After files are written, the agent should print:
