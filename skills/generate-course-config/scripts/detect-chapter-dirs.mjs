@@ -10,6 +10,7 @@
  */
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 const SKIP_DIR_NAMES = new Set([
   ".git",
@@ -63,7 +64,7 @@ const NAME_SCORE = [
  *
  * @param {string} name
  */
-function scoreName(name) {
+export function scoreName(name) {
   if (NOISE_DIR_NAMES.has(name.toLowerCase()) || SKIP_DIR_NAMES.has(name)) {
     return 0;
   }
@@ -132,7 +133,7 @@ async function listFiles(root, prefix = "", depth = 0) {
  * @param {string[]} left
  * @param {string[]} right
  */
-function similarity(left, right) {
+export function similarity(left, right) {
   const a = new Set(left);
   const b = new Set(right);
   let inter = 0;
@@ -150,7 +151,7 @@ function similarity(left, right) {
  *
  * @param {string} name
  */
-function isStartName(name) {
+export function isStartName(name) {
   return /^(start|baseline|init|initial)$/i.test(name);
 }
 
@@ -458,7 +459,7 @@ async function detectGroup(root) {
  *
  * @param {string[]} snapshots
  */
-function buildChapters(snapshots) {
+export function buildChapters(snapshots) {
   /** @type {{ id: string, title: string, fromDir: string, toDir: string }[]} */
   const chapters = [];
   for (let i = 0; i < snapshots.length - 1; i += 1) {
@@ -497,7 +498,7 @@ function buildChapters(snapshots) {
  * @param {string} fromDir - Start snapshot (empty string = empty tree)
  * @param {string} toDir - Goal snapshot (empty string = empty tree)
  */
-async function changedFilesBetween(root, fromDir, toDir) {
+export async function changedFilesBetween(root, fromDir, toDir) {
   const fromAbs = fromDir === "" ? "" : path.join(root, fromDir);
   const toAbs = toDir === "" ? "" : path.join(root, toDir);
   const fromFiles = fromDir === "" ? [] : await listFiles(fromAbs);
@@ -538,7 +539,63 @@ async function changedFilesBetween(root, fromDir, toDir) {
 }
 
 /**
- * CLI entry.
+ * Detects ordered snapshots and per-chapter U/M/D lists under a source root.
+ *
+ * @param {string} root - Source tree
+ * @param {string[] | undefined} forcedDirs - Explicit snapshot dirs; omit to run heuristics
+ * @returns {Promise<
+ *   | { ok: true; root: string; snapshots: string[]; chapters: object[]; courseId: string }
+ *   | { ok: false; root: string; reason: string }
+ * >}
+ */
+export async function detectCourse(root, forcedDirs) {
+  /** @type {string[]} */
+  let snapshots;
+  if (forcedDirs !== undefined && forcedDirs.length >= 2) {
+    snapshots = forcedDirs;
+  } else if (forcedDirs !== undefined) {
+    return {
+      ok: false,
+      root,
+      reason: "need at least two snapshot directories (from → to pairs)",
+    };
+  } else {
+    const detected = await detectGroup(root);
+    if (detected === undefined) {
+      return {
+        ok: false,
+        root,
+        reason:
+          "no chapter-like sibling directories found; pass --dirs start,hello,world or choose a source root",
+      };
+    }
+    snapshots = detected.snapshots;
+  }
+
+  const chapters = buildChapters(snapshots);
+  if (chapters.length === 0) {
+    return { ok: false, root, reason: "could not build chapters from snapshots" };
+  }
+
+  for (const chapter of chapters) {
+    chapter.changedFiles = await changedFilesBetween(root, chapter.fromDir, chapter.toDir);
+  }
+
+  return {
+    ok: true,
+    root,
+    snapshots,
+    chapters,
+    courseId:
+      path
+        .basename(root)
+        .replace(/[^a-zA-Z0-9_-]+/g, "-")
+        .toLowerCase() || "course",
+  };
+}
+
+/**
+ * Parses CLI args, runs {@link detectCourse}, and prints JSON to stdout.
  */
 async function main() {
   const args = process.argv.slice(2);
@@ -573,63 +630,24 @@ async function main() {
     return;
   }
 
-  /** @type {string[]} */
-  let snapshots;
-  if (forcedDirs !== undefined && forcedDirs.length >= 2) {
-    snapshots = forcedDirs;
-  } else if (forcedDirs !== undefined) {
-    console.log(
-      JSON.stringify({
-        ok: false,
-        root,
-        reason: "need at least two snapshot directories (from → to pairs)",
-      }),
-    );
+  const result = await detectCourse(root, forcedDirs);
+  console.log(JSON.stringify(result));
+  if (!result.ok) {
     process.exitCode = 1;
-    return;
-  } else {
-    const detected = await detectGroup(root);
-    if (detected === undefined) {
-      console.log(
-        JSON.stringify({
-          ok: false,
-          root,
-          reason:
-            "no chapter-like sibling directories found; pass --dirs start,hello,world or choose a source root",
-        }),
-      );
-      process.exitCode = 1;
-      return;
-    }
-    snapshots = detected.snapshots;
   }
-
-  const chapters = buildChapters(snapshots);
-  if (chapters.length === 0) {
-    console.log(
-      JSON.stringify({ ok: false, root, reason: "could not build chapters from snapshots" }),
-    );
-    process.exitCode = 1;
-    return;
-  }
-
-  for (const chapter of chapters) {
-    chapter.changedFiles = await changedFilesBetween(root, chapter.fromDir, chapter.toDir);
-  }
-
-  console.log(
-    JSON.stringify({
-      ok: true,
-      root,
-      snapshots,
-      chapters,
-      courseId:
-        path
-          .basename(root)
-          .replace(/[^a-zA-Z0-9_-]+/g, "-")
-          .toLowerCase() || "course",
-    }),
-  );
 }
 
-await main();
+/**
+ * Returns whether this file is the Node CLI entry (not imported by tests).
+ */
+function isMainModule() {
+  const entry = process.argv[1];
+  if (entry === undefined) {
+    return false;
+  }
+  return import.meta.url === pathToFileURL(path.resolve(entry)).href;
+}
+
+if (isMainModule()) {
+  await main();
+}
