@@ -78,6 +78,7 @@ docs: README.md
 - `fromDir`（可選）：本章開始時的原始碼快照目錄，相對 `source.repository`（若寫了 `source.root`，則相對那一層）。預設為空，表示空目錄。不允許 `..` 或絕對路徑。
 - `toDir`（可選）：本章目標快照目錄，相對規則同 `fromDir`。預設為空，表示空目錄。
 - `entryFiles`（可選）：本章要關注的檔案清單，路徑相對章節快照樹根（`toDir`）。預設為所有 `toDir` 下的檔案。
+- `changedFiles`（可選）：從 `fromDir` 到 `toDir` 的檔案差異（`path` 加上 `U` 新增、`M` 修改、`D` 刪除）。填寫後開啟課程時不必再比對快照。不寫則執行時分類；空清單表示本章沒有變化。generate-course-config 腳手架會自動填寫。
 - `docs`（可選）：本章文件。可以是 `http(s)` URL，也可以是快照樹裡的檔案路徑（先找 `toDir`，再找 `fromDir`），例如 `README.md`。預設為空，表示沒有文件按鈕。
 
 ### 保留檔案

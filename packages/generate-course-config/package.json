@@ -1,0 +1,16 @@
+{
+  "name": "@learn-by-diff/generate-course-config",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Tests for the generate-course-config author skill scripts.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "vp test",
+    "check": "vp check"
+  },
+  "devDependencies": {
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}
