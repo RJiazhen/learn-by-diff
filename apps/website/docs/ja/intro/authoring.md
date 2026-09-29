@@ -45,8 +45,8 @@ chaptersDir: chapters
 - `title`（任意）: 人が読むための表示名。省略時は `id`。
 - `source.repository`（任意）: ソースの場所。次の 3 通りです。
   - git リポジトリ URL。例: `https://github.com/org/repo.git`
-  - ローカルパス。絶対パス、または `course.yml` からの相対パス。
-  - 省略: ソースは `course.yml` と同じリポジトリまたは同じディレクトリ。
+  - ローカルパス。絶対パス、または `course.yml` があるディレクトリからの相対パス。
+  - 省略: ソースは `course.yml` があるディレクトリ。
 - `source.root`（任意）: `source.repository` 内のソースディレクトリ。省略時はリポジトリルート。
 - `chaptersDir`（任意）: 章 YAML のディレクトリ。`course.yml` からの相対パス。省略時は `course.yml` の隣の `chapters`。
 

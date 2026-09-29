@@ -30,22 +30,22 @@ export function localCourseOrigin(courseRepoUrl: string): string | undefined {
 /**
  * Resolves `source.repository` for clone/mirror.
  *
- * Relative paths are resolved against the course home (parent of `.course-config`,
- * or the directory that contains a root-level `course.yml`) so fixtures can use
- * `../demo-source` without baking machine-specific absolutes.
+ * Git URLs stay clone remotes (no path suffix is split off). Absolute local paths
+ * are kept. Relative paths and `.` resolve from the directory that contains
+ * `course.yml` (omitted / `.` means that directory).
  *
  * @param declared - Value from `course.yml`
- * @param courseHome - Course home directory for the original `course.yml`
+ * @param configDir - Directory that contains the original `course.yml`
  */
-export function resolveSourceRepository(declared: string, courseHome: string): string {
+export function resolveSourceRepository(declared: string, configDir: string): string {
   const trimmed = declared.trim();
-  if (trimmed === "") {
-    return trimmed;
+  if (trimmed === "" || trimmed === ".") {
+    return path.resolve(configDir);
   }
   if (isRemoteGitUrl(trimmed) || path.isAbsolute(trimmed)) {
     return trimmed;
   }
-  return path.resolve(courseHome, trimmed);
+  return path.resolve(configDir, trimmed);
 }
 
 /**

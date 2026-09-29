@@ -63,7 +63,7 @@ describe("materializeChapterRef", () => {
     await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
     await writeFile(
       path.join(courseDir, ".course-config", "course.yml"),
-      ["id: refs", "title: Refs", "source:", "  repository: ../demo-source", ""].join("\n"),
+      ["id: refs", "title: Refs", "source:", "  repository: ../../demo-source", ""].join("\n"),
       "utf8",
     );
     await writeFile(

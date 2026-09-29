@@ -48,7 +48,7 @@ chapters/*.yml                  # default chaptersDir
 | ------------------- | ------------------------------------------------------------- |
 | `id`                | Course home folder; `{repo}-learn` if that home is a git root |
 | `title`             | `id`                                                          |
-| `source.repository` | `.` (course home)                                             |
+| `source.repository` | `.` (directory that contains `course.yml`)                    |
 | `source.root`       | none                                                          |
 | `chaptersDir`       | `chapters` (directory next to `course.yml`)                   |
 
@@ -116,7 +116,7 @@ Deep link authority = `publisher.name` → `RuanJiazhen.learn-by-diff`.
 
 ## Examples
 
-- `examples/demo-course` — course config (relative `../demo-source`, chapter `docs` samples: https tutorial, Markdown, PDF).
+- `examples/demo-course` — course config (git URL + `source.root: examples/demo-source`, chapter `docs` samples: https tutorial, Markdown, PDF).
 - `examples/demo-source` — `start` / `skeleton` / `particles` / `follow` / `glow` snapshots (canvas particles that follow the cursor).
 - `apps/website` — VitePress docs site (`https://rjiazhen.github.io/learn-by-diff/`).
 

@@ -14,10 +14,19 @@ describe("resolveSourceRepository", () => {
     expect(resolveSourceRepository("/abs/source", "/tmp/course")).toBe("/abs/source");
   });
 
-  test("resolves relative paths against the local course origin", () => {
-    expect(resolveSourceRepository("../demo-source", "/repo/examples/demo-course")).toBe(
-      path.resolve("/repo/examples/demo-course", "../demo-source"),
-    );
+  test("resolves relative paths against the directory that contains course.yml", () => {
+    expect(
+      resolveSourceRepository("../demo-source", "/repo/examples/demo-course/.course-config"),
+    ).toBe(path.resolve("/repo/examples/demo-course/.course-config", "../demo-source"));
+    expect(
+      resolveSourceRepository("../../demo-source", "/repo/examples/demo-course/.course-config"),
+    ).toBe(path.resolve("/repo/examples/demo-course/.course-config", "../../demo-source"));
+  });
+
+  test("treats omitted and . as the config directory", () => {
+    const configDir = "/repo/examples/demo-course/.course-config";
+    expect(resolveSourceRepository("", configDir)).toBe(path.resolve(configDir));
+    expect(resolveSourceRepository(".", configDir)).toBe(path.resolve(configDir));
   });
 
   test("detects remote git URLs", () => {

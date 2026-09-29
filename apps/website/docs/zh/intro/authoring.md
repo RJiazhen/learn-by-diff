@@ -45,8 +45,8 @@ chaptersDir: chapters
 - `title`(可选)：课程显示名。改成给人看的名称即可。默认值为 `id`。
 - `source.repository`(可选)：源码所在位置，允许以下三种写法：
   - git 仓库地址：例如 `https://github.com/org/repo.git`，代表源码所属的 git 仓库；
-  - 本地路径：本机上的源码目录，可以是绝对路径，也可以是相对于 `course.yml` 文件的相对路径；
-  - 默认值：空，表示源码就在 `course.yml` 所在仓库或同一目录。
+  - 本地路径：本机上的源码目录，可以是绝对路径，也可以是相对于 `course.yml` 所在目录的相对路径；
+  - 默认值：空，表示源码就在 `course.yml` 所在目录。
 - `source.root`(可选)：源码在 `source.repository` 中的相对路径，默认值为空，表示源码就在 `source.repository` 的根目录。
 - `chaptersDir`(可选)：章节 YAML 所在目录，相对 `course.yml` 文件的地址。默认值为 `chapters`，即章节配置文件就在 `course.yml` 所在目录的 `chapters` 目录下。
 
