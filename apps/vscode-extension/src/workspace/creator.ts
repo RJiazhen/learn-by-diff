@@ -17,6 +17,7 @@ import { NonEmptyLearningTargetError } from "./errors.ts";
 import { isCodeWorkspaceFileName, learningPaths } from "./paths.ts";
 import { ensureLearningWorkspaceFile } from "./multiRoot.ts";
 import { githubCloneBranch, parseCourseConfigUrl } from "./parseCourseConfigUrl.ts";
+import { describeCourseOrigin, writeCourseOrigin } from "./courseOrigin.ts";
 import { isRemoteGitUrl, localCourseOrigin, resolveSourceRepository } from "./resolveRepo.ts";
 import {
   assertSourceSubtree,
@@ -116,6 +117,10 @@ export async function createLearningWorkspace(
       completed: false,
       appliedSide: "start",
     });
+    await writeCourseOrigin(
+      learningRoot,
+      await describeCourseOrigin(git, courseRepoUrl, courseConfigSource.configDir),
+    );
 
     await ensureLearningWorkspaceFile(learningRoot);
 
@@ -469,6 +474,7 @@ const LEARN_GITIGNORE_RULES = [
   ".learn/source.git/",
   ".learn/snapshots/",
   ".learn/refs/",
+  ".learn/origin.json",
   "*.code-workspace",
   "node_modules/",
 ];

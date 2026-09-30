@@ -60,6 +60,20 @@
         "icon": "$(search)"
       },
       {
+        "command": "learnByDiff.copyCurrentCourseUrl",
+        "title": "%learnByDiff.copyCurrentCourseUrl.title%",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "learnByDiff.copyWorkspaceCourseUrl",
+        "title": "%learnByDiff.copyWorkspaceCourseUrl.title%"
+      },
+      {
+        "command": "learnByDiff.copyOneClickOpenUrl",
+        "title": "%learnByDiff.copyOneClickOpenUrl.title%",
+        "icon": "$(link-external)"
+      },
+      {
         "command": "learnByDiff.openFileDiff",
         "title": "%learnByDiff.openFileDiff.title%"
       },
@@ -154,14 +168,24 @@
           "group": "navigation@3"
         },
         {
+          "command": "learnByDiff.copyCurrentCourseUrl",
+          "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace",
+          "group": "navigation@4"
+        },
+        {
+          "command": "learnByDiff.copyOneClickOpenUrl",
+          "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace",
+          "group": "navigation@4.5"
+        },
+        {
           "command": "learnByDiff.viewAsTree",
           "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace && learnByDiff.viewMode == 'list'",
-          "group": "navigation@4"
+          "group": "navigation@5"
         },
         {
           "command": "learnByDiff.viewAsList",
           "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace && learnByDiff.viewMode != 'list'",
-          "group": "navigation@4"
+          "group": "navigation@5"
         }
       ],
       "view/item/context": [
@@ -217,6 +241,14 @@
         }
       ],
       "commandPalette": [
+        {
+          "command": "learnByDiff.copyCurrentCourseUrl",
+          "when": "learnByDiff.isLearningWorkspace"
+        },
+        {
+          "command": "learnByDiff.copyOneClickOpenUrl",
+          "when": "learnByDiff.isLearningWorkspace"
+        },
         {
           "command": "learnByDiff.openFileDiff",
           "when": "false"

@@ -79,6 +79,7 @@ Under a learning workspace root:
 | ---------------------------------------- | ---------------------------------------------------------------------------------- |
 | `.learn/progress.json`                   | Applied chapter id / start or finish snapshot                                      |
 | `.learn/course/`                         | Copy of course config                                                              |
+| `.learn/origin.json`                     | Open Course origin for copy-link (gitignored)                                      |
 | `.learn/source.git/`                     | Materialized source store (mirror)                                                 |
 | `.learn/snapshots/dirs/<source-dir>/`    | Cached source trees (one copy per unique `fromDir`/`toDir`; prefetched after open) |
 | `.learn/refs/<ordinal>-<title> (status)` | Runnable copy; folder name matches Explorer                                        |
@@ -90,16 +91,17 @@ Activation today: `onUri` + `onView:learnByDiff.courseView` + `workspaceContains
 
 ## Major surfaces
 
-| Area                                  | Responsibility                                                                  |
-| ------------------------------------- | ------------------------------------------------------------------------------- |
-| `workspace/openCourse.ts`             | Shared open-course flow (command + deep link)                                   |
-| `workspace/creator.ts`                | Create learning root, copy config, materialize source, first chapter            |
-| `workspace/sourceStore.ts`            | Source mirror (git or tree copy); list/read/export chapter subtrees             |
-| `workspace/session.ts`                | Chapter navigation and snapshot apply                                           |
-| `snapshot/archive.ts` / `prefetch.ts` | Unique source trees; prefetch during Open Course (and on reopen if missing)     |
-| `ui/explorerView.ts`                  | SCM-like chapter/file tree from cached snapshots; contextValues, inline actions |
-| `ui/diff.ts` / `openDocs.ts`          | File diffs (`.learn/snapshots`, warmed after open); docs URL / Markdown / file  |
-| `uri/*`                               | `vscode://RuanJiazhen.learn-by-diff/open?url=…` (also `cursor://`)              |
+| Area                                  | Responsibility                                                                             |
+| ------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `workspace/openCourse.ts`             | Shared open-course flow (command + deep link)                                              |
+| `workspace/creator.ts`                | Create learning root, copy config, materialize source, first chapter                       |
+| `workspace/sourceStore.ts`            | Source mirror (git or tree copy); list/read/export chapter subtrees                        |
+| `workspace/session.ts`                | Chapter navigation and snapshot apply                                                      |
+| `snapshot/archive.ts` / `prefetch.ts` | Unique source trees; prefetch during Open Course (and on reopen if missing)                |
+| `ui/explorerView.ts`                  | SCM-like chapter/file tree from cached snapshots; contextValues, inline actions            |
+| `ui/diff.ts` / `openDocs.ts`          | File diffs (`.learn/snapshots`, warmed after open); docs URL / Markdown / file             |
+| `uri/*`                               | `vscode://RuanJiazhen.learn-by-diff/open?url=…` (also `cursor://`)                         |
+| Copy URL commands                     | Current-course Open Course input; workspace `course.yml` scan; one one-click URI at a time |
 
 Deep link authority = `publisher.name` → `RuanJiazhen.learn-by-diff`.
 

@@ -18,6 +18,20 @@ import {
   type LearningSession,
 } from "../workspace/loader.ts";
 import { openCourse } from "../workspace/openCourse.ts";
+import {
+  COURSE_YML_FIND_EXCLUDE,
+  COURSE_YML_FIND_INCLUDE,
+  collectOpenCourseLinkSources,
+  collectOpenCourseLinkSourcesForCourseYml,
+  currentCourseOpenUrl,
+  isWorkspaceCourseYml,
+  oneClickCopyOptions,
+  workspaceCourseCopyPicks,
+  type OpenCourseLinkKind,
+  type OpenCourseLinkSource,
+  type OneClickCopyOption,
+  type WorkspaceCourseCopyPick,
+} from "../workspace/openCourseLink.ts";
 import { materializeChapterRef, chapterRefWorkspaceName } from "../workspace/refs.ts";
 import { demoCoursePath } from "../workspace/resolveRepo.ts";
 import {
@@ -31,6 +45,7 @@ import {
   addOrOpenWorkspaceFolder,
   openLearningWorkspaceIfNeeded,
 } from "../workspace/workspaceFolders.ts";
+import type { OpenCourseEditorScheme } from "../uri/formatOpenCourseLink.ts";
 import { registerUriHandler } from "../uri/registerUriHandler.ts";
 import { showError } from "./showError.ts";
 
@@ -315,6 +330,103 @@ export function registerCommands(
   );
 
   /**
+   * Copies the URL that was used to open the current learning workspace.
+   *
+   * This is the Open Course input (local path, git URL, or GitHub file URL), not a
+   * `vscode://` / `cursor://` one-click URI.
+   */
+  async function onCopyCurrentCourseUrl(): Promise<void> {
+    const session = await loadFromRoot();
+    if (session === undefined) {
+      return;
+    }
+    const url = await currentCourseOpenUrl(git, session.workspaceRoot);
+    if (url === undefined || url === "") {
+      void vscode.window.showWarningMessage(
+        vscode.l10n.t("No course URL is recorded for this learning workspace."),
+      );
+      return;
+    }
+    await copyToClipboard(url, vscode.l10n.t("Copied the course URL to the clipboard."));
+  }
+
+  /**
+   * Finds `course.yml` files in the open folders and copies one chosen URL.
+   */
+  async function onCopyWorkspaceCourseUrl(): Promise<void> {
+    const courseYmlPath = await pickWorkspaceCourseYml();
+    if (courseYmlPath === undefined) {
+      return;
+    }
+    const sources = await collectOpenCourseLinkSourcesForCourseYml(git, courseYmlPath);
+    const pick = await pickWorkspaceCourseCopyAction(sources);
+    if (pick === undefined) {
+      return;
+    }
+    if (pick.kind === "plain-local") {
+      await copyToClipboard(
+        pick.url,
+        vscode.l10n.t("Copied the local course.yml path to the clipboard."),
+      );
+      return;
+    }
+    if (pick.kind === "plain-remote") {
+      await copyToClipboard(
+        pick.url,
+        vscode.l10n.t("Copied the remote course URL to the clipboard."),
+      );
+      return;
+    }
+    await copyToClipboard(
+      pick.option.uri,
+      vscode.l10n.t("Copied the one-click open URL to the clipboard."),
+    );
+  }
+
+  /**
+   * Copies one vscode or cursor one-click open URI for the current learning workspace.
+   *
+   * Shows every scheme × URL-source pair and copies a single chosen URI.
+   */
+  async function onCopyOneClickOpenUrl(): Promise<void> {
+    const session = await loadFromRoot();
+    if (session === undefined) {
+      return;
+    }
+    const sources = await collectOpenCourseLinkSources(git, session.workspaceRoot);
+    const options = oneClickCopyOptions(sources);
+    /**
+     * Maps a one-click option to a QuickPick row.
+     *
+     * @param option - Scheme and `url=` source pair
+     */
+    function toPick(option: OneClickCopyOption): vscode.QuickPickItem & { uri: string } {
+      return {
+        label: oneClickCopyOptionLabel(option),
+        description: option.uri,
+        uri: option.uri,
+      };
+    }
+    const selected = await vscode.window.showQuickPick(options.map(toPick), {
+      title: vscode.l10n.t("LearnByDiff: Copy One-Click Open URL"),
+      placeHolder: vscode.l10n.t("Choose one vscode or cursor one-click open URL to copy"),
+    });
+    if (selected === undefined) {
+      return;
+    }
+    await copyToClipboard(
+      selected.uri,
+      vscode.l10n.t("Copied the one-click open URL to the clipboard."),
+    );
+  }
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("learnByDiff.copyCurrentCourseUrl", onCopyCurrentCourseUrl),
+    vscode.commands.registerCommand("learnByDiff.copyWorkspaceCourseUrl", onCopyWorkspaceCourseUrl),
+    vscode.commands.registerCommand("learnByDiff.copyOneClickOpenUrl", onCopyOneClickOpenUrl),
+  );
+
+  /**
    * Applies the start snapshot for the chapter row the user clicked.
    *
    * @param item - Explorer chapter row
@@ -558,4 +670,158 @@ export function registerCommands(
   }
 
   void restore();
+}
+
+/**
+ * Writes `text` to the clipboard and shows `message`.
+ *
+ * @param text - Clipboard contents
+ * @param message - Success toast
+ */
+async function copyToClipboard(text: string, message: string): Promise<void> {
+  await vscode.env.clipboard.writeText(text);
+  void vscode.window.showInformationMessage(message);
+}
+
+/**
+ * Prompts for a workspace `course.yml`, skipping the picker when only one exists.
+ */
+async function pickWorkspaceCourseYml(): Promise<string | undefined> {
+  const folders = vscode.workspace.workspaceFolders;
+  if (folders === undefined || folders.length === 0) {
+    void vscode.window.showWarningMessage(vscode.l10n.t("Open a folder first."));
+    return undefined;
+  }
+  const uris = await vscode.workspace.findFiles(COURSE_YML_FIND_INCLUDE, COURSE_YML_FIND_EXCLUDE);
+  const files = uris
+    .map((uri) => uri.fsPath)
+    .filter(isWorkspaceCourseYml)
+    .sort();
+  if (files.length === 0) {
+    void vscode.window.showWarningMessage(
+      vscode.l10n.t("No course.yml files found in this workspace."),
+    );
+    return undefined;
+  }
+  if (files.length === 1) {
+    return files[0];
+  }
+  /**
+   * Maps a `course.yml` path to a QuickPick row.
+   *
+   * @param filePath - Absolute `course.yml` path
+   */
+  function toPick(filePath: string): vscode.QuickPickItem & { filePath: string } {
+    return {
+      label: vscode.workspace.asRelativePath(filePath),
+      description: filePath,
+      filePath,
+    };
+  }
+  const selected = await vscode.window.showQuickPick(files.map(toPick), {
+    title: vscode.l10n.t("LearnByDiff: Copy Workspace Course URL"),
+    placeHolder: vscode.l10n.t("Choose a course.yml file"),
+  });
+  return selected?.filePath;
+}
+
+/**
+ * Prompts for a workspace copy action after a `course.yml` is chosen.
+ *
+ * @param sources - `url=` sources derived from the chosen file
+ */
+async function pickWorkspaceCourseCopyAction(
+  sources: OpenCourseLinkSource[],
+): Promise<WorkspaceCourseCopyPick | undefined> {
+  /**
+   * Maps a copy row to a QuickPick item.
+   *
+   * @param pick - Plain URL or one-click URI to copy
+   */
+  function toPick(
+    pick: WorkspaceCourseCopyPick,
+  ): vscode.QuickPickItem & { pick: WorkspaceCourseCopyPick } {
+    return {
+      label: workspaceCourseCopyPickLabel(pick),
+      description: workspaceCourseCopyPickDescription(pick),
+      pick,
+    };
+  }
+  const selected = await vscode.window.showQuickPick(
+    workspaceCourseCopyPicks(sources).map(toPick),
+    {
+      title: vscode.l10n.t("LearnByDiff: Copy Workspace Course URL"),
+      placeHolder: vscode.l10n.t("Choose what to copy"),
+    },
+  );
+  return selected?.pick;
+}
+
+/**
+ * Returns the QuickPick label for a workspace copy row.
+ *
+ * @param pick - Plain URL or one-click URI to copy
+ */
+function workspaceCourseCopyPickLabel(pick: WorkspaceCourseCopyPick): string {
+  switch (pick.kind) {
+    case "plain-local":
+      return vscode.l10n.t("Copy local course URL");
+    case "plain-remote":
+      return vscode.l10n.t("Copy remote course URL");
+    case "one-click":
+      return oneClickCopyOptionLabel(pick.option);
+  }
+}
+
+/**
+ * Returns the URL shown beside a workspace copy row.
+ *
+ * @param pick - Plain URL or one-click URI to copy
+ */
+function workspaceCourseCopyPickDescription(pick: WorkspaceCourseCopyPick): string {
+  if (pick.kind === "one-click") {
+    return pick.option.uri;
+  }
+  return pick.url;
+}
+
+/**
+ * Returns the QuickPick label for a vscode or cursor one-click copy row.
+ *
+ * @param option - Scheme and `url=` source pair
+ */
+function oneClickCopyOptionLabel(option: OneClickCopyOption): string {
+  return vscode.l10n.t(
+    "Copy {0} one-click open URL ({1})",
+    openCourseEditorSchemeLabel(option.scheme),
+    openCourseLinkKindLabel(option.source.kind),
+  );
+}
+
+/**
+ * Returns the QuickPick label for a one-click editor scheme.
+ *
+ * @param scheme - `vscode` or `cursor`
+ */
+function openCourseEditorSchemeLabel(scheme: OpenCourseEditorScheme): string {
+  switch (scheme) {
+    case "vscode":
+      return vscode.l10n.t("VS Code");
+    case "cursor":
+      return vscode.l10n.t("Cursor");
+  }
+}
+
+/**
+ * Returns the QuickPick label for a one-click open-link URL source.
+ *
+ * @param kind - Local path or git URL
+ */
+function openCourseLinkKindLabel(kind: OpenCourseLinkKind): string {
+  switch (kind) {
+    case "local":
+      return vscode.l10n.t("Local course.yml path");
+    case "git":
+      return vscode.l10n.t("Remote git URL");
+  }
 }
