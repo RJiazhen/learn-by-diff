@@ -44,7 +44,7 @@ First match wins:
 
 ## Constraints
 
-- No develop or `--force` push on `main`. Issues read-only (except PR `Closes`/`Fixes` after merge).
+- No develop or `--force` push on `main`. After a successful Merge, close issues the PR body links with `Closes` / `Fixes` via `gh issue close`. Do not otherwise edit issues.
 - Commit: Conventional Commits, one logical change; body required (why/constraints, not subject echo).
 - Only **Merge** merges PRs. No secrets; no `sandbox/**` as source of truth—use `examples/`.
 - After protocol `src` changes: `pnpm exec vp run @learn-by-diff/protocol#pack` before extension test/F5.
