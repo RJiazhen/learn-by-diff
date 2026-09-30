@@ -9,7 +9,7 @@ export default defineConfig({
     platform: "node",
     deps: {
       neverBundle: ["vscode"],
-      alwaysBundle: ["@learn-by-diff/protocol", "yaml"],
+      alwaysBundle: ["@learn-by-diff/protocol", "jsonc-parser"],
       onlyBundle: false,
     },
   },

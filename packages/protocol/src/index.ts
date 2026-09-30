@@ -1,6 +1,7 @@
 export {
   CHAPTERS_DIR_NAME,
   CHAPTER_CHANGE_KINDS,
+  CHAPTER_FILE_EXTENSION,
   COURSE_CONFIG_DIR,
   COURSE_FILE_NAME,
   isChapterChangeKind,
@@ -22,7 +23,7 @@ export {
   defaultCourseId,
   type ParsedCourseFields,
 } from "./courseDefaults.ts";
-export { parseChapterYaml, parseCourseYaml } from "./parse.ts";
+export { parseChapterJsonc, parseCourseJsonc } from "./parse.ts";
 export {
   isHttpUrl,
   normalizeRelativeFilePath,

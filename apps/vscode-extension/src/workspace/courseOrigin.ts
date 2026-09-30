@@ -10,11 +10,11 @@ import { isRemoteGitUrl, localCourseOrigin } from "./resolveRepo.ts";
 export interface CourseOpenOrigin {
   /** Original Open Course input. */
   input: string;
-  /** Absolute local `course.yml` when the input was a filesystem path. */
+  /** Absolute local `course.jsonc` when the input was a filesystem path. */
   localCourseYml?: string;
   /** Git clone URL when the course came from a remote or a local git checkout. */
   gitUrl?: string;
-  /** Posix-relative path to `course.yml` inside the git repository. */
+  /** Posix-relative path to `course.jsonc` inside the git repository. */
   configRelPath?: string;
   /** GitHub ref for blob URLs (branch, tag, or SHA). */
   githubRef?: string;
@@ -55,13 +55,13 @@ export async function writeCourseOrigin(
 }
 
 /**
- * Records how `course.yml` was resolved so later copy-URL commands can rebuild shareable links.
+ * Records how `course.jsonc` was resolved so later copy-URL commands can rebuild shareable links.
  *
  * Local paths also probe git remotes so git/GitHub links work after a filesystem open.
  *
  * @param git - Git client
  * @param courseRepoUrl - Original Open Course input
- * @param configDir - Directory that contains the resolved `course.yml`
+ * @param configDir - Directory that contains the resolved `course.jsonc`
  */
 export async function describeCourseOrigin(
   git: GitClient,
@@ -99,12 +99,12 @@ export async function describeCourseOrigin(
 }
 
 /**
- * Adds git clone URL, in-repo `course.yml` path, and current branch when `dir` is a checkout.
+ * Adds git clone URL, in-repo `course.jsonc` path, and current branch when `dir` is a checkout.
  *
  * @param git - Git client
  * @param origin - Origin document to update
  * @param dir - Directory inside the checkout
- * @param courseYmlPath - Absolute `course.yml` path
+ * @param courseYmlPath - Absolute `course.jsonc` path
  */
 async function fillGitFieldsFromCheckout(
   git: GitClient,

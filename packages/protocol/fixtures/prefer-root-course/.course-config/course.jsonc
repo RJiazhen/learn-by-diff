@@ -1,0 +1,7 @@
+{
+  "id": "from-nested",
+  "title": "From Nested",
+  "source": {
+    "repository": "https://example.com/prefer-nested.git",
+  },
+}

@@ -1,5 +1,0 @@
-# yaml-language-server: $schema=../../../packages/protocol/schema.json#/$defs/course
-title: Cursor particles
-source:
-  repository: https://github.com/RJiazhen/learn-by-diff.git
-  root: examples/demo-source

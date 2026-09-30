@@ -9,12 +9,12 @@ You will build a **full-screen dark canvas**: particles drift, gather into a rin
 
 This is the sample course in the repo. Chapter pages on this site match the snapshot docs in `examples/demo-source` (`README.md` or `docs.md`). Chapter 1’s course `docs` URL points here; later chapters open the files inside the snapshot.
 
-|           |                                                                                                                                                        |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Course    | Cursor particles                                                                                                                                       |
-| Config    | [`examples/demo-course/.course-config/course.yml`](https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml) |
-| Snapshots | [`examples/demo-source`](https://github.com/RJiazhen/learn-by-diff/tree/main/examples/demo-source)                                                     |
-| Chapters  | 4: skeleton → particles → follow → glow                                                                                                                |
+|           |                                                                                                                                                            |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Course    | Cursor particles                                                                                                                                           |
+| Config    | [`examples/demo-course/.course-config/course.jsonc`](https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc) |
+| Snapshots | [`examples/demo-source`](https://github.com/RJiazhen/learn-by-diff/tree/main/examples/demo-source)                                                         |
+| Chapters  | 4: skeleton → particles → follow → glow                                                                                                                    |
 
 <p class="lbd-quiet-link">
   <a href="/intro/start">New to the extension? Start here</a>
@@ -23,7 +23,7 @@ This is the sample course in the repo. Chapter pages on this site match the snap
 After cloning [learn-by-diff](https://github.com/RJiazhen/learn-by-diff), pick this file in Open Course:
 
 ```text
-examples/demo-course/.course-config/course.yml
+examples/demo-course/.course-config/course.jsonc
 ```
 
 Do not use the whole product repository git URL as the course `url` (the repo root is not the course root).

@@ -2,6 +2,6 @@
 
 Particle-cursor course used when debugging the extension. Four chapters: canvas skeleton → drifting particles → pointer follow → glow trails.
 
-- Config: [`.course-config/course.yml`](.course-config/course.yml) (paste this file into **Open Course**)
+- Config: [`.course-config/course.jsonc`](.course-config/course.jsonc) (paste this file into **Open Course**)
 - Source tree: [`../demo-source`](../demo-source) with per-chapter directories (`fromDir` / `toDir`)
 - Docs samples: https tutorial on chapter 1 (`https://rjiazhen.github.io/learn-by-diff/demo/skeleton.html`, same text as `skeleton/README.md`), Markdown, and PDF (`glow/docs.pdf`)

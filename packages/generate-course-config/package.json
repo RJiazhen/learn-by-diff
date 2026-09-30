@@ -6,10 +6,15 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "test": "vp test",
+    "build": "vp build",
+    "test": "vp build && vp test",
     "check": "vp check"
   },
+  "dependencies": {
+    "jsonc-parser": "catalog:"
+  },
   "devDependencies": {
+    "@types/node": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:"
   }

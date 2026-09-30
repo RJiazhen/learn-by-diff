@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/packages/protocol/schema.json",
   "title": "Learning Course Protocol (LCP)",
-  "description": "JSON Schema for LearnByDiff course.yml and chapter YAML documents. Wire via YAML language server ($schema comment or yaml.schemas). Protocol evolves additively; all course.yml fields are optional.",
+  "description": "JSON Schema for LearnByDiff course.jsonc and chapter JSONC documents. Wire via the $schema property. Protocol evolves additively; all course.jsonc fields are optional.",
   "oneOf": [{ "$ref": "#/$defs/course" }, { "$ref": "#/$defs/chapter" }],
   "$defs": {
     "nonEmptyString": {
@@ -46,7 +46,7 @@
         "repository": {
           "type": "string",
           "minLength": 1,
-          "description": "Git repository URL (clone remote only; do not append a subdirectory), local filesystem path, or omit. Defaults to `.` (the directory that contains course.yml). Relative local paths resolve from that same directory."
+          "description": "Git repository URL (clone remote only; do not append a subdirectory), local filesystem path, or omit. Defaults to `.` (the directory that contains course.jsonc). Relative local paths resolve from that same directory."
         },
         "root": {
           "$ref": "#/$defs/sourceDirPath",
@@ -57,8 +57,12 @@
     "course": {
       "type": "object",
       "additionalProperties": false,
-      "description": "All fields optional. Defaults: id from course home (or `{repo}-learn` at a git root), title=id, source.repository=`.` (directory that contains course.yml), chaptersDir=`chapters` (next to course.yml).",
+      "description": "All fields optional. Defaults: id from course home (or `{repo}-learn` at a git root), title=id, source.repository=`.` (directory that contains course.jsonc), chaptersDir=`chapters` (next to course.jsonc).",
       "properties": {
+        "$schema": {
+          "type": "string",
+          "description": "JSON Schema URL or path for this course document."
+        },
         "id": {
           "$ref": "#/$defs/nonEmptyString",
           "description": "Stable course id (also used as the default learning workspace folder name). Defaults from the course home directory."
@@ -72,7 +76,7 @@
         },
         "chaptersDir": {
           "$ref": "#/$defs/sourceDirPath",
-          "description": "Directory of chapter YAML files, relative to the directory that contains course.yml. Defaults to `chapters`. Nested paths allowed; no absolute paths or '..' segments."
+          "description": "Directory of chapter JSONC files, relative to the directory that contains course.jsonc. Defaults to `chapters`. Nested paths allowed; no absolute paths or '..' segments."
         }
       }
     },
@@ -81,9 +85,13 @@
       "additionalProperties": false,
       "description": "All fields optional. Defaults: id from filename (strip numeric prefix), title=id, empty fromDir/toDir = empty trees, omitted entryFiles = all files under toDir, omitted changedFiles = classify at runtime.",
       "properties": {
+        "$schema": {
+          "type": "string",
+          "description": "JSON Schema URL or path for this chapter document."
+        },
         "id": {
           "$ref": "#/$defs/nonEmptyString",
-          "description": "Stable chapter id (unique within the course). Defaults from the yaml filename."
+          "description": "Stable chapter id (unique within the course). Defaults from the jsonc filename."
         },
         "title": {
           "$ref": "#/$defs/nonEmptyString",

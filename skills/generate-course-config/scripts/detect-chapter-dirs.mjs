@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Fills `changedFiles` on existing chapter YAML under `--out`.
+ * Fills `changedFiles` on existing chapter JSONC under `--out`.
  *
  * Usage:
  *   node detect-chapter-dirs.mjs [--out .course-config] [--depth N] [rootDir]
@@ -15,6 +15,9 @@
 import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { formatJsonc, parseJsonc, upsertChangedFilesJsonc } from "./chapter-jsonc.mjs";
+
+export { formatJsonc, parseJsonc, upsertChangedFilesJsonc };
 
 const SKIP_DIR_NAMES = new Set([
   ".git",
@@ -66,7 +69,7 @@ const NAME_SCORE = [
 /** Subdirectory levels to enter under each snapshot when `--depth` is omitted. */
 export const DEFAULT_MAX_DEPTH = 6;
 
-/** Per-chapter run report written next to course YAML (agent deletes after the skill). */
+/** Per-chapter run report written next to course JSONC (agent deletes after the skill). */
 export const RESULT_FILE_NAME = "detect-chapter-dirs.result.json";
 
 /**
@@ -528,126 +531,48 @@ export function buildChapters(snapshots) {
 }
 
 /**
- * Quotes a YAML scalar when the value would be ambiguous unquoted.
+ * Returns whether `value` is a plain object.
  *
- * @param {string} value
+ * @param {unknown} value
  */
-function yamlScalar(value) {
-  if (value === "") {
-    return '""';
-  }
-  if (/[:#{}[\],&*!|>'"%@`]|^\s|\s$/.test(value)) {
-    return JSON.stringify(value);
-  }
-  return value;
+function isRecord(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 /**
- * Formats a top-level `changedFiles` YAML block (no trailing newline).
+ * Formats `changedFiles` as a JSON array (no trailing newline).
  *
  * @param {{ path: string, kind: "U" | "M" | "D" }[]} files
  */
-export function formatChangedFilesYaml(files) {
-  if (files.length === 0) {
-    return "changedFiles: []";
-  }
-  const lines = ["changedFiles:"];
-  for (const file of files) {
-    lines.push(`  - path: ${yamlScalar(file.path)}`);
-    lines.push(`    kind: ${file.kind}`);
-  }
-  return lines.join("\n");
+export function formatChangedFilesJsonc(files) {
+  return JSON.stringify(files, null, 2);
 }
 
 /**
- * Inserts or replaces a top-level `changedFiles` block in chapter YAML.
- *
- * @param {string} text - Existing chapter YAML
- * @param {{ path: string, kind: "U" | "M" | "D" }[]} files
- */
-export function upsertChangedFilesYaml(text, files) {
-  const block = formatChangedFilesYaml(files);
-  const normalized = text.replace(/\r\n/g, "\n");
-  const lines = normalized.split("\n");
-  const start = lines.findIndex((line) => line.startsWith("changedFiles:"));
-  if (start === -1) {
-    const body = normalized.replace(/\s*$/, "");
-    return `${body}\n${block}\n`;
-  }
-  let end = start + 1;
-  while (end < lines.length) {
-    const line = lines[end] ?? "";
-    if (line !== "" && !/^[ \t]/.test(line)) {
-      break;
-    }
-    end += 1;
-  }
-  const merged = [...lines.slice(0, start), ...block.split("\n"), ...lines.slice(end)];
-  return `${merged.join("\n").replace(/\s*$/, "")}\n`;
-}
-
-/**
- * Unquotes a YAML scalar token (plain, double-quoted, or single-quoted).
- *
- * @param {string} raw
- */
-export function unquoteYamlScalar(raw) {
-  const trimmed = raw.trim().replace(/\s+#.*$/, "");
-  if (trimmed === "" || trimmed === "~" || trimmed === "null") {
-    return "";
-  }
-  if (trimmed === '""' || trimmed === "''") {
-    return "";
-  }
-  if (trimmed.startsWith('"') && trimmed.endsWith('"') && trimmed.length >= 2) {
-    try {
-      return JSON.parse(trimmed);
-    } catch {
-      return trimmed.slice(1, -1);
-    }
-  }
-  if (trimmed.startsWith("'") && trimmed.endsWith("'") && trimmed.length >= 2) {
-    return trimmed.slice(1, -1).replace(/''/g, "'");
-  }
-  return trimmed;
-}
-
-/**
- * Reads a top-level YAML scalar, or `undefined` when the key is absent.
- *
- * @param {string} text - Chapter YAML
- * @param {string} key - Top-level key (`fromDir`, `toDir`, `id`)
- */
-export function readTopLevelYamlScalar(text, key) {
-  const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = text.replace(/\r\n/g, "\n").match(new RegExp(`^${escaped}:\\s*(.*)$`, "m"));
-  if (match === null) {
-    return undefined;
-  }
-  return unquoteYamlScalar(match[1] ?? "");
-}
-
-/**
- * Derives a chapter id from `001-hello.yml` (strip extension and numeric prefix).
+ * Derives a chapter id from `001-hello.jsonc` (strip extension and numeric prefix).
  *
  * @param {string} fileName
  */
 export function chapterIdFromFileName(fileName) {
-  const base = fileName.replace(/\.(ya?ml)$/i, "");
+  const base = fileName.replace(/\.jsonc$/i, "");
   const stripped = base.replace(/^\d+[-_.]?/, "");
   return stripped || base;
 }
 
 /**
- * Reads `id` / `fromDir` / `toDir` from chapter YAML (empty from/to = empty trees).
+ * Reads `id` / `fromDir` / `toDir` from chapter JSONC (empty from/to = empty trees).
  *
- * @param {string} text - Chapter YAML
+ * @param {string} text - Chapter JSONC
  * @param {string} fileName - File basename used when `id` is omitted
  */
 export function readChapterSnapshotFields(text, fileName) {
-  const fromRaw = readTopLevelYamlScalar(text, "fromDir");
-  const toRaw = readTopLevelYamlScalar(text, "toDir");
-  const idRaw = readTopLevelYamlScalar(text, "id");
+  const value = parseJsonc(text);
+  if (!isRecord(value)) {
+    throw new Error("chapter config must be a JSON object");
+  }
+  const idRaw = typeof value.id === "string" ? value.id : undefined;
+  const fromRaw = typeof value.fromDir === "string" ? value.fromDir : undefined;
+  const toRaw = typeof value.toDir === "string" ? value.toDir : undefined;
   return {
     id: idRaw !== undefined && idRaw !== "" ? idRaw : chapterIdFromFileName(fileName),
     fromDir: fromRaw ?? "",
@@ -672,7 +597,7 @@ export function assertRepoRelativeSnapshot(relative) {
 }
 
 /**
- * Lists `chapters/*.yml` under the course config directory, sorted by file name.
+ * Lists `chapters/*.jsonc` under the course config directory, sorted by file name.
  *
  * @param {string} configDir
  * @returns {Promise<Array<{ file: string, filePath: string }>>}
@@ -686,14 +611,14 @@ export async function listChapterConfigFiles(configDir) {
     return [];
   }
   return entries
-    .filter((entry) => entry.isFile() && /\.ya?ml$/i.test(entry.name))
+    .filter((entry) => entry.isFile() && /\.jsonc$/i.test(entry.name))
     .map((entry) => entry.name)
     .sort()
     .map((file) => ({ file, filePath: path.join(chaptersDir, file) }));
 }
 
 /**
- * Fills `changedFiles` on each existing chapter YAML file; continues after a failure.
+ * Fills `changedFiles` on each existing chapter JSONC file; continues after a failure.
  *
  * @param {string} root - Source root
  * @param {string} configDir - Course config directory (`--out`)
@@ -713,7 +638,7 @@ export async function fillExistingChapterConfigs(
       ok: false,
       wrote: 0,
       failed: 0,
-      reason: "no chapter YAML in chapters/; write basic chapter files (fromDir/toDir) first",
+      reason: "no chapter JSONC in chapters/; write basic chapter files (fromDir/toDir) first",
       chapters: [],
     };
   }
@@ -744,7 +669,7 @@ export async function fillExistingChapterConfigs(
       await ensureSnapshotDir(root, toDir);
       const changedFiles = await changedFilesBetween(root, fromDir, toDir, maxDepth);
       if (write) {
-        await writeFile(filePath, upsertChangedFilesYaml(text, changedFiles), "utf8");
+        await writeFile(filePath, upsertChangedFilesJsonc(text, changedFiles), "utf8");
       }
       chapters.push({
         ok: true,
@@ -766,7 +691,7 @@ export async function fillExistingChapterConfigs(
       });
     }
   }
-  /** Counts chapter YAML files updated successfully. */
+  /** Counts chapter JSONC files updated successfully. */
   const wrote = chapters.filter((chapter) => chapter.ok).length;
   /** Counts chapters that failed analyze or write. */
   const failed = chapters.filter((chapter) => !chapter.ok).length;
@@ -779,7 +704,7 @@ export async function fillExistingChapterConfigs(
 }
 
 /**
- * Formats a new chapter YAML document (id, title, from/to, changedFiles).
+ * Formats a new chapter JSONC document (id, title, from/to, changedFiles).
  *
  * @param {{
  *   id: string,
@@ -789,16 +714,14 @@ export async function fillExistingChapterConfigs(
  *   changedFiles?: { path: string, kind: "U" | "M" | "D" }[],
  * }} chapter
  */
-export function formatNewChapterYaml(chapter) {
-  const files = chapter.changedFiles ?? [];
-  return [
-    `id: ${yamlScalar(chapter.id)}`,
-    `title: ${yamlScalar(chapter.title)}`,
-    `fromDir: ${yamlScalar(chapter.fromDir)}`,
-    `toDir: ${yamlScalar(chapter.toDir)}`,
-    formatChangedFilesYaml(files),
-    "",
-  ].join("\n");
+export function formatNewChapterJsonc(chapter) {
+  return formatJsonc({
+    id: chapter.id,
+    title: chapter.title,
+    fromDir: chapter.fromDir,
+    toDir: chapter.toDir,
+    changedFiles: chapter.changedFiles ?? [],
+  });
 }
 
 /**
@@ -948,7 +871,7 @@ export async function writeRunReport(configDir, report) {
 }
 
 /**
- * Writes or updates numbered chapter YAML files under `configDir/chapters`.
+ * Writes or updates numbered chapter JSONC files under `configDir/chapters`.
  *
  * Existing files keep extra keys (`docs`, `entryFiles`, …); only `changedFiles`
  * is replaced. New files get id/title/fromDir/toDir/changedFiles. A chapter
@@ -1016,7 +939,7 @@ export async function writeChapterConfigs(configDir, chapters) {
       continue;
     }
     const ordinal = String(i + 1).padStart(3, "0");
-    const fileName = `${ordinal}-${chapter.id}.yml`;
+    const fileName = `${ordinal}-${chapter.id}.jsonc`;
     const filePath = path.join(chaptersDir, fileName);
     try {
       let existing;
@@ -1028,8 +951,8 @@ export async function writeChapterConfigs(configDir, chapters) {
       const files = chapter.changedFiles ?? [];
       const next =
         existing === undefined
-          ? formatNewChapterYaml(chapter)
-          : upsertChangedFilesYaml(existing, files);
+          ? formatNewChapterJsonc(chapter)
+          : upsertChangedFilesJsonc(existing, files);
       await writeFile(filePath, next, "utf8");
       results.push({
         ok: true,
@@ -1129,7 +1052,7 @@ export async function detectCourse(root, forcedDirs, maxDepth = DEFAULT_MAX_DEPT
         ok: false,
         root,
         reason:
-          "no chapter-like sibling directories found; write chapter YAML with fromDir/toDir instead",
+          "no chapter-like sibling directories found; write chapter JSONC with fromDir/toDir instead",
       };
     }
     snapshots = detected.snapshots;
@@ -1205,7 +1128,7 @@ async function finishRun(outDir, report) {
 }
 
 /**
- * Parses CLI args, writes chapter YAML by default, or prints JSON with `--json`.
+ * Parses CLI args, writes chapter JSONC by default, or prints JSON with `--json`.
  */
 async function main() {
   const args = process.argv.slice(2);
@@ -1226,7 +1149,7 @@ async function main() {
           ok: false,
           wrote: 0,
           failed: 0,
-          reason: "--dirs was removed; write chapter YAML with fromDir/toDir, then rerun",
+          reason: "--dirs was removed; write chapter JSONC with fromDir/toDir, then rerun",
         },
         false,
       );

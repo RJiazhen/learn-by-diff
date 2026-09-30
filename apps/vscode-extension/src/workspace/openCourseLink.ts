@@ -16,10 +16,10 @@ import {
 } from "./courseOrigin.ts";
 import { learningPaths } from "./paths.ts";
 
-/** Glob used with `vscode.workspace.findFiles` to locate `course.yml` files. */
-export const COURSE_YML_FIND_INCLUDE = "**/course.yml";
+/** Glob used with `vscode.workspace.findFiles` to locate `course.jsonc` files. */
+export const COURSE_YML_FIND_INCLUDE = "**/course.jsonc";
 
-/** Glob that skips generated and vendor trees when searching for `course.yml`. */
+/** Glob that skips generated and vendor trees when searching for `course.jsonc`. */
 export const COURSE_YML_FIND_EXCLUDE = "**/{node_modules,.git,.learn,dist,build,coverage}/**";
 
 /** Which `url=` source a copied one-click open link uses. */
@@ -40,7 +40,7 @@ export interface OneClickCopyOption {
   uri: string;
 }
 
-/** Copy action offered after picking a workspace `course.yml`. */
+/** Copy action offered after picking a workspace `course.jsonc`. */
 export type WorkspaceCourseCopyPick =
   | { kind: "plain-local"; url: string }
   | { kind: "plain-remote"; url: string }
@@ -49,7 +49,7 @@ export type WorkspaceCourseCopyPick =
 /**
  * Collects local and git `url=` sources for the open learning workspace.
  *
- * Local always includes a `course.yml` path (original file when it still exists, else the
+ * Local always includes a `course.jsonc` path (original file when it still exists, else the
  * `.learn/course` copy). Git is omitted when it cannot be derived.
  *
  * @param git - Git client
@@ -69,12 +69,12 @@ export async function collectOpenCourseLinkSources(
 }
 
 /**
- * Collects local and git `url=` sources for a `course.yml` on disk.
+ * Collects local and git `url=` sources for a `course.jsonc` on disk.
  *
  * Used by the workspace scan command, which is not tied to a learning workspace.
  *
  * @param git - Git client
- * @param courseYmlPath - Absolute `course.yml` path
+ * @param courseYmlPath - Absolute `course.jsonc` path
  */
 export async function collectOpenCourseLinkSourcesForCourseYml(
   git: GitClient,
@@ -87,7 +87,7 @@ export async function collectOpenCourseLinkSourcesForCourseYml(
 /**
  * Returns the original Open Course input for a learning workspace.
  *
- * Falls back to the local `course.yml` path when `.learn/origin.json` is missing.
+ * Falls back to the local `course.jsonc` path when `.learn/origin.json` is missing.
  *
  * @param git - Git client
  * @param workspaceRoot - Learning workspace root
@@ -132,7 +132,7 @@ export function oneClickCopyOptions(sources: OpenCourseLinkSource[]): OneClickCo
  *
  * Remote and one-click-with-git rows are omitted when the file has no git remote URL.
  *
- * @param sources - `url=` sources derived from the chosen `course.yml`
+ * @param sources - `url=` sources derived from the chosen `course.jsonc`
  */
 export function workspaceCourseCopyPicks(
   sources: OpenCourseLinkSource[],
@@ -152,7 +152,7 @@ export function workspaceCourseCopyPicks(
 }
 
 /**
- * Returns sources in copy-picker order: remote git URL first, then local `course.yml`.
+ * Returns sources in copy-picker order: remote git URL first, then local `course.jsonc`.
  *
  * @param sources - Local and/or git `url=` values
  */
@@ -168,7 +168,7 @@ function sourcesInCopyOrder(sources: OpenCourseLinkSource[]): OpenCourseLinkSour
 }
 
 /**
- * Returns whether `filePath` is a `course.yml` outside generated trees.
+ * Returns whether `filePath` is a `course.jsonc` outside generated trees.
  *
  * @param filePath - Absolute or relative path
  */
@@ -184,7 +184,7 @@ export function isWorkspaceCourseYml(filePath: string): boolean {
  * Builds local and git `url=` sources from an origin document.
  *
  * @param origin - Stored or freshly described origin
- * @param localUrl - Absolute `course.yml` path for the local source
+ * @param localUrl - Absolute `course.jsonc` path for the local source
  */
 function openCourseLinkSourcesFromOrigin(
   origin: CourseOpenOrigin | undefined,
@@ -203,7 +203,7 @@ function openCourseLinkSourcesFromOrigin(
  *
  * @param git - Git client
  * @param origin - Stored origin, or `undefined` for older workspaces
- * @param learnCourseYml - `.learn/course/course.yml`
+ * @param learnCourseYml - `.learn/course/course.jsonc`
  */
 async function enrichOriginFromLocalGit(
   git: GitClient,
@@ -234,12 +234,12 @@ async function enrichOriginFromLocalGit(
 }
 
 /**
- * Returns the local `course.yml` path to put in `url=`.
+ * Returns the local `course.jsonc` path to put in `url=`.
  *
  * Prefers the original file when it still exists.
  *
  * @param origin - Stored origin
- * @param learnCourseYml - Fallback `.learn/course/course.yml`
+ * @param learnCourseYml - Fallback `.learn/course/course.jsonc`
  */
 async function resolveLocalCourseYml(
   origin: CourseOpenOrigin | undefined,
@@ -253,7 +253,7 @@ async function resolveLocalCourseYml(
 }
 
 /**
- * Builds a git clone URL, appending `#path/to/course.yml` when the config is nested.
+ * Builds a git clone URL, appending `#path/to/course.jsonc` when the config is nested.
  *
  * @param origin - Stored origin
  */

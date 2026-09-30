@@ -24,7 +24,7 @@
 填入以下 demo 课程配置地址并确认：
 
 ```text
-https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml
+https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc
 ```
 
 在弹出窗口中选择一个目录存放学习工作区，课程相关文件会下载到该目录。
@@ -35,8 +35,8 @@ https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course
 
 已安装扩展时，也可以点击以下链接一键开课：
 
-- [VS Code](vscode://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml)
-- [Cursor](cursor://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml)
+- [VS Code](vscode://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc)
+- [Cursor](cursor://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc)
 
 ## 按你的方式学习
 

@@ -4,12 +4,12 @@ import type { CourseConfig, CourseSource } from "./types.ts";
 import { COURSE_CONFIG_DIR, CHAPTERS_DIR_NAME } from "./types.ts";
 import { normalizeSourceDirPath } from "./sourcePath.ts";
 
-/** Sparse `course.yml` fields before load-time defaults. */
+/** Sparse `course.jsonc` fields before load-time defaults. */
 export interface ParsedCourseFields {
   id: string;
   title: string;
   source: CourseSource;
-  /** Empty when omitted in YAML; {@link applyCourseDefaults} fills `chapters`. */
+  /** Empty when omitted in JSONC; {@link applyCourseDefaults} fills `chapters`. */
   chaptersDir: string;
 }
 
@@ -17,9 +17,9 @@ export interface ParsedCourseFields {
  * Returns the course home directory for a config dir.
  *
  * `.course-config` → its parent; `.learn/course` → learning workspace root;
- * otherwise the config dir itself (root-level `course.yml`).
+ * otherwise the config dir itself (root-level `course.jsonc`).
  *
- * @param configDir - Absolute path to the directory that contains `course.yml`
+ * @param configDir - Absolute path to the directory that contains `course.jsonc`
  */
 export function courseHomeDir(configDir: string): string {
   const base = path.basename(configDir);
@@ -37,9 +37,9 @@ export function courseHomeDir(configDir: string): string {
  * Derives a default course id from where the config directory sits.
  *
  * Uses the course home folder name. When that home is a git repository root and the
- * config is `.course-config` or a root-level `course.yml`, returns `{repoName}-learn`.
+ * config is `.course-config` or a root-level `course.jsonc`, returns `{repoName}-learn`.
  *
- * @param configDir - Absolute path to the directory that contains `course.yml`
+ * @param configDir - Absolute path to the directory that contains `course.jsonc`
  */
 export function defaultCourseId(configDir: string): string {
   const home = courseHomeDir(configDir);
@@ -51,12 +51,12 @@ export function defaultCourseId(configDir: string): string {
 }
 
 /**
- * Applies course.yml defaults after parse.
+ * Applies course.jsonc defaults after parse.
  *
  * - `id` ← course home folder (or `{repo}-learn` at a git root); for `.learn/course`, learning folder name
  * - `title` ← `id`
- * - `source.repository` ← `.` (directory that contains `course.yml`)
- * - `chaptersDir` ← `chapters` (directory next to `course.yml`)
+ * - `source.repository` ← `.` (directory that contains `course.jsonc`)
+ * - `chaptersDir` ← `chapters` (directory next to `course.jsonc`)
  *
  * @param partial - Parsed fields (empty strings mean omitted)
  * @param configDir - Absolute config directory used for path-based defaults
@@ -81,11 +81,11 @@ export function applyCourseDefaults(partial: ParsedCourseFields, configDir: stri
 }
 
 /**
- * Returns whether `configDir` is the course-root layout (`.course-config` or home-level `course.yml`).
+ * Returns whether `configDir` is the course-root layout (`.course-config` or home-level `course.jsonc`).
  *
  * `.learn/course` is not a course-root layout.
  *
- * @param configDir - Directory that contains `course.yml`
+ * @param configDir - Directory that contains `course.jsonc`
  * @param home - {@link courseHomeDir} for `configDir`
  */
 function isCourseRootConfig(configDir: string, home: string): boolean {

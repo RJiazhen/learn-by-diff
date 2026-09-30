@@ -1,6 +1,0 @@
-id: effect
-title: Effect
-fromDir: reactive
-toDir: effect
-entryFiles:
-  - packages/reactivity/effect.ts

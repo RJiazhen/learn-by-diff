@@ -1,23 +1,23 @@
 import { COURSE_FILE_NAME } from "@learn-by-diff/protocol";
 import { isRemoteGitUrl } from "./resolveRepo.ts";
 
-/** GitHub blob/raw `course.yml` URL, cloned as a git repository then opened at `configRelPath`. */
+/** GitHub blob/raw `course.jsonc` URL, cloned as a git repository then opened at `configRelPath`. */
 export interface GitHubCourseFileOrigin {
   kind: "githubFile";
   /** `https://github.com/{owner}/{repo}.git` */
   cloneUrl: string;
   /** Branch, tag, or `refs/heads|tags/...` from the URL. */
   ref: string;
-  /** Posix-relative path to `course.yml` inside the clone. */
+  /** Posix-relative path to `course.jsonc` inside the clone. */
   configRelPath: string;
 }
 
-/** Remote git repository URL, optionally with a `#…/course.yml` path inside the clone. */
+/** Remote git repository URL, optionally with a `#…/course.jsonc` path inside the clone. */
 export interface GitRepoOrigin {
   kind: "gitRepo";
   /** Clone URL with the `#` fragment removed. */
   url: string;
-  /** Posix-relative path to `course.yml` when the input used `gitUrl#path`. */
+  /** Posix-relative path to `course.jsonc` when the input used `gitUrl#path`. */
   configRelPath?: string;
 }
 
@@ -25,11 +25,11 @@ export interface GitRepoOrigin {
 export type RemoteCourseOrigin = GitHubCourseFileOrigin | GitRepoOrigin;
 
 /**
- * Classifies a user-supplied Open Course string as a GitHub `course.yml` file URL or a git repo URL.
+ * Classifies a user-supplied Open Course string as a GitHub `course.jsonc` file URL or a git repo URL.
  *
  * Local filesystem paths return `undefined` (handled separately). GitHub blob/raw URLs that are
- * not `course.yml` throw so they are never passed to `git clone`. A git clone URL may append
- * `#path/to/course.yml` to open a nested config file.
+ * not `course.jsonc` throw so they are never passed to `git clone`. A git clone URL may append
+ * `#path/to/course.jsonc` to open a nested config file.
  *
  * @param input - User-supplied path or URL
  * @returns Remote origin, or `undefined` when the input is not a remote URL
@@ -81,8 +81,8 @@ export function githubCloneBranch(ref: string): string | undefined {
  * Parses a GitHub blob or raw URL that points at a file in a repository.
  *
  * @param input - Original user string (used in error messages)
- * @returns File origin when the URL is a GitHub file link to `course.yml`
- * @throws When the URL is a GitHub file link but not `course.yml`
+ * @returns File origin when the URL is a GitHub file link to `course.jsonc`
+ * @throws When the URL is a GitHub file link but not `course.jsonc`
  */
 function tryParseGitHubFileUrl(input: string): GitHubCourseFileOrigin | undefined {
   const normalized = stripUrlNoise(input);
@@ -142,10 +142,10 @@ function tryParseGitHubFileUrl(input: string): GitHubCourseFileOrigin | undefine
 }
 
 /**
- * Parses `gitUrl#relative/course.yml` into a clone URL plus in-repo config path.
+ * Parses `gitUrl#relative/course.jsonc` into a clone URL plus in-repo config path.
  *
  * GitHub blob/raw file links are handled first, so `#L1` on those URLs is not treated as a path.
- * A non-empty fragment that is not `course.yml` throws.
+ * A non-empty fragment that is not `course.jsonc` throws.
  *
  * @param input - User-supplied remote string
  */
@@ -177,7 +177,7 @@ function tryParseGitRepoWithConfigPath(input: string): GitRepoOrigin | undefined
 }
 
 /**
- * Returns whether `filePath` is a posix-relative `course.yml` with no `..` segments.
+ * Returns whether `filePath` is a posix-relative `course.jsonc` with no `..` segments.
  *
  * @param filePath - Slash-separated path
  */
@@ -269,7 +269,7 @@ function stripGitSuffix(repo: string): string {
 }
 
 /**
- * Builds the error for a GitHub file URL that does not point at `course.yml`.
+ * Builds the error for a GitHub file URL that does not point at `course.jsonc`.
  *
  * @param input - Original user string
  */
@@ -278,7 +278,7 @@ function githubFileMustBeCourseYml(input: string): Error {
 }
 
 /**
- * Builds the error for a git URL whose `#` fragment is not a `course.yml` path.
+ * Builds the error for a git URL whose `#` fragment is not a `course.jsonc` path.
  *
  * @param input - Original user string
  */

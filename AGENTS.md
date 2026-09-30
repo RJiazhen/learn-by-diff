@@ -4,21 +4,21 @@ Guidance for AI agents working in this repository. Read this first; follow linke
 
 ## What this is
 
-VS Code / Cursor extension that turns a **course repo** (Learning Course Protocol: a `course.yml` file plus chapter YAML) plus a **source repo** (directory snapshots per chapter) into a local **learning workspace**. Students learn by implementing increments and comparing diffs—not by checking out git history.
+VS Code / Cursor extension that turns a **course repo** (Learning Course Protocol: a `course.jsonc` file plus chapter JSONC) plus a **source repo** (directory snapshots per chapter) into a local **learning workspace**. Students learn by implementing increments and comparing diffs—not by checking out git history.
 
 Not in scope: course hosting, accounts, AI explanations of code.
 
 ## Layout
 
-| Path                                   | Role                                                                           |
-| -------------------------------------- | ------------------------------------------------------------------------------ |
-| `packages/protocol`                    | LCP types, YAML parse/validate/load, `schema.json` (`@learn-by-diff/protocol`) |
-| `apps/vscode-extension`                | Extension UI, git, workspace create, explorer, deep links                      |
-| `apps/website`                         | VitePress site (GitHub Pages: `https://rjiazhen.github.io/learn-by-diff/`)     |
-| `examples/demo-course` + `demo-source` | Local F5 fixtures                                                              |
-| `sandbox/`                             | Extension Development Host folder (generated `.learn/` gitignored)             |
-| `skills/`                              | Author Agent Skills (not in pnpm workspace)                                    |
-| `docs/`                                | Architecture                                                                   |
+| Path                                   | Role                                                                            |
+| -------------------------------------- | ------------------------------------------------------------------------------- |
+| `packages/protocol`                    | LCP types, JSONC parse/validate/load, `schema.json` (`@learn-by-diff/protocol`) |
+| `apps/vscode-extension`                | Extension UI, git, workspace create, explorer, deep links                       |
+| `apps/website`                         | VitePress site (GitHub Pages: `https://rjiazhen.github.io/learn-by-diff/`)      |
+| `examples/demo-course` + `demo-source` | Local F5 fixtures                                                               |
+| `sandbox/`                             | Extension Development Host folder (generated `.learn/` gitignored)              |
+| `skills/`                              | Author Agent Skills (not in pnpm workspace)                                     |
+| `docs/`                                | Architecture                                                                    |
 
 ## Commands
 
@@ -37,11 +37,11 @@ F5 → packs with watch → opens `sandbox/`. Reload Extension Host after code c
 ## Hard product rules (current + direction)
 
 - Protocol evolves **additively** (optional fields only). No `protocolVersion` gate. No `workspace.*` / chapter `tests` yet.
-- Course + chapter YAML: **all fields optional** with path/filename defaults (see protocol types / `docs/architecture.md`). Optional `chaptersDir` defaults to `chapters` next to `course.yml`.
+- Course + chapter JSONC: **all fields optional** with path/filename defaults (see protocol types / `docs/architecture.md`). Optional `chaptersDir` defaults to `chapters` next to `course.jsonc`.
 - Prefer **reference via diff** for learning; workspace overwrite is explicit **Chapter Start** / **Chapter Finish** (dirty confirm vs last applied snapshot).
 - One `source.repository` per course; optional `source.root`. No per-chapter remotes.
-- Open Course takes a **`course.yml` file path** (or a git URL to clone). Do not pass a directory that might contain config.
-- Schema for authors: `# yaml-language-server: $schema=…/schema.json#/$defs/course|chapter` (relative path). Do not rely on workspace `yaml.schemas`.
+- Open Course takes a **`course.jsonc` file path** (or a git URL to clone). Do not pass a directory that might contain config.
+- Schema for authors: a `$schema` property pointing at `schema.json#/$defs/course` or `#/$defs/chapter` (relative path). Do not rely on workspace `yaml.schemas`.
 
 ## Code norms
 
@@ -54,7 +54,7 @@ F5 → packs with watch → opens `sandbox/`. Reload Extension Host after code c
 
 | Task                                    | Start here                                           |
 | --------------------------------------- | ---------------------------------------------------- |
-| Course/chapter YAML shape               | `packages/protocol` + `schema.json` + fixtures/tests |
+| Course/chapter JSONC shape              | `packages/protocol` + `schema.json` + fixtures/tests |
 | Open course / chapter switch / `.learn` | `apps/vscode-extension/src/workspace/`               |
 | Explorer / docs button / diffs          | `apps/vscode-extension/src/ui/`                      |
 | `vscode://` / `cursor://` links         | `apps/vscode-extension/src/uri/` + `onUri`           |

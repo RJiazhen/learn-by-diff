@@ -31,7 +31,7 @@ export interface OpenCourseOptions {
 }
 
 /**
- * Creates a learning workspace from a `course.yml` path, GitHub file URL, or git URL,
+ * Creates a learning workspace from a `course.jsonc` path, GitHub file URL, or git URL,
  * caches unique chapter snapshots, and opens the folder when needed.
  *
  * Snapshot download uses the same progress notification as workspace creation.

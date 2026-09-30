@@ -25,7 +25,7 @@ Explorer の **LEARN BY DIFF** ビューのタイトルバーで「コースを�
 次のデモコース設定 URL を貼り付けて確定します。
 
 ```text
-https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml
+https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc
 ```
 
 フォルダー選択で学習ワークスペースの保存先を選びます。コース関連ファイルはそのディレクトリにダウンロードされます。
@@ -36,8 +36,8 @@ https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course
 
 対応 IDE では、次のリンクからワンクリックで開けます。
 
-- [VS Code](vscode://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml)
-- [Cursor](cursor://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml)
+- [VS Code](vscode://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc)
+- [Cursor](cursor://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc)
 
 ## 自分のやり方で学ぶ
 

@@ -4,7 +4,7 @@ import path from "node:path";
 import { describe, expect, test } from "vite-plus/test";
 import { chapterIdFromFileName } from "../src/chapterDefaults.ts";
 import { applyCourseDefaults, courseHomeDir, defaultCourseId } from "../src/courseDefaults.ts";
-import { parseChapterYaml, parseCourseYaml } from "../src/parse.ts";
+import { parseChapterJsonc, parseCourseJsonc } from "../src/parse.ts";
 import {
   isHttpUrl,
   normalizeRelativeFilePath,
@@ -30,9 +30,9 @@ const validChapter = {
 
 describe("chapterIdFromFileName", () => {
   test("strips numeric prefixes", () => {
-    expect(chapterIdFromFileName("001-hello.yml")).toBe("hello");
-    expect(chapterIdFromFileName("01_world.yaml")).toBe("world");
-    expect(chapterIdFromFileName("2.bang.yml")).toBe("bang");
+    expect(chapterIdFromFileName("001-hello.jsonc")).toBe("hello");
+    expect(chapterIdFromFileName("01_world.jsonc")).toBe("world");
+    expect(chapterIdFromFileName("2.bang.jsonc")).toBe("bang");
   });
 });
 
@@ -60,7 +60,7 @@ describe("course defaults", () => {
     }
   });
 
-  test("defaultCourseId appends -learn when course.yml is at a git root", () => {
+  test("defaultCourseId appends -learn when course.jsonc is at a git root", () => {
     const root = path.join(os.tmpdir(), `lbd-git-root-yml-${String(process.pid)}`);
     fs.mkdirSync(path.join(root, ".git"), { recursive: true });
     try {
@@ -82,17 +82,17 @@ describe("course defaults", () => {
   });
 });
 
-describe("parseCourseYaml", () => {
-  test("throws on invalid YAML", () => {
-    expect(() => parseCourseYaml(": :", "course.yml")).toThrow(ProtocolError);
+describe("parseCourseJsonc", () => {
+  test("throws on invalid JSONC", () => {
+    expect(() => parseCourseJsonc("{", "course.jsonc")).toThrow(ProtocolError);
   });
 
-  test("throws when the document is not a mapping", () => {
-    expect(() => parseCourseYaml("- just a list\n", "course.yml")).toThrow(ProtocolError);
+  test("throws when the document is not an object", () => {
+    expect(() => parseCourseJsonc("[]\n", "course.jsonc")).toThrow(ProtocolError);
   });
 
   test("accepts an empty document", () => {
-    expect(parseCourseYaml("", "course.yml")).toEqual({
+    expect(parseCourseJsonc("", "course.jsonc")).toEqual({
       id: "",
       title: "",
       source: { repository: "" },
@@ -100,26 +100,28 @@ describe("parseCourseYaml", () => {
     });
   });
 
-  test("parses optional chaptersDir", () => {
-    const config = parseCourseYaml("chaptersDir: lessons\n", "course.yml");
+  test("parses comments and a trailing comma", () => {
+    const config = parseCourseJsonc('{ /* dir */ "chaptersDir": "lessons", }\n', "course.jsonc");
     expect(config.chaptersDir).toBe("lessons");
   });
 
   test("parses optional source.root", () => {
-    const config = parseCourseYaml(
-      ["source:", "  repository: https://example.com/src.git", "  root: learn/demo", ""].join("\n"),
-      "course.yml",
+    const config = parseCourseJsonc(
+      JSON.stringify({
+        source: { repository: "https://example.com/src.git", root: "learn/demo" },
+      }),
+      "course.jsonc",
     );
     expect(config.source.root).toBe("learn/demo");
   });
 });
 
-describe("parseChapterYaml", () => {
+describe("parseChapterJsonc", () => {
   test("defaults id and title from the filename", () => {
-    const chapter = parseChapterYaml(
-      "fromDir: start\ntoDir: hello\n",
-      "chapters/001-hello.yml",
-      "001-hello.yml",
+    const chapter = parseChapterJsonc(
+      '{ "fromDir": "start", "toDir": "hello" }\n',
+      "chapters/001-hello.jsonc",
+      "001-hello.jsonc",
     );
     expect(chapter.id).toBe("hello");
     expect(chapter.title).toBe("hello");
@@ -129,27 +131,31 @@ describe("parseChapterYaml", () => {
   });
 
   test("parses optional docs", () => {
-    const chapter = parseChapterYaml(
-      "docs: https://example.com/lesson\n",
-      "chapters/001-hello.yml",
-      "001-hello.yml",
+    const chapter = parseChapterJsonc(
+      '{ "docs": "https://example.com/lesson" }\n',
+      "chapters/001-hello.jsonc",
+      "001-hello.jsonc",
     );
     expect(chapter.docs).toBe("https://example.com/lesson");
   });
 
   test("parses optional changedFiles including an empty list", () => {
-    const withFiles = parseChapterYaml(
-      ["changedFiles:", "  - path: src/a.ts", "    kind: M", ""].join("\n"),
-      "chapters/001-hello.yml",
-      "001-hello.yml",
+    const withFiles = parseChapterJsonc(
+      '{ "changedFiles": [{ "path": "src/a.ts", "kind": "M" }] }\n',
+      "chapters/001-hello.jsonc",
+      "001-hello.jsonc",
     );
     expect(withFiles.changedFiles).toEqual([{ path: "src/a.ts", kind: "M" }]);
-    const empty = parseChapterYaml("changedFiles: []\n", "chapters/001-hello.yml", "001-hello.yml");
+    const empty = parseChapterJsonc(
+      '{ "changedFiles": [] }\n',
+      "chapters/001-hello.jsonc",
+      "001-hello.jsonc",
+    );
     expect(empty.changedFiles).toEqual([]);
   });
 
   test("allows empty fromDir and toDir", () => {
-    const chapter = parseChapterYaml("{}\n", "chapters/001-concept.yml", "001-concept.yml");
+    const chapter = parseChapterJsonc("{}\n", "chapters/001-concept.jsonc", "001-concept.jsonc");
     expect(chapter.id).toBe("concept");
     expect(chapter.fromDir).toBe("");
     expect(chapter.toDir).toBe("");

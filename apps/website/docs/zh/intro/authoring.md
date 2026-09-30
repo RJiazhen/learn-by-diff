@@ -23,57 +23,61 @@ npx skills add RJiazhen/learn-by-diff@generate-course-config -y
 
 ## 课程配置文件
 
-每个课程都需要一个课程配置文件 `course.yml`，以及对应的章节配置文件 `chapters/*.yml`。
+每个课程都需要一个课程配置文件 `course.jsonc`，以及对应的章节配置文件 `chapters/*.jsonc`。
 
-### course.yml
+### course.jsonc
 
-首先在你的课程仓库中新建一个 `course.yml` 文件，并粘贴以下内容：
+首先在你的课程仓库中新建一个 `course.jsonc` 文件，并粘贴以下内容：
 
-```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/course
-id: demo-course
-title: 测试课程
-source:
-  repository: https://github.com/RJiazhen/learn-by-diff.git
-  root: examples/demo-source
-chaptersDir: chapters
+```jsonc
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/course",
+  "id": "demo-course",
+  "title": "测试课程",
+  "source": {
+    "repository": "https://github.com/RJiazhen/learn-by-diff.git",
+    "root": "examples/demo-source",
+  },
+  "chaptersDir": "chapters",
+}
 ```
 
-一个 `course.yml` 文件中可以包含以下字段：
+一个 `course.jsonc` 文件中可以包含以下字段：
 
 - `id`(可选)：课程的稳定标识，也会用作学生本地学习目录的文件夹名。改成适合当路径的 slug（建议只用字母、数字、连字符）。不写则用课程所在文件夹名；若该目录是 git 仓库根，则为 `{仓库名}-learn`。
 - `title`(可选)：课程显示名。改成给人看的名称即可。默认值为 `id`。
 - `source.repository`(可选)：源码所在位置，允许以下三种写法：
   - git 仓库地址：例如 `https://github.com/org/repo.git`，代表源码所属的 git 仓库；
-  - 本地路径：本机上的源码目录，可以是绝对路径，也可以是相对于 `course.yml` 所在目录的相对路径；
-  - 默认值：空，表示源码就在 `course.yml` 所在目录。
+  - 本地路径：本机上的源码目录，可以是绝对路径，也可以是相对于 `course.jsonc` 所在目录的相对路径；
+  - 默认值：空，表示源码就在 `course.jsonc` 所在目录。
 - `source.root`(可选)：源码在 `source.repository` 中的相对路径，默认值为空，表示源码就在 `source.repository` 的根目录。
-- `chaptersDir`(可选)：章节 YAML 所在目录，相对 `course.yml` 文件的地址。默认值为 `chapters`，即章节配置文件就在 `course.yml` 所在目录的 `chapters` 目录下。
+- `chaptersDir`(可选)：章节 JSONC 所在目录，相对 `course.jsonc` 文件的地址。默认值为 `chapters`，即章节配置文件就在 `course.jsonc` 所在目录的 `chapters` 目录下。
 
-### chapters/*.yml
+### chapters/*.jsonc
 
-在 `course.yml` 所在目录下新建一个 `chapters` 目录，并在该目录下新建一个 `00-start.yml` 文件，并粘贴以下内容：
+在 `course.jsonc` 所在目录下新建一个 `chapters` 目录，并在该目录下新建一个 `00-start.jsonc` 文件，并粘贴以下内容：
 
-```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter
-id: start
-title: 开始
-fromDir: start
-toDir: skeleton
-entryFiles:
-  - src/main.js
-docs: README.md
+```jsonc
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "start",
+  "title": "开始",
+  "fromDir": "start",
+  "toDir": "skeleton",
+  "entryFiles": ["src/main.js"],
+  "docs": "README.md",
+}
 ```
 
-首先，章节配置文件需要放在 `chaptersDir` 目录下（默认是 `course.yml` 旁边的 `chapters/`）。
+首先，章节配置文件需要放在 `chaptersDir` 目录下（默认是 `course.jsonc` 旁边的 `chapters/`）。
 
-每一个 `.yml` 文件对应一章，**课程顺序和文件名顺序一致**，所以建议用数字前缀排课，例如 `00-start.yml`、`01-skeleton.yml`。
+每一个 `.jsonc` 文件对应一章，**课程顺序和文件名顺序一致**，所以建议用数字前缀排课，例如 `00-start.jsonc`、`01-skeleton.jsonc`。
 
-同时，当章节配置文件中的 `id` 为空时，会去掉扩展名和开头的数字前缀作为 `id`，例如 `00-start.yml` → `start`。前缀可以是 `00-`、`01_`、`1.` 这种形式。一门课至少要有一个章节文件，各章 `id` 不能重复。
+同时，当章节配置文件中的 `id` 为空时，会去掉扩展名和开头的数字前缀作为 `id`，例如 `00-start.jsonc` → `start`。前缀可以是 `00-`、`01_`、`1.` 这种形式。一门课至少要有一个章节文件，各章 `id` 不能重复。
 
 每个章节配置文件中，包含以下字段：
 
-- `id`(可选)：章节的稳定标识，进度记录用它，不用于显示。默认为空，此时会从文件名推导（如上，`00-start.yml` → `start`）。
+- `id`(可选)：章节的稳定标识，进度记录用它，不用于显示。默认为空，此时会从文件名推导（如上，`00-start.jsonc` → `start`）。
 - `title`(可选)：章节显示名。默认为空，此时会用 `id`。
 - `fromDir`(可选)：本章开始时的源码快照目录，相对 `source.repository`（若写了 `source.root`，则相对那一层）。默认值为空，表示空目录。不允许 `..` 或绝对路径。
 - `toDir`(可选)：本章目标快照目录，相对规则同 `fromDir`。默认值为空，表示空目录。
@@ -93,24 +97,24 @@ docs: README.md
 
 ### 分享课程配置文件地址
 
-如果是托管在 GitHub 上，则可以直接分享 `course.yml` 的地址，对方在 Open Course 里粘贴即可。
+如果是托管在 GitHub 上，则可以直接分享 `course.jsonc` 的地址，对方在 Open Course 里粘贴即可。
 
 例如：
 
 ```text
-https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml
+https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc
 ```
 
-如果课程配置文件是直接放在仓库根目录下，或在根目录的 `.course-config/course.yml` 时，则可以直接分享仓库 git 地址 URL：
+如果课程配置文件是直接放在仓库根目录下，或在根目录的 `.course-config/course.jsonc` 时，则可以直接分享仓库 git 地址 URL：
 
 ```text
 https://github.com/RJiazhen/learn-by-diff.git
 ```
 
-如果课程配置文件在仓库的子目录下，用 git 地址加 `#` 再拼上相对路径（相对仓库根，指向 `course.yml`）：
+如果课程配置文件在仓库的子目录下，用 git 地址加 `#` 再拼上相对路径（相对仓库根，指向 `course.jsonc`）：
 
 ```text
-https://github.com/RJiazhen/learn-by-diff.git#examples/demo-course/.course-config/course.yml
+https://github.com/RJiazhen/learn-by-diff.git#examples/demo-course/.course-config/course.jsonc
 ```
 
 ### 生成一键分享链接
@@ -118,8 +122,8 @@ https://github.com/RJiazhen/learn-by-diff.git#examples/demo-course/.course-confi
 或者可以按照以下规则，将课程配置文件的地址转换为一键分享链接，他人点击链接即可打开课程（会唤醒 IDE 并自动打开课程）。
 
 ```text
-vscode://RuanJiazhen.learn-by-diff/open?url=<course.yml地址或git仓库URL>
-cursor://RuanJiazhen.learn-by-diff/open?url=<course.yml地址或git仓库URL>
+vscode://RuanJiazhen.learn-by-diff/open?url=<course.jsonc地址或git仓库URL>
+cursor://RuanJiazhen.learn-by-diff/open?url=<course.jsonc地址或git仓库URL>
 ```
 
 VS Code 用 `vscode://`，Cursor 用 `cursor://`。对方需要已安装 LearnByDiff；首次点击时系统可能会询问是否允许打开该协议。

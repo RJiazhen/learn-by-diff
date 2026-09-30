@@ -1,18 +1,23 @@
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { applyCourseDefaults } from "./courseDefaults.ts";
-import { parseChapterYaml, parseCourseYaml } from "./parse.ts";
+import { parseChapterJsonc, parseCourseJsonc } from "./parse.ts";
 import type { ChapterConfig, Course } from "./types.ts";
-import { COURSE_CONFIG_DIR, COURSE_FILE_NAME, ProtocolError } from "./types.ts";
+import {
+  CHAPTER_FILE_EXTENSION,
+  COURSE_CONFIG_DIR,
+  COURSE_FILE_NAME,
+  ProtocolError,
+} from "./types.ts";
 import { validateCourse } from "./validate.ts";
 
 const MISSING_COURSE_FILE_MESSAGE =
-  "course config file was not found (looked in course.yml, then .course-config/course.yml)";
+  "course config file was not found (looked in course.jsonc, then .course-config/course.jsonc)";
 
 /**
- * Returns the directory that contains `course.yml` for `rootDir`.
+ * Returns the directory that contains `course.jsonc` for `rootDir`.
  *
- * Prefers `{rootDir}/course.yml`, then `{rootDir}/.course-config/course.yml`.
+ * Prefers `{rootDir}/course.jsonc`, then `{rootDir}/.course-config/course.jsonc`.
  * Used when cloning a remote course repository (the user did not pick a file).
  *
  * @param rootDir - Directory or repository root to inspect
@@ -32,7 +37,7 @@ export async function findCourseConfigDir(rootDir: string): Promise<string | und
 /**
  * Returns whether `rootDir` looks like a course repository.
  *
- * True when `{rootDir}/course.yml` or `{rootDir}/.course-config/course.yml` exists.
+ * True when `{rootDir}/course.jsonc` or `{rootDir}/.course-config/course.jsonc` exists.
  *
  * @param rootDir - Repository root to inspect
  */
@@ -41,12 +46,12 @@ export async function isCourseRepository(rootDir: string): Promise<boolean> {
 }
 
 /**
- * Loads and validates a course from a `course.yml` file or a directory/repo root.
+ * Loads and validates a course from a `course.jsonc` file or a directory/repo root.
  *
- * A file must be named `course.yml`. A directory still looks up `course.yml` then
- * `.course-config/course.yml` (cloned remotes and fixtures).
+ * A file must be named `course.jsonc`. A directory still looks up `course.jsonc` then
+ * `.course-config/course.jsonc` (cloned remotes and fixtures).
  *
- * @param target - Absolute or relative path to `course.yml` or a course root
+ * @param target - Absolute or relative path to `course.jsonc` or a course root
  * @returns Validated course
  */
 export async function loadCourse(target: string): Promise<Course> {
@@ -77,9 +82,9 @@ export async function loadCourse(target: string): Promise<Course> {
 }
 
 /**
- * Loads and validates a course from an explicit `course.yml` file path.
+ * Loads and validates a course from an explicit `course.jsonc` file path.
  *
- * @param filePath - Path that must exist and be named `course.yml`
+ * @param filePath - Path that must exist and be named `course.jsonc`
  */
 export async function loadCourseFromFile(filePath: string): Promise<Course> {
   const resolved = path.resolve(filePath);
@@ -103,12 +108,12 @@ export async function loadCourseFromFile(filePath: string): Promise<Course> {
 }
 
 /**
- * Loads and validates a course from a config directory (`course.yml` + chapters dir).
+ * Loads and validates a course from a config directory (`course.jsonc` + chapters dir).
  *
- * Used for a course-home `course.yml`, `.course-config/` in a course repo, and
+ * Used for a course-home `course.jsonc`, `.course-config/` in a course repo, and
  * `.learn/course/` in a learning repo.
  *
- * @param configDir - Directory that contains `course.yml`
+ * @param configDir - Directory that contains `course.jsonc`
  */
 export async function loadCourseFromConfigDir(configDir: string): Promise<Course> {
   const filePath = path.join(configDir, COURSE_FILE_NAME);
@@ -125,16 +130,16 @@ export async function loadCourseFromConfigDir(configDir: string): Promise<Course
     ]);
   }
 
-  const parsed = parseCourseYaml(courseText, courseRel);
+  const parsed = parseCourseJsonc(courseText, courseRel);
   const config = applyCourseDefaults(parsed, configDir);
   const chapters = await loadChapters(configDir, config.chaptersDir);
   return validateCourse(config, chapters, configDir);
 }
 
 /**
- * Reads chapter yaml files from `chaptersDir` under the config directory, sorted by file name.
+ * Reads chapter JSONC files from `chaptersDir` under the config directory, sorted by file name.
  *
- * @param configDir - Directory that contains `course.yml`
+ * @param configDir - Directory that contains `course.jsonc`
  * @param chaptersDir - Posix-relative chapters directory (already defaulted/validated shape)
  */
 async function loadChapters(configDir: string, chaptersDir: string): Promise<ChapterConfig[]> {
@@ -151,15 +156,15 @@ async function loadChapters(configDir: string, chaptersDir: string): Promise<Cha
     ]);
   }
 
-  const yamlNames = names
-    .filter((name) => name.endsWith(".yml") || name.endsWith(".yaml"))
+  const jsoncNames = names
+    .filter((name) => name.endsWith(CHAPTER_FILE_EXTENSION))
     .sort((left, right) => left.localeCompare(right));
 
   const chapters: ChapterConfig[] = [];
-  for (const name of yamlNames) {
+  for (const name of jsoncNames) {
     const relativePath = protocolPath(configDir, `${chaptersDir}/${name}`);
     const text = await readFile(path.join(chaptersAbs, name), "utf8");
-    chapters.push(parseChapterYaml(text, relativePath, name));
+    chapters.push(parseChapterJsonc(text, relativePath, name));
   }
   return chapters;
 }
@@ -167,7 +172,7 @@ async function loadChapters(configDir: string, chaptersDir: string): Promise<Cha
 /**
  * Joins a posix-relative path onto a config directory as a filesystem path.
  *
- * @param configDir - Directory that contains `course.yml`
+ * @param configDir - Directory that contains `course.jsonc`
  * @param relativePosix - Slash-separated path under the config directory
  */
 function joinConfigRelative(configDir: string, relativePosix: string): string {
@@ -177,9 +182,9 @@ function joinConfigRelative(configDir: string, relativePosix: string): string {
 /**
  * Returns a protocol error path relative to the course home (POSIX slashes).
  *
- * Nested `.course-config` keeps that prefix; a root-level `course.yml` does not.
+ * Nested `.course-config` keeps that prefix; a root-level `course.jsonc` does not.
  *
- * @param configDir - Directory that contains `course.yml`
+ * @param configDir - Directory that contains `course.jsonc`
  * @param relativePosix - Path under the config directory
  */
 function protocolPath(configDir: string, relativePosix: string): string {

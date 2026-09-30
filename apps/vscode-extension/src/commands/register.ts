@@ -235,12 +235,12 @@ export function registerCommands(
         title: vscode.l10n.t("LearnByDiff: Open Course"),
         prompt: isDevHost
           ? vscode.l10n.t(
-              "Path to course.yml (prefilled with local examples/demo-course/.course-config/course.yml)",
+              "Path to course.jsonc (prefilled with local examples/demo-course/.course-config/course.jsonc)",
             )
           : vscode.l10n.t(
-              "Path to course.yml, a GitHub course.yml URL, or a git URL to a course repository",
+              "Path to course.jsonc, a GitHub course.jsonc URL, or a git URL to a course repository",
             ),
-        placeHolder: "/path/to/course.yml",
+        placeHolder: "/path/to/course.jsonc",
         value: defaultCourseUrl,
         ignoreFocusOut: true,
       });
@@ -351,7 +351,7 @@ export function registerCommands(
   }
 
   /**
-   * Finds `course.yml` files in the open folders and copies one chosen URL.
+   * Finds `course.jsonc` files in the open folders and copies one chosen URL.
    */
   async function onCopyWorkspaceCourseUrl(): Promise<void> {
     const courseYmlPath = await pickWorkspaceCourseYml();
@@ -366,7 +366,7 @@ export function registerCommands(
     if (pick.kind === "plain-local") {
       await copyToClipboard(
         pick.url,
-        vscode.l10n.t("Copied the local course.yml path to the clipboard."),
+        vscode.l10n.t("Copied the local course.jsonc path to the clipboard."),
       );
       return;
     }
@@ -684,7 +684,7 @@ async function copyToClipboard(text: string, message: string): Promise<void> {
 }
 
 /**
- * Prompts for a workspace `course.yml`, skipping the picker when only one exists.
+ * Prompts for a workspace `course.jsonc`, skipping the picker when only one exists.
  */
 async function pickWorkspaceCourseYml(): Promise<string | undefined> {
   const folders = vscode.workspace.workspaceFolders;
@@ -699,7 +699,7 @@ async function pickWorkspaceCourseYml(): Promise<string | undefined> {
     .sort();
   if (files.length === 0) {
     void vscode.window.showWarningMessage(
-      vscode.l10n.t("No course.yml files found in this workspace."),
+      vscode.l10n.t("No course.jsonc files found in this workspace."),
     );
     return undefined;
   }
@@ -707,9 +707,9 @@ async function pickWorkspaceCourseYml(): Promise<string | undefined> {
     return files[0];
   }
   /**
-   * Maps a `course.yml` path to a QuickPick row.
+   * Maps a `course.jsonc` path to a QuickPick row.
    *
-   * @param filePath - Absolute `course.yml` path
+   * @param filePath - Absolute `course.jsonc` path
    */
   function toPick(filePath: string): vscode.QuickPickItem & { filePath: string } {
     return {
@@ -720,13 +720,13 @@ async function pickWorkspaceCourseYml(): Promise<string | undefined> {
   }
   const selected = await vscode.window.showQuickPick(files.map(toPick), {
     title: vscode.l10n.t("LearnByDiff: Copy Workspace Course URL"),
-    placeHolder: vscode.l10n.t("Choose a course.yml file"),
+    placeHolder: vscode.l10n.t("Choose a course.jsonc file"),
   });
   return selected?.filePath;
 }
 
 /**
- * Prompts for a workspace copy action after a `course.yml` is chosen.
+ * Prompts for a workspace copy action after a `course.jsonc` is chosen.
  *
  * @param sources - `url=` sources derived from the chosen file
  */
@@ -820,7 +820,7 @@ function openCourseEditorSchemeLabel(scheme: OpenCourseEditorScheme): string {
 function openCourseLinkKindLabel(kind: OpenCourseLinkKind): string {
   switch (kind) {
     case "local":
-      return vscode.l10n.t("Local course.yml path");
+      return vscode.l10n.t("Local course.jsonc path");
     case "git":
       return vscode.l10n.t("Remote git URL");
   }
