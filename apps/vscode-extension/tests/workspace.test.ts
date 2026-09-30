@@ -28,10 +28,10 @@ async function tempDir(prefix: string): Promise<string> {
 }
 
 /**
- * Returns the `.course-config/course.yml` path under a fixture course tree.
+ * Returns the `.course-config/course.jsonc` path under a fixture course tree.
  */
-function nestedCourseYml(courseDir: string): string {
-  return path.join(courseDir, ".course-config", "course.yml");
+function nestedCourseJsonc(courseDir: string): string {
+  return path.join(courseDir, ".course-config", "course.jsonc");
 }
 
 afterEach(async () => {
@@ -89,40 +89,46 @@ async function createTwoChapterWorkspace(): Promise<{
 
   await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
   await writeFile(
-    path.join(courseDir, ".course-config", "course.yml"),
-    ["id: twochap", "title: Two", "source:", "  repository: ../../demo-source", ""].join("\n"),
+    path.join(courseDir, ".course-config", "course.jsonc"),
+    `{
+  "id": "twochap",
+  "title": "Two",
+  "source": {
+    "repository": "../../demo-source"
+  }
+}\n`,
     "utf8",
   );
   await writeFile(
-    path.join(courseDir, ".course-config", "chapters", "001.yml"),
-    [
-      "id: one",
-      "title: One",
-      "fromDir: start",
-      "toDir: two",
-      "entryFiles:",
-      "  - pkg/index.ts",
-      "",
-    ].join("\n"),
+    path.join(courseDir, ".course-config", "chapters", "001.jsonc"),
+    `{
+  "id": "one",
+  "title": "One",
+  "fromDir": "start",
+  "toDir": "two",
+  "entryFiles": [
+    "pkg/index.ts"
+  ]
+}\n`,
     "utf8",
   );
   await writeFile(
-    path.join(courseDir, ".course-config", "chapters", "002.yml"),
-    [
-      "id: two",
-      "title: Two",
-      "fromDir: two",
-      "toDir: two",
-      "entryFiles:",
-      "  - pkg/index.ts",
-      "",
-    ].join("\n"),
+    path.join(courseDir, ".course-config", "chapters", "002.jsonc"),
+    `{
+  "id": "two",
+  "title": "Two",
+  "fromDir": "two",
+  "toDir": "two",
+  "entryFiles": [
+    "pkg/index.ts"
+  ]
+}\n`,
     "utf8",
   );
 
   const parent = await tempDir("lbd-two-parent-");
   const created = await createLearningWorkspace({
-    courseRepoUrl: nestedCourseYml(courseDir),
+    courseRepoUrl: nestedCourseJsonc(courseDir),
     parentDir: parent,
     git,
   });
@@ -146,21 +152,21 @@ describe("learning workspace", () => {
     const course = await tempDir("lbd-course-");
     await mkdir(path.join(course, ".course-config", "chapters"), { recursive: true });
     await writeFile(
-      path.join(course, ".course-config", "course.yml"),
-      ["id: demo", "title: Demo", "source:", `  repository: ${source}`, ""].join("\n"),
+      path.join(course, ".course-config", "course.jsonc"),
+      `{\n  "id": "demo",\n  "title": "Demo",\n  "source": {\n    "repository": ${JSON.stringify(source)}\n  }\n}\n`,
       "utf8",
     );
     await writeFile(
-      path.join(course, ".course-config", "chapters", "001.yml"),
-      [
-        "id: one",
-        "title: One",
-        "fromDir: start",
-        "toDir: done",
-        "entryFiles:",
-        "  - pkg/index.ts",
-        "",
-      ].join("\n"),
+      path.join(course, ".course-config", "chapters", "001.jsonc"),
+      `{
+  "id": "one",
+  "title": "One",
+  "fromDir": "start",
+  "toDir": "done",
+  "entryFiles": [
+    "pkg/index.ts"
+  ]
+}\n`,
       "utf8",
     );
     await git.run(["init"], { cwd: course });
@@ -182,7 +188,7 @@ describe("learning workspace", () => {
 
     const parent = await tempDir("lbd-parent-");
     const created = await createLearningWorkspace({
-      courseRepoUrl: nestedCourseYml(course),
+      courseRepoUrl: nestedCourseJsonc(course),
       parentDir: parent,
       git,
     });
@@ -223,7 +229,7 @@ describe("learning workspace", () => {
     ).resolves.toBe(false);
   });
 
-  test("opens the chosen course.yml and copies only that config tree into .learn/course", async () => {
+  test("opens the chosen course.jsonc and copies only that config tree into .learn/course", async () => {
     const pair = await tempDir("lbd-root-cfg-");
     const sourceDir = path.join(pair, "demo-source");
     const courseDir = path.join(pair, "demo-course");
@@ -235,32 +241,46 @@ describe("learning workspace", () => {
     await mkdir(path.join(courseDir, "chapters"), { recursive: true });
     await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
     await writeFile(
-      path.join(courseDir, "course.yml"),
-      ["id: from-root", "title: Root", "source:", "  repository: ../demo-source", ""].join("\n"),
+      path.join(courseDir, "course.jsonc"),
+      `{
+  "id": "from-root",
+  "title": "Root",
+  "source": {
+    "repository": "../demo-source"
+  }
+}\n`,
       "utf8",
     );
     await writeFile(
-      path.join(courseDir, "chapters", "001.yml"),
-      ["id: one", "title: One", "fromDir: start", "toDir: done", ""].join("\n"),
+      path.join(courseDir, "chapters", "001.jsonc"),
+      `{
+  "id": "one",
+  "title": "One",
+  "fromDir": "start",
+  "toDir": "done"
+}\n`,
       "utf8",
     );
     await writeFile(
-      path.join(courseDir, ".course-config", "course.yml"),
-      ["id: from-nested", "title: Nested", "source:", "  repository: ../../demo-source", ""].join(
-        "\n",
-      ),
+      path.join(courseDir, ".course-config", "course.jsonc"),
+      `{\n  "id": "from-nested",\n  "title": "Nested",\n  "source": {\n    "repository": "../../demo-source"\n  }\n}\n`,
       "utf8",
     );
     await writeFile(
-      path.join(courseDir, ".course-config", "chapters", "001.yml"),
-      ["id: nested", "title: Nested", "fromDir: start", "toDir: done", ""].join("\n"),
+      path.join(courseDir, ".course-config", "chapters", "001.jsonc"),
+      `{
+  "id": "nested",
+  "title": "Nested",
+  "fromDir": "start",
+  "toDir": "done"
+}\n`,
       "utf8",
     );
     await writeFile(path.join(courseDir, "stale.ts"), "should not be copied\n", "utf8");
 
     const parent = await tempDir("lbd-root-parent-");
     const created = await createLearningWorkspace({
-      courseRepoUrl: path.join(courseDir, "course.yml"),
+      courseRepoUrl: path.join(courseDir, "course.jsonc"),
       parentDir: parent,
       git,
     });
@@ -268,14 +288,14 @@ describe("learning workspace", () => {
     expect(created.course.config.id).toBe("from-root");
     expect(created.course.chapters.map((chapter) => chapter.id)).toEqual(["one"]);
     const copied = learningPaths(created.learningRoot).courseDir;
-    expect(await readFile(path.join(copied, "course.yml"), "utf8")).toContain("from-root");
+    expect(await readFile(path.join(copied, "course.jsonc"), "utf8")).toContain("from-root");
     await expect(access(path.join(copied, "stale.ts"))).rejects.toMatchObject({ code: "ENOENT" });
     await expect(access(path.join(copied, ".course-config"))).rejects.toMatchObject({
       code: "ENOENT",
     });
   });
 
-  test("omitted source.repository uses the directory that contains course.yml", async () => {
+  test("omitted source.repository uses the directory that contains course.jsonc", async () => {
     const courseDir = await tempDir("lbd-omit-repo-");
     const configDir = path.join(courseDir, ".course-config");
     await mkdir(path.join(configDir, "start"), { recursive: true });
@@ -283,15 +303,24 @@ describe("learning workspace", () => {
     await mkdir(path.join(configDir, "chapters"), { recursive: true });
     await writeFile(path.join(configDir, "start", "a.ts"), "export const a = 1;\n", "utf8");
     await writeFile(path.join(configDir, "done", "a.ts"), "export const a = 2;\n", "utf8");
-    await writeFile(path.join(configDir, "course.yml"), "id: omit-repo\ntitle: Omit\n", "utf8");
     await writeFile(
-      path.join(configDir, "chapters", "001.yml"),
-      ["id: one", "title: One", "fromDir: start", "toDir: done", ""].join("\n"),
+      path.join(configDir, "course.jsonc"),
+      '{"id":"omit-repo","title":"Omit"}\n',
+      "utf8",
+    );
+    await writeFile(
+      path.join(configDir, "chapters", "001.jsonc"),
+      `{
+  "id": "one",
+  "title": "One",
+  "fromDir": "start",
+  "toDir": "done"
+}\n`,
       "utf8",
     );
 
     const created = await createLearningWorkspace({
-      courseRepoUrl: path.join(configDir, "course.yml"),
+      courseRepoUrl: path.join(configDir, "course.jsonc"),
       parentDir: await tempDir("lbd-omit-parent-"),
       git,
     });
@@ -301,13 +330,17 @@ describe("learning workspace", () => {
     );
   });
 
-  test("rejects a local directory instead of a course.yml file", async () => {
+  test("rejects a local directory instead of a course.jsonc file", async () => {
     const courseDir = await tempDir("lbd-dir-reject-");
     await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
-    await writeFile(path.join(courseDir, ".course-config", "course.yml"), "id: nope\n", "utf8");
     await writeFile(
-      path.join(courseDir, ".course-config", "chapters", "001.yml"),
-      "id: one\nfromDir: a\ntoDir: b\n",
+      path.join(courseDir, ".course-config", "course.jsonc"),
+      '{"id":"nope"}\n',
+      "utf8",
+    );
+    await writeFile(
+      path.join(courseDir, ".course-config", "chapters", "001.jsonc"),
+      '{"id":"one","fromDir":"a","toDir":"b"}\n',
       "utf8",
     );
     await expect(
@@ -319,7 +352,7 @@ describe("learning workspace", () => {
     ).rejects.toThrow(/not a directory/);
   });
 
-  test("copies a custom chaptersDir next to course.yml", async () => {
+  test("copies a custom chaptersDir next to course.jsonc", async () => {
     const pair = await tempDir("lbd-lessons-");
     const sourceDir = path.join(pair, "demo-source");
     const courseDir = path.join(pair, "demo-course");
@@ -330,26 +363,31 @@ describe("learning workspace", () => {
 
     await mkdir(path.join(courseDir, ".course-config", "lessons"), { recursive: true });
     await writeFile(
-      path.join(courseDir, ".course-config", "course.yml"),
-      [
-        "id: lessons-course",
-        "title: Lessons",
-        "source:",
-        "  repository: ../../demo-source",
-        "chaptersDir: lessons",
-        "",
-      ].join("\n"),
+      path.join(courseDir, ".course-config", "course.jsonc"),
+      `{
+  "id": "lessons-course",
+  "title": "Lessons",
+  "source": {
+    "repository": "../../demo-source"
+  },
+  "chaptersDir": "lessons"
+}\n`,
       "utf8",
     );
     await writeFile(
-      path.join(courseDir, ".course-config", "lessons", "001.yml"),
-      ["id: one", "title: One", "fromDir: start", "toDir: done", ""].join("\n"),
+      path.join(courseDir, ".course-config", "lessons", "001.jsonc"),
+      `{
+  "id": "one",
+  "title": "One",
+  "fromDir": "start",
+  "toDir": "done"
+}\n`,
       "utf8",
     );
 
     const parent = await tempDir("lbd-lessons-parent-");
     const created = await createLearningWorkspace({
-      courseRepoUrl: nestedCourseYml(courseDir),
+      courseRepoUrl: nestedCourseJsonc(courseDir),
       parentDir: parent,
       git,
     });
@@ -357,7 +395,7 @@ describe("learning workspace", () => {
     expect(created.course.config.chaptersDir).toBe("lessons");
     expect(created.course.chapters.map((chapter) => chapter.id)).toEqual(["one"]);
     const copied = learningPaths(created.learningRoot).courseDir;
-    await expect(access(path.join(copied, "lessons", "001.yml"))).resolves.toBeUndefined();
+    await expect(access(path.join(copied, "lessons", "001.jsonc"))).resolves.toBeUndefined();
     await expect(access(path.join(copied, "chapters"))).rejects.toMatchObject({ code: "ENOENT" });
   });
 
@@ -415,27 +453,33 @@ describe("learning workspace", () => {
 
     await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
     await writeFile(
-      path.join(courseDir, ".course-config", "course.yml"),
-      ["id: plain", "title: Plain", "source:", "  repository: ../../demo-source", ""].join("\n"),
+      path.join(courseDir, ".course-config", "course.jsonc"),
+      `{
+  "id": "plain",
+  "title": "Plain",
+  "source": {
+    "repository": "../../demo-source"
+  }
+}\n`,
       "utf8",
     );
     await writeFile(
-      path.join(courseDir, ".course-config", "chapters", "001.yml"),
-      [
-        "id: one",
-        "title: One",
-        "fromDir: start",
-        "toDir: done",
-        "entryFiles:",
-        "  - pkg/index.ts",
-        "",
-      ].join("\n"),
+      path.join(courseDir, ".course-config", "chapters", "001.jsonc"),
+      `{
+  "id": "one",
+  "title": "One",
+  "fromDir": "start",
+  "toDir": "done",
+  "entryFiles": [
+    "pkg/index.ts"
+  ]
+}\n`,
       "utf8",
     );
 
     const parent = await tempDir("lbd-plain-parent-");
     const created = await createLearningWorkspace({
-      courseRepoUrl: nestedCourseYml(courseDir),
+      courseRepoUrl: nestedCourseJsonc(courseDir),
       parentDir: parent,
       git,
     });
@@ -466,21 +510,27 @@ describe("learning workspace", () => {
 
     await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
     await writeFile(
-      path.join(courseDir, ".course-config", "course.yml"),
-      ["id: mergegi", "title: Merge", "source:", "  repository: ../../demo-source", ""].join("\n"),
+      path.join(courseDir, ".course-config", "course.jsonc"),
+      `{
+  "id": "mergegi",
+  "title": "Merge",
+  "source": {
+    "repository": "../../demo-source"
+  }
+}\n`,
       "utf8",
     );
     await writeFile(
-      path.join(courseDir, ".course-config", "chapters", "001.yml"),
-      [
-        "id: one",
-        "title: One",
-        "fromDir: start",
-        "toDir: done",
-        "entryFiles:",
-        "  - pkg/index.ts",
-        "",
-      ].join("\n"),
+      path.join(courseDir, ".course-config", "chapters", "001.jsonc"),
+      `{
+  "id": "one",
+  "title": "One",
+  "fromDir": "start",
+  "toDir": "done",
+  "entryFiles": [
+    "pkg/index.ts"
+  ]
+}\n`,
       "utf8",
     );
 
@@ -489,7 +539,7 @@ describe("learning workspace", () => {
     await writeFile(path.join(inPlace, ".gitignore"), "keep-me\ndist/\n", "utf8");
 
     const created = await createLearningWorkspace({
-      courseRepoUrl: nestedCourseYml(courseDir),
+      courseRepoUrl: nestedCourseJsonc(courseDir),
       inPlaceRoot: inPlace,
       git,
     });
@@ -524,40 +574,46 @@ describe("learning workspace", () => {
 
     await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
     await writeFile(
-      path.join(courseDir, ".course-config", "course.yml"),
-      ["id: gi", "title: Gitignore", "source:", "  repository: ../../demo-source", ""].join("\n"),
+      path.join(courseDir, ".course-config", "course.jsonc"),
+      `{
+  "id": "gi",
+  "title": "Gitignore",
+  "source": {
+    "repository": "../../demo-source"
+  }
+}\n`,
       "utf8",
     );
     await writeFile(
-      path.join(courseDir, ".course-config", "chapters", "001.yml"),
-      [
-        "id: one",
-        "title: One",
-        "fromDir: start",
-        "toDir: two",
-        "entryFiles:",
-        "  - pkg/index.ts",
-        "",
-      ].join("\n"),
+      path.join(courseDir, ".course-config", "chapters", "001.jsonc"),
+      `{
+  "id": "one",
+  "title": "One",
+  "fromDir": "start",
+  "toDir": "two",
+  "entryFiles": [
+    "pkg/index.ts"
+  ]
+}\n`,
       "utf8",
     );
     await writeFile(
-      path.join(courseDir, ".course-config", "chapters", "002.yml"),
-      [
-        "id: two",
-        "title: Two",
-        "fromDir: two",
-        "toDir: two",
-        "entryFiles:",
-        "  - pkg/index.ts",
-        "",
-      ].join("\n"),
+      path.join(courseDir, ".course-config", "chapters", "002.jsonc"),
+      `{
+  "id": "two",
+  "title": "Two",
+  "fromDir": "two",
+  "toDir": "two",
+  "entryFiles": [
+    "pkg/index.ts"
+  ]
+}\n`,
       "utf8",
     );
 
     const parent = await tempDir("lbd-gi-parent-");
     const created = await createLearningWorkspace({
-      courseRepoUrl: nestedCourseYml(courseDir),
+      courseRepoUrl: nestedCourseJsonc(courseDir),
       parentDir: parent,
       git,
     });
@@ -641,29 +697,27 @@ describe("learning workspace", () => {
 
     await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
     await writeFile(
-      path.join(courseDir, ".course-config", "course.yml"),
-      ["id: replace", "title: Replace", "source:", "  repository: ../../demo-source", ""].join(
-        "\n",
-      ),
+      path.join(courseDir, ".course-config", "course.jsonc"),
+      `{\n  "id": "replace",\n  "title": "Replace",\n  "source": {\n    "repository": "../../demo-source"\n  }\n}\n`,
       "utf8",
     );
     await writeFile(
-      path.join(courseDir, ".course-config", "chapters", "001.yml"),
-      [
-        "id: one",
-        "title: One",
-        "fromDir: start",
-        "toDir: done",
-        "entryFiles:",
-        "  - src/main.ts",
-        "",
-      ].join("\n"),
+      path.join(courseDir, ".course-config", "chapters", "001.jsonc"),
+      `{
+  "id": "one",
+  "title": "One",
+  "fromDir": "start",
+  "toDir": "done",
+  "entryFiles": [
+    "src/main.ts"
+  ]
+}\n`,
       "utf8",
     );
 
     const parent = await tempDir("lbd-replace-parent-");
     const created = await createLearningWorkspace({
-      courseRepoUrl: nestedCourseYml(courseDir),
+      courseRepoUrl: nestedCourseJsonc(courseDir),
       parentDir: parent,
       git,
     });
@@ -781,14 +835,14 @@ describe("learning workspace", () => {
     const dir = await tempDir("lbd-course-hidden-");
     await writeFile(path.join(dir, "README.md"), "course\n", "utf8");
     await mkdir(path.join(dir, ".course-config"), { recursive: true });
-    await writeFile(path.join(dir, ".course-config", "course.yml"), "id: demo\n", "utf8");
+    await writeFile(path.join(dir, ".course-config", "course.jsonc"), '{"id":"demo"}\n', "utf8");
     expect(await isInPlaceLearningTarget(dir)).toBe(false);
   });
 
-  test("isInPlaceLearningTarget rejects a course repo with course.yml at the root", async () => {
+  test("isInPlaceLearningTarget rejects a course repo with course.jsonc at the root", async () => {
     const dir = await tempDir("lbd-course-root-");
     await writeFile(path.join(dir, "README.md"), "course\n", "utf8");
-    await writeFile(path.join(dir, "course.yml"), "id: demo\n", "utf8");
+    await writeFile(path.join(dir, "course.jsonc"), '{"id":"demo"}\n', "utf8");
     expect(await isInPlaceLearningTarget(dir)).toBe(false);
   });
 
@@ -801,13 +855,13 @@ describe("learning workspace", () => {
     const courseDir = await tempDir("lbd-refuse-inplace-course-");
     await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
     await writeFile(
-      path.join(courseDir, ".course-config", "course.yml"),
-      "id: refuse-inplace\n",
+      path.join(courseDir, ".course-config", "course.jsonc"),
+      '{"id":"refuse-inplace"}\n',
       "utf8",
     );
     await writeFile(
-      path.join(courseDir, ".course-config", "chapters", "001.yml"),
-      "id: one\n",
+      path.join(courseDir, ".course-config", "chapters", "001.jsonc"),
+      '{"id":"one"}\n',
       "utf8",
     );
     const occupied = await tempDir("lbd-occupied-inplace-");
@@ -815,7 +869,7 @@ describe("learning workspace", () => {
     await writeFile(keepPath, "keep\n", "utf8");
     await expect(
       createLearningWorkspace({
-        courseRepoUrl: nestedCourseYml(courseDir),
+        courseRepoUrl: nestedCourseJsonc(courseDir),
         inPlaceRoot: occupied,
         git,
       }),
@@ -827,13 +881,13 @@ describe("learning workspace", () => {
     const courseDir = await tempDir("lbd-refuse-parent-course-");
     await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
     await writeFile(
-      path.join(courseDir, ".course-config", "course.yml"),
-      "id: refuse-parent\n",
+      path.join(courseDir, ".course-config", "course.jsonc"),
+      '{"id":"refuse-parent"}\n',
       "utf8",
     );
     await writeFile(
-      path.join(courseDir, ".course-config", "chapters", "001.yml"),
-      "id: one\n",
+      path.join(courseDir, ".course-config", "chapters", "001.jsonc"),
+      '{"id":"one"}\n',
       "utf8",
     );
     const parent = await tempDir("lbd-occupied-parent-");
@@ -843,7 +897,7 @@ describe("learning workspace", () => {
     await writeFile(keepPath, "keep\n", "utf8");
     await expect(
       createLearningWorkspace({
-        courseRepoUrl: nestedCourseYml(courseDir),
+        courseRepoUrl: nestedCourseJsonc(courseDir),
         parentDir: parent,
         git,
       }),

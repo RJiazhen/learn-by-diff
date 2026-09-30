@@ -1,40 +1,47 @@
-import { parse } from "yaml";
+import { parse, printParseErrorCode, type ParseError } from "jsonc-parser";
 import { chapterIdFromFileName } from "./chapterDefaults.ts";
 import type { ParsedCourseFields } from "./courseDefaults.ts";
 import type { ChapterChangedFile, ChapterConfig } from "./types.ts";
 import { isChapterChangeKind, ProtocolError } from "./types.ts";
 
 /**
- * Parses a YAML document into an unknown object graph.
+ * Parses a JSONC document into an unknown value.
  *
- * @param text - Raw YAML
+ * Comments and trailing commas are allowed. Empty or comments-only text becomes `undefined`.
+ *
+ * @param text - Raw JSONC
  * @param path - Path used in error messages
  * @returns Parsed value
  */
-function parseYamlDocument(text: string, path: string): unknown {
-  try {
-    return parse(text);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new ProtocolError([{ path, message: `invalid YAML: ${message}` }]);
+function parseJsoncDocument(text: string, path: string): unknown {
+  const errors: ParseError[] = [];
+  const value: unknown = parse(text, errors, {
+    allowTrailingComma: true,
+    allowEmptyContent: true,
+  });
+  if (errors.length > 0) {
+    const message = errors.map((error) => printParseErrorCode(error.error)).join("; ");
+    throw new ProtocolError([{ path, message: `invalid JSONC: ${message}` }]);
   }
+  return value;
 }
 
 /**
- * Parses `course.yml` text without applying path-based defaults.
+ * Parses `course.jsonc` text without applying path-based defaults.
  *
  * Empty documents and omitted fields become empty strings; call {@link applyCourseDefaults} after.
+ * `$schema` and other unknown properties are ignored.
  *
- * @param text - Raw YAML
+ * @param text - Raw JSONC
  * @param path - Path used in error messages
  */
-export function parseCourseYaml(text: string, path: string): ParsedCourseFields {
-  const value = parseYamlDocument(text, path);
+export function parseCourseJsonc(text: string, path: string): ParsedCourseFields {
+  const value = parseJsoncDocument(text, path);
   if (value === null || value === undefined) {
     return { id: "", title: "", source: { repository: "" }, chaptersDir: "" };
   }
   if (!isRecord(value)) {
-    throw new ProtocolError([{ path, message: "document must be a mapping" }]);
+    throw new ProtocolError([{ path, message: "document must be an object" }]);
   }
   const source = isRecord(value.source) ? value.source : {};
   const root = asString(source.root);
@@ -50,19 +57,19 @@ export function parseCourseYaml(text: string, path: string): ParsedCourseFields 
 }
 
 /**
- * Parses a chapter yaml document and applies filename-based defaults.
+ * Parses a chapter JSONC document and applies filename-based defaults.
  *
- * @param text - Raw YAML
+ * @param text - Raw JSONC
  * @param path - Path used in error messages
- * @param fileName - Chapter file basename (e.g. `001-hello.yml`) used for default `id`
+ * @param fileName - Chapter file basename (e.g. `001-hello.jsonc`) used for default `id`
  */
-export function parseChapterYaml(text: string, path: string, fileName: string): ChapterConfig {
-  const value = parseYamlDocument(text, path);
+export function parseChapterJsonc(text: string, path: string, fileName: string): ChapterConfig {
+  const value = parseJsoncDocument(text, path);
   if (value === null || value === undefined) {
     return emptyChapter(fileName);
   }
   if (!isRecord(value)) {
-    throw new ProtocolError([{ path, message: "document must be a mapping" }]);
+    throw new ProtocolError([{ path, message: "document must be an object" }]);
   }
   const defaultId = chapterIdFromFileName(fileName);
   const id = asString(value.id) || defaultId;
@@ -84,9 +91,9 @@ export function parseChapterYaml(text: string, path: string, fileName: string): 
 }
 
 /**
- * Parses `changedFiles` mappings; non-objects become empty-path rows so validate can reject them.
+ * Parses `changedFiles` objects; non-objects become empty-path rows so validate can reject them.
  *
- * @param value - YAML sequence under `changedFiles`
+ * @param value - JSON array under `changedFiles`
  */
 function parseChangedFiles(value: unknown[]): ChapterChangedFile[] {
   const files: ChapterChangedFile[] = [];
@@ -122,14 +129,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * Coerces a YAML scalar to string; empty when missing or the wrong type.
+ * Coerces a JSON value to string; empty when missing or the wrong type.
  */
 function asString(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
 /**
- * Coerces a YAML sequence of strings; empty when missing or the wrong type.
+ * Coerces a JSON array to strings, dropping non-strings.
  */
 function asStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) {

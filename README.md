@@ -24,7 +24,7 @@ Click **Open Course** on the **LEARN BY DIFF** view title bar in Explorer (or ru
 Paste this demo course config URL and confirm:
 
 ```text
-https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml
+https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc
 ```
 
 In the folder picker, choose a directory for the learning workspace. Course files download into that folder.
@@ -35,8 +35,8 @@ Learning workspace after download:
 
 With the extension installed, you can also open the demo in one click:
 
-- [VS Code](vscode://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml)
-- [Cursor](cursor://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml)
+- [VS Code](vscode://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc)
+- [Cursor](cursor://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc)
 
 ## Learn in your own way
 

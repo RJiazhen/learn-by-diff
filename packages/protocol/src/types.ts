@@ -2,9 +2,12 @@
 export const COURSE_CONFIG_DIR = ".course-config";
 
 /** Filename of the course-level protocol document. */
-export const COURSE_FILE_NAME = "course.yml";
+export const COURSE_FILE_NAME = "course.jsonc";
 
-/** Default directory of per-chapter YAML next to `course.yml` (`chaptersDir` when omitted). */
+/** Chapter config extension loaded from `chaptersDir`. */
+export const CHAPTER_FILE_EXTENSION = ".jsonc";
+
+/** Default directory of per-chapter JSONC next to `course.jsonc` (`chaptersDir` when omitted). */
 export const CHAPTERS_DIR_NAME = "chapters";
 
 /** SCM-style letters for an author-declared from/to file difference. */
@@ -28,16 +31,16 @@ export interface ChapterChangedFile {
 /**
  * Returns whether `value` is a {@link ChapterChangeKind}.
  *
- * @param value - Raw YAML kind string
+ * @param value - Raw kind string from chapter JSONC
  */
 export function isChapterChangeKind(value: string): value is ChapterChangeKind {
   return (CHAPTER_CHANGE_KINDS as readonly string[]).includes(value);
 }
 
-/** Source repository pointer in `course.yml`. */
+/** Source repository pointer in `course.jsonc`. */
 export interface CourseSource {
   /**
-   * Git repository URL, local filesystem path, or `.` for the directory that contains `course.yml`.
+   * Git repository URL, local filesystem path, or `.` for the directory that contains `course.jsonc`.
    * Relative local paths resolve from that same directory. Do not append a subdirectory to a git URL.
    */
   repository: string;
@@ -49,13 +52,13 @@ export interface CourseSource {
 }
 
 /**
- * Parsed `course.yml` document (after load-time defaults).
+ * Parsed `course.jsonc` document (after load-time defaults).
  *
- * No field is required in the YAML file. Defaults:
+ * No field is required in the JSONC file. Defaults:
  * - `id` ← course home folder, or `{repoName}-learn` when that home is a git root
  * - `title` ← `id`
- * - `source.repository` ← `.` (directory that contains `course.yml`)
- * - `chaptersDir` ← `chapters` (next to `course.yml`)
+ * - `source.repository` ← `.` (directory that contains `course.jsonc`)
+ * - `chaptersDir` ← `chapters` (next to `course.jsonc`)
  *
  * Protocol evolves by adding optional fields only; there is no `protocolVersion` gate.
  */
@@ -64,17 +67,17 @@ export interface CourseConfig {
   title: string;
   source: CourseSource;
   /**
-   * Directory of chapter YAML files, relative to the directory that contains `course.yml`.
+   * Directory of chapter JSONC files, relative to the directory that contains `course.jsonc`.
    * Defaults to `chapters`. Nested paths allowed; no `..` or absolutes.
    */
   chaptersDir: string;
 }
 
 /**
- * Parsed chapter yaml document (after load-time defaults).
+ * Parsed chapter JSONC document (after load-time defaults).
  *
- * No field is required in the YAML file. Defaults:
- * - `id` ← filename without numeric prefix (`001-hello.yml` → `hello`)
+ * No field is required in the JSONC file. Defaults:
+ * - `id` ← filename without numeric prefix (`001-hello.jsonc` → `hello`)
  * - `title` ← `id`
  * - `fromDir` / `toDir` ← `""` (empty snapshot tree)
  * - `entryFiles` ← omitted means discover all files under `toDir` at runtime
@@ -115,7 +118,7 @@ export interface ChapterConfig {
 export interface Course {
   config: CourseConfig;
   chapters: ChapterConfig[];
-  /** Absolute path to the directory that contains the loaded `course.yml`. */
+  /** Absolute path to the directory that contains the loaded `course.jsonc`. */
   configDir: string;
 }
 
@@ -125,7 +128,7 @@ export interface ProtocolIssue {
   message: string;
 }
 
-/** Thrown when YAML cannot be parsed or fails protocol validation. */
+/** Thrown when JSONC cannot be parsed or fails protocol validation. */
 export class ProtocolError extends Error {
   /**
    * Creates a protocol error with one or more field issues.

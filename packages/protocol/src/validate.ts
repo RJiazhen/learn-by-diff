@@ -5,7 +5,7 @@ import type {
   CourseConfig,
   ProtocolIssue,
 } from "./types.ts";
-import { isChapterChangeKind, ProtocolError } from "./types.ts";
+import { COURSE_FILE_NAME, isChapterChangeKind, ProtocolError } from "./types.ts";
 import { isHttpUrl, normalizeRelativeFilePath, normalizeSourceDirPath } from "./sourcePath.ts";
 
 /**
@@ -13,7 +13,7 @@ import { isHttpUrl, normalizeRelativeFilePath, normalizeSourceDirPath } from "./
  *
  * Does not talk to Git. Source subdirectory existence is checked later by the extension.
  *
- * @param config - Parsed `course.yml` (defaults already applied)
+ * @param config - Parsed `course.jsonc` (defaults already applied)
  * @param chapters - Parsed chapter documents (defaults already applied)
  * @param configDir - `.course-config` directory, used in issue paths
  */
@@ -34,15 +34,15 @@ export function validateCourse(
 }
 
 /**
- * Collects `course.yml` field issues into `issues` (after defaults).
+ * Collects `course.jsonc` field issues into `issues` (after defaults).
  */
 function validateCourseConfig(config: CourseConfig, issues: ProtocolIssue[]): void {
-  requireNonEmpty(issues, "course.yml#id", config.id);
-  requireNonEmpty(issues, "course.yml#title", config.title);
-  requireNonEmpty(issues, "course.yml#source.repository", config.source.repository);
-  requireSourceDirPath(issues, "course.yml#chaptersDir", config.chaptersDir);
+  requireNonEmpty(issues, `${COURSE_FILE_NAME}#id`, config.id);
+  requireNonEmpty(issues, `${COURSE_FILE_NAME}#title`, config.title);
+  requireNonEmpty(issues, `${COURSE_FILE_NAME}#source.repository`, config.source.repository);
+  requireSourceDirPath(issues, `${COURSE_FILE_NAME}#chaptersDir`, config.chaptersDir);
   if (config.source.root !== undefined && config.source.root.trim() !== "") {
-    requireSourceDirPath(issues, "course.yml#source.root", config.source.root);
+    requireSourceDirPath(issues, `${COURSE_FILE_NAME}#source.root`, config.source.root);
   }
 }
 
@@ -51,7 +51,7 @@ function validateCourseConfig(config: CourseConfig, issues: ProtocolIssue[]): vo
  *
  * @param chapters - Parsed chapter documents
  * @param issues - Accumulator
- * @param chaptersDir - Relative chapters directory from `course.yml` (for empty-list errors)
+ * @param chaptersDir - Relative chapters directory from `course.jsonc` (for empty-list errors)
  */
 function validateChapters(
   chapters: ChapterConfig[],
@@ -61,7 +61,7 @@ function validateChapters(
   if (chapters.length === 0) {
     issues.push({
       path: `${chaptersDir}/`,
-      message: "at least one chapter yaml is required",
+      message: "at least one chapter jsonc file is required",
     });
     return;
   }

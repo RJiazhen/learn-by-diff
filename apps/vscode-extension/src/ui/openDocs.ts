@@ -71,7 +71,7 @@ async function openDocsFile(uri: vscode.Uri): Promise<void> {
  *
  * @param session - Active learning session
  * @param chapter - Chapter config
- * @param docs - Relative file path from chapter yaml
+ * @param docs - Relative file path from chapter JSONC
  */
 async function resolveChapterDocsFileUri(
   session: LearningSession,

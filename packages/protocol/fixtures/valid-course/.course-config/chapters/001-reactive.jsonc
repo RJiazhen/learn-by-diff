@@ -1,0 +1,7 @@
+{
+  "id": "reactive",
+  "title": "Reactive",
+  "fromDir": "start",
+  "toDir": "reactive",
+  "entryFiles": ["packages/reactivity/reactive.ts"],
+}

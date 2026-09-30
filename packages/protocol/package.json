@@ -21,7 +21,7 @@
     "prepare": "vp pack"
   },
   "dependencies": {
-    "yaml": "catalog:"
+    "jsonc-parser": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",

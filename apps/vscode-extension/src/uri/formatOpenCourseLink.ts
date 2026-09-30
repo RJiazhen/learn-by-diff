@@ -11,7 +11,7 @@ export type OpenCourseEditorScheme = (typeof OPEN_COURSE_LINK_SCHEMES)[number];
  * Builds a LearnByDiff one-click open URI for one editor scheme.
  *
  * @param scheme - `vscode` or `cursor`
- * @param courseUrl - Value for the `url` query (local `course.yml` path, git URL, or GitHub file URL)
+ * @param courseUrl - Value for the `url` query (local `course.jsonc` path, git URL, or GitHub file URL)
  */
 export function formatOpenCourseDeepLink(scheme: string, courseUrl: string): string {
   return `${scheme}://${OPEN_COURSE_EXTENSION_ID}/open?url=${encodeURIComponent(courseUrl)}`;

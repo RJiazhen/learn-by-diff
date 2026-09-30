@@ -16,17 +16,17 @@ pnpm exec vp run learn-by-diff#pack
 pnpm --filter website dev
 ```
 
-Press **F5** (`Run Extension`). The prelaunch task runs `vp pack --watch`, then the Extension Development Host opens [`sandbox/`](sandbox) in a temporary empty profile. After code changes, reload the Extension Development Host to pick up the rebuilt bundle. **LearnByDiff: Open Course** prefills [`examples/demo-course/.course-config/course.yml`](examples/demo-course/.course-config/course.yml).
+Press **F5** (`Run Extension`). The prelaunch task runs `vp pack --watch`, then the Extension Development Host opens [`sandbox/`](sandbox) in a temporary empty profile. After code changes, reload the Extension Development Host to pick up the rebuilt bundle. **LearnByDiff: Open Course** prefills [`examples/demo-course/.course-config/course.jsonc`](examples/demo-course/.course-config/course.jsonc).
 
 ## Layout
 
-| Path                                             | Role                                                          |
-| ------------------------------------------------ | ------------------------------------------------------------- |
-| [`packages/protocol`](packages/protocol)         | LCP types, YAML parse, validation (`@learn-by-diff/protocol`) |
-| [`apps/vscode-extension`](apps/vscode-extension) | VS Code extension (`learn-by-diff`)                           |
-| [`apps/website`](apps/website)                   | Project site (VitePress, GitHub Pages)                        |
-| [`sandbox/`](sandbox)                            | F5 debug workspace (generated files are gitignored)           |
-| [`skills/`](skills), [`examples/`](examples)     | Author skills; committed local demo course/source             |
+| Path                                             | Role                                                           |
+| ------------------------------------------------ | -------------------------------------------------------------- |
+| [`packages/protocol`](packages/protocol)         | LCP types, JSONC parse, validation (`@learn-by-diff/protocol`) |
+| [`apps/vscode-extension`](apps/vscode-extension) | VS Code extension (`learn-by-diff`)                            |
+| [`apps/website`](apps/website)                   | Project site (VitePress, GitHub Pages)                         |
+| [`sandbox/`](sandbox)                            | F5 debug workspace (generated files are gitignored)            |
+| [`skills/`](skills), [`examples/`](examples)     | Author skills; committed local demo course/source              |
 
 ## Pull requests
 

@@ -62,27 +62,33 @@ describe("materializeChapterRef", () => {
 
     await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
     await writeFile(
-      path.join(courseDir, ".course-config", "course.yml"),
-      ["id: refs", "title: Refs", "source:", "  repository: ../../demo-source", ""].join("\n"),
+      path.join(courseDir, ".course-config", "course.jsonc"),
+      `{
+  "id": "refs",
+  "title": "Refs",
+  "source": {
+    "repository": "../../demo-source"
+  }
+}\n`,
       "utf8",
     );
     await writeFile(
-      path.join(courseDir, ".course-config", "chapters", "001.yml"),
-      [
-        "id: one",
-        "title: One",
-        "fromDir: start",
-        "toDir: done",
-        "entryFiles:",
-        "  - pkg/index.ts",
-        "",
-      ].join("\n"),
+      path.join(courseDir, ".course-config", "chapters", "001.jsonc"),
+      `{
+  "id": "one",
+  "title": "One",
+  "fromDir": "start",
+  "toDir": "done",
+  "entryFiles": [
+    "pkg/index.ts"
+  ]
+}\n`,
       "utf8",
     );
 
     const parent = await tempDir("lbd-ref-parent-");
     const created = await createLearningWorkspace({
-      courseRepoUrl: path.join(courseDir, ".course-config", "course.yml"),
+      courseRepoUrl: path.join(courseDir, ".course-config", "course.jsonc"),
       parentDir: parent,
       git,
     });

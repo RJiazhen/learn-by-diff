@@ -6,7 +6,7 @@ import type { CourseSource } from "./types.ts";
  * Accepts nested paths (`tutorials/hello/start`). Rejects absolute paths,
  * empty segments, and `..` traversal.
  *
- * @param value - Raw path from course/chapter yaml
+ * @param value - Raw path from course or chapter JSONC
  * @returns Normalized path, or `undefined` when invalid
  */
 export function normalizeSourceDirPath(value: string): string | undefined {

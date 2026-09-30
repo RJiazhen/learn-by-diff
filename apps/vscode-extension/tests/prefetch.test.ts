@@ -57,42 +57,40 @@ async function createTwoChapterWorkspace(): Promise<{
 
   await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
   await writeFile(
-    path.join(courseDir, ".course-config", "course.yml"),
-    ["id: prefetch", "title: Prefetch", "source:", "  repository: ../../demo-source", ""].join(
-      "\n",
-    ),
+    path.join(courseDir, ".course-config", "course.jsonc"),
+    `{\n  "id": "prefetch",\n  "title": "Prefetch",\n  "source": {\n    "repository": "../../demo-source"\n  }\n}\n`,
     "utf8",
   );
   await writeFile(
-    path.join(courseDir, ".course-config", "chapters", "001.yml"),
-    [
-      "id: one",
-      "title: One",
-      "fromDir: start",
-      "toDir: two",
-      "entryFiles:",
-      "  - pkg/index.ts",
-      "",
-    ].join("\n"),
+    path.join(courseDir, ".course-config", "chapters", "001.jsonc"),
+    `{
+  "id": "one",
+  "title": "One",
+  "fromDir": "start",
+  "toDir": "two",
+  "entryFiles": [
+    "pkg/index.ts"
+  ]
+}\n`,
     "utf8",
   );
   await writeFile(
-    path.join(courseDir, ".course-config", "chapters", "002.yml"),
-    [
-      "id: two",
-      "title: Two",
-      "fromDir: two",
-      "toDir: two",
-      "entryFiles:",
-      "  - pkg/index.ts",
-      "",
-    ].join("\n"),
+    path.join(courseDir, ".course-config", "chapters", "002.jsonc"),
+    `{
+  "id": "two",
+  "title": "Two",
+  "fromDir": "two",
+  "toDir": "two",
+  "entryFiles": [
+    "pkg/index.ts"
+  ]
+}\n`,
     "utf8",
   );
 
   const parent = await tempDir("lbd-prefetch-parent-");
   const created = await createLearningWorkspace({
-    courseRepoUrl: path.join(courseDir, ".course-config", "course.yml"),
+    courseRepoUrl: path.join(courseDir, ".course-config", "course.jsonc"),
     parentDir: parent,
     git,
   });

@@ -27,7 +27,7 @@ describe("loadCourse", () => {
     expect(course.chapters.map((chapter) => chapter.id)).toEqual(["reactive", "effect"]);
   });
 
-  test("applies course.yml defaults when fields are omitted", async () => {
+  test("applies course.jsonc defaults when fields are omitted", async () => {
     const course = await loadCourse(fixtureRoot("empty-course"));
     expect(course.config.id).toBe("empty-course");
     expect(course.config.title).toBe("empty-course");
@@ -36,7 +36,7 @@ describe("loadCourse", () => {
     expect(course.chapters.map((chapter) => chapter.id)).toEqual(["hello"]);
   });
 
-  test("loads chapters from course.yml chaptersDir", async () => {
+  test("loads chapters from course.jsonc chaptersDir", async () => {
     const course = await loadCourse(fixtureRoot("custom-chapters-dir"));
     expect(course.config.chaptersDir).toBe("lessons");
     expect(course.chapters.map((chapter) => chapter.id)).toEqual(["one"]);
@@ -52,11 +52,11 @@ describe("loadCourse", () => {
     }
   });
 
-  test("rejects a repository without course.yml", async () => {
+  test("rejects a repository without course.jsonc", async () => {
     await expect(loadCourse(fixtureRoot("valid-course/.."))).rejects.toBeInstanceOf(ProtocolError);
   });
 
-  test("loads course.yml at the specified directory root", async () => {
+  test("loads course.jsonc at the specified directory root", async () => {
     const course = await loadCourse(fixtureRoot("root-course"));
     expect(course.config.id).toBe("root-course");
     expect(course.config.title).toBe("Root Course");
@@ -64,7 +64,7 @@ describe("loadCourse", () => {
     expect(course.chapters.map((chapter) => chapter.id)).toEqual(["intro"]);
   });
 
-  test("prefers root course.yml over .course-config/course.yml", async () => {
+  test("prefers root course.jsonc over .course-config/course.jsonc", async () => {
     const course = await loadCourse(fixtureRoot("prefer-root-course"));
     expect(course.config.id).toBe("from-root");
     expect(course.chapters.map((chapter) => chapter.id)).toEqual(["root-chapter"]);
@@ -72,11 +72,11 @@ describe("loadCourse", () => {
 });
 
 describe("findCourseConfigDir", () => {
-  test("returns the specified directory when course.yml is there", async () => {
+  test("returns the specified directory when course.jsonc is there", async () => {
     expect(await findCourseConfigDir(fixtureRoot("root-course"))).toBe(fixtureRoot("root-course"));
   });
 
-  test("falls back to .course-config when the root has no course.yml", async () => {
+  test("falls back to .course-config when the root has no course.jsonc", async () => {
     expect(await findCourseConfigDir(fixtureRoot("valid-course"))).toBe(
       path.join(fixtureRoot("valid-course"), ".course-config"),
     );
@@ -84,26 +84,26 @@ describe("findCourseConfigDir", () => {
 });
 
 describe("loadCourseFromFile", () => {
-  test("loads from an explicit course.yml path", async () => {
-    const filePath = path.join(fixtureRoot("valid-course"), ".course-config", "course.yml");
+  test("loads from an explicit course.jsonc path", async () => {
+    const filePath = path.join(fixtureRoot("valid-course"), ".course-config", "course.jsonc");
     const course = await loadCourseFromFile(filePath);
     expect(course.config.id).toBe("chibivue");
     expect(course.configDir).toBe(path.dirname(filePath));
   });
 
-  test("rejects a file that is not named course.yml", async () => {
+  test("rejects a file that is not named course.jsonc", async () => {
     const chapterFile = path.join(
       fixtureRoot("valid-course"),
       ".course-config",
       "chapters",
-      "001-reactive.yml",
+      "001-reactive.jsonc",
     );
     await expect(loadCourseFromFile(chapterFile)).rejects.toBeInstanceOf(ProtocolError);
   });
 });
 
 describe("isCourseRepository", () => {
-  test("detects course.yml at the root or under .course-config", async () => {
+  test("detects course.jsonc at the root or under .course-config", async () => {
     expect(await isCourseRepository(fixtureRoot("valid-course"))).toBe(true);
     expect(await isCourseRepository(fixtureRoot("root-course"))).toBe(true);
     expect(await isCourseRepository(fixturesDir)).toBe(false);

@@ -23,57 +23,61 @@ You can also pass a GitHub repository URL; the agent will read the source and ge
 
 ## Course config files
 
-Every course needs a `course.yml` and chapter files `chapters/*.yml`.
+Every course needs a `course.jsonc` and chapter files `chapters/*.jsonc`.
 
-### course.yml
+### course.jsonc
 
-Create `course.yml` in your course repository and paste:
+Create `course.jsonc` in your course repository and paste:
 
-```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/course
-id: demo-course
-title: Demo course
-source:
-  repository: https://github.com/RJiazhen/learn-by-diff.git
-  root: examples/demo-source
-chaptersDir: chapters
+```jsonc
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/course",
+  "id": "demo-course",
+  "title": "Demo course",
+  "source": {
+    "repository": "https://github.com/RJiazhen/learn-by-diff.git",
+    "root": "examples/demo-source",
+  },
+  "chaptersDir": "chapters",
+}
 ```
 
-Fields in `course.yml`:
+Fields in `course.jsonc`:
 
 - `id` (optional): Stable course id, also used as the student workspace folder name. Prefer a path-safe slug (letters, digits, hyphens). If omitted, the course folder name is used; if that folder is a git repository root, `{repo-name}-learn`.
 - `title` (optional): Human-readable display name. Defaults to `id`.
 - `source.repository` (optional): Where the source lives. Three forms:
   - Git repository URL, for example `https://github.com/org/repo.git`.
-  - Local path: absolute, or relative to the directory that contains `course.yml`.
-  - Omitted: source is the directory that contains `course.yml`.
+  - Local path: absolute, or relative to the directory that contains `course.jsonc`.
+  - Omitted: source is the directory that contains `course.jsonc`.
 - `source.root` (optional): Path of the source tree inside `source.repository`. Omitted means the repository root.
-- `chaptersDir` (optional): Directory of chapter YAML files, relative to `course.yml`. Defaults to `chapters` next to `course.yml`.
+- `chaptersDir` (optional): Directory of chapter JSONC files, relative to `course.jsonc`. Defaults to `chapters` next to `course.jsonc`.
 
-### chapters/*.yml
+### chapters/*.jsonc
 
-Next to `course.yml`, create a `chapters` directory, then create `00-start.yml` and paste:
+Next to `course.jsonc`, create a `chapters` directory, then create `00-start.jsonc` and paste:
 
-```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter
-id: start
-title: Start
-fromDir: start
-toDir: skeleton
-entryFiles:
-  - src/main.js
-docs: README.md
+```jsonc
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "start",
+  "title": "Start",
+  "fromDir": "start",
+  "toDir": "skeleton",
+  "entryFiles": ["src/main.js"],
+  "docs": "README.md",
+}
 ```
 
-Chapter files go in `chaptersDir` (default `chapters/` next to `course.yml`).
+Chapter files go in `chaptersDir` (default `chapters/` next to `course.jsonc`).
 
-Each `.yml` file is one chapter. **Course order matches filename order**, so prefix names with numbers such as `00-start.yml`, `01-skeleton.yml`.
+Each `.jsonc` file is one chapter. **Course order matches filename order**, so prefix names with numbers such as `00-start.jsonc`, `01-skeleton.jsonc`.
 
-If `id` is empty, it is derived by stripping the extension and a leading numeric prefix: `00-start.yml` → `start`. Prefixes like `00-`, `01_`, and `1.` work. A course needs at least one chapter file, and chapter ids must be unique.
+If `id` is empty, it is derived by stripping the extension and a leading numeric prefix: `00-start.jsonc` → `start`. Prefixes like `00-`, `01_`, and `1.` work. A course needs at least one chapter file, and chapter ids must be unique.
 
 Fields in each chapter file:
 
-- `id` (optional): Stable chapter id used for progress, not for display. Omitted or empty → derived from the filename (`00-start.yml` → `start`).
+- `id` (optional): Stable chapter id used for progress, not for display. Omitted or empty → derived from the filename (`00-start.jsonc` → `start`).
 - `title` (optional): Display name. Omitted or empty → `id`.
 - `fromDir` (optional): Start snapshot directory, relative to `source.repository` (or to `source.root` when that is set). Empty means an empty tree. No `..` or absolute paths.
 - `toDir` (optional): Goal snapshot directory; same path rules as `fromDir`. Empty means an empty tree.
@@ -95,24 +99,24 @@ Publish the course repository (including the source) to Git.
 
 ### Share the config location
 
-If the course is on GitHub, you can share the `course.yml` file URL. The other person pastes it into Open Course.
+If the course is on GitHub, you can share the `course.jsonc` file URL. The other person pastes it into Open Course.
 
 For example:
 
 ```text
-https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml
+https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc
 ```
 
-If `course.yml` is at the repository root, or at `.course-config/course.yml` under the root, you can share the git repository URL instead:
+If `course.jsonc` is at the repository root, or at `.course-config/course.jsonc` under the root, you can share the git repository URL instead:
 
 ```text
 https://github.com/RJiazhen/learn-by-diff.git
 ```
 
-If `course.yml` lives in a subdirectory, append `#` and the path relative to the repository root (pointing at `course.yml`):
+If `course.jsonc` lives in a subdirectory, append `#` and the path relative to the repository root (pointing at `course.jsonc`):
 
 ```text
-https://github.com/RJiazhen/learn-by-diff.git#examples/demo-course/.course-config/course.yml
+https://github.com/RJiazhen/learn-by-diff.git#examples/demo-course/.course-config/course.jsonc
 ```
 
 ### One-click share links
@@ -120,8 +124,8 @@ https://github.com/RJiazhen/learn-by-diff.git#examples/demo-course/.course-confi
 Or turn that address into a one-click link. Clicking it wakes the IDE and opens the course:
 
 ```text
-vscode://RuanJiazhen.learn-by-diff/open?url=<course.yml-or-git-repo-URL>
-cursor://RuanJiazhen.learn-by-diff/open?url=<course.yml-or-git-repo-URL>
+vscode://RuanJiazhen.learn-by-diff/open?url=<course.jsonc-or-git-repo-URL>
+cursor://RuanJiazhen.learn-by-diff/open?url=<course.jsonc-or-git-repo-URL>
 ```
 
 Use `vscode://` for VS Code and `cursor://` for Cursor. The other person needs LearnByDiff installed; the OS may ask once for permission to open the protocol.

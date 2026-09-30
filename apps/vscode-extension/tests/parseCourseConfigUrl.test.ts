@@ -21,9 +21,9 @@ afterEach(async () => {
   await Promise.all(temps.splice(0).map((dir) => rm(dir, { recursive: true, force: true })));
 });
 
-const nestedRel = "examples/demo-course/.course-config/course.yml";
+const nestedRel = "examples/demo-course/.course-config/course.jsonc";
 const demoBlob =
-  "https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml";
+  "https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc";
 const expectedClone = "https://github.com/RJiazhen/learn-by-diff.git";
 const expectedFile = {
   kind: "githubFile",
@@ -40,7 +40,7 @@ describe("parseCourseConfigUrl", () => {
     expect(parseCourseConfigUrl(`${demoBlob}#L1`)).toEqual(expectedFile);
     expect(
       parseCourseConfigUrl(
-        "https://www.github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml",
+        "https://www.github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc",
       ),
     ).toEqual(expectedFile);
   });
@@ -48,7 +48,7 @@ describe("parseCourseConfigUrl", () => {
   test("parses github.com raw URLs", () => {
     expect(
       parseCourseConfigUrl(
-        "https://github.com/RJiazhen/learn-by-diff/raw/main/examples/demo-course/.course-config/course.yml",
+        "https://github.com/RJiazhen/learn-by-diff/raw/main/examples/demo-course/.course-config/course.jsonc",
       ),
     ).toEqual(expectedFile);
   });
@@ -56,12 +56,12 @@ describe("parseCourseConfigUrl", () => {
   test("parses raw.githubusercontent.com including refs/heads", () => {
     expect(
       parseCourseConfigUrl(
-        "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/examples/demo-course/.course-config/course.yml",
+        "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/examples/demo-course/.course-config/course.jsonc",
       ),
     ).toEqual(expectedFile);
     expect(
       parseCourseConfigUrl(
-        "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/examples/demo-course/.course-config/course.yml",
+        "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/examples/demo-course/.course-config/course.jsonc",
       ),
     ).toEqual({
       ...expectedFile,
@@ -69,7 +69,7 @@ describe("parseCourseConfigUrl", () => {
     });
     expect(
       parseCourseConfigUrl(
-        "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/tags/v0.1.0/examples/demo-course/.course-config/course.yml",
+        "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/tags/v0.1.0/examples/demo-course/.course-config/course.jsonc",
       ),
     ).toEqual({
       ...expectedFile,
@@ -92,7 +92,7 @@ describe("parseCourseConfigUrl", () => {
     });
   });
 
-  test("parses git URL # relative course.yml path", () => {
+  test("parses git URL # relative course.jsonc path", () => {
     expect(
       parseCourseConfigUrl(`https://github.com/RJiazhen/learn-by-diff.git#${nestedRel}`),
     ).toEqual({
@@ -102,7 +102,7 @@ describe("parseCourseConfigUrl", () => {
     });
     expect(
       parseCourseConfigUrl(
-        "https://github.com/RJiazhen/learn-by-diff#examples/demo-course/.course-config/course.yml",
+        "https://github.com/RJiazhen/learn-by-diff#examples/demo-course/.course-config/course.jsonc",
       ),
     ).toEqual({
       kind: "gitRepo",
@@ -114,35 +114,37 @@ describe("parseCourseConfigUrl", () => {
       url: "git@github.com:RJiazhen/learn-by-diff.git",
       configRelPath: nestedRel,
     });
-    expect(parseCourseConfigUrl("https://github.com/org/course.git#course.yml")).toEqual({
+    expect(parseCourseConfigUrl("https://github.com/org/course.git#course.jsonc")).toEqual({
       kind: "gitRepo",
       url: "https://github.com/org/course.git",
-      configRelPath: "course.yml",
+      configRelPath: "course.jsonc",
     });
   });
 
-  test("rejects git URL # fragments that are not course.yml", () => {
+  test("rejects git URL # fragments that are not course.jsonc", () => {
     expect(() =>
       parseCourseConfigUrl("https://github.com/org/course.git#examples/README.md"),
-    ).toThrow(/# fragment must be a course\.yml path/);
+    ).toThrow(/# fragment must be a course\.jsonc path/);
   });
 
   test("ignores local paths", () => {
-    expect(parseCourseConfigUrl("/tmp/course.yml")).toBeUndefined();
-    expect(parseCourseConfigUrl("examples/demo-course/.course-config/course.yml")).toBeUndefined();
+    expect(parseCourseConfigUrl("/tmp/course.jsonc")).toBeUndefined();
+    expect(
+      parseCourseConfigUrl("examples/demo-course/.course-config/course.jsonc"),
+    ).toBeUndefined();
   });
 
-  test("rejects GitHub file URLs that are not course.yml", () => {
+  test("rejects GitHub file URLs that are not course.jsonc", () => {
     expect(() =>
       parseCourseConfigUrl(
         "https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/README.md",
       ),
-    ).toThrow(/must point at course\.yml/);
+    ).toThrow(/must point at course\.jsonc/);
     expect(() =>
       parseCourseConfigUrl(
         "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/README.md",
       ),
-    ).toThrow(/must point at course\.yml/);
+    ).toThrow(/must point at course\.jsonc/);
   });
 });
 
@@ -184,16 +186,16 @@ class RecordingGitClient extends GitClient {
 }
 
 /**
- * Writes a nested demo `course.yml` under a fake clone tree.
+ * Writes a nested demo `course.jsonc` under a fake clone tree.
  */
 async function writeNestedCourseTree(root: string): Promise<void> {
   const file = path.join(root, ...nestedRel.split("/"));
   await mkdir(path.dirname(file), { recursive: true });
-  await writeFile(file, "title: Demo\n", "utf8");
+  await writeFile(file, '{"title":"Demo"}\n', "utf8");
 }
 
 describe("resolveCourseConfigDir GitHub file URLs", () => {
-  test("clones the git repo and opens the nested course.yml path", async () => {
+  test("clones the git repo and opens the nested course.jsonc path", async () => {
     const tree = await tempDir("lbd-gh-tree-");
     await writeNestedCourseTree(tree);
     const git = new RecordingGitClient(tree);
@@ -207,8 +209,8 @@ describe("resolveCourseConfigDir GitHub file URLs", () => {
         },
       ]);
       expect(path.basename(source.configDir)).toBe(".course-config");
-      expect(await readFile(path.join(source.configDir, "course.yml"), "utf8")).toBe(
-        "title: Demo\n",
+      expect(await readFile(path.join(source.configDir, "course.jsonc"), "utf8")).toBe(
+        '{"title":"Demo"}\n',
       );
     } finally {
       await source.cleanup();
@@ -221,7 +223,7 @@ describe("resolveCourseConfigDir GitHub file URLs", () => {
     const git = new RecordingGitClient(tree);
     const source = await resolveCourseConfigDir(
       git,
-      "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/examples/demo-course/.course-config/course.yml",
+      "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/examples/demo-course/.course-config/course.jsonc",
     );
     try {
       expect(git.cloneCalls[0]).toMatchObject({
@@ -233,16 +235,16 @@ describe("resolveCourseConfigDir GitHub file URLs", () => {
     }
   });
 
-  test("throws when the nested course.yml is missing after clone", async () => {
+  test("throws when the nested course.jsonc is missing after clone", async () => {
     const tree = await tempDir("lbd-gh-empty-");
     const git = new RecordingGitClient(tree);
     await expect(resolveCourseConfigDir(git, demoBlob)).rejects.toThrow(
-      "course.yml not found in cloned repository",
+      "course.jsonc not found in cloned repository",
     );
     expect(git.cloneCalls[0]?.url).toBe(expectedClone);
   });
 
-  test("clones a git URL and opens the # course.yml path", async () => {
+  test("clones a git URL and opens the # course.jsonc path", async () => {
     const tree = await tempDir("lbd-git-hash-");
     await writeNestedCourseTree(tree);
     const git = new RecordingGitClient(tree);

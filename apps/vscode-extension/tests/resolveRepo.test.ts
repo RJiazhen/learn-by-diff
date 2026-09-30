@@ -14,7 +14,7 @@ describe("resolveSourceRepository", () => {
     expect(resolveSourceRepository("/abs/source", "/tmp/course")).toBe("/abs/source");
   });
 
-  test("resolves relative paths against the directory that contains course.yml", () => {
+  test("resolves relative paths against the directory that contains course.jsonc", () => {
     expect(
       resolveSourceRepository("../demo-source", "/repo/examples/demo-course/.course-config"),
     ).toBe(path.resolve("/repo/examples/demo-course/.course-config", "../demo-source"));
@@ -35,9 +35,9 @@ describe("resolveSourceRepository", () => {
     expect(isRemoteGitUrl("/tmp/course")).toBe(false);
   });
 
-  test("demoCoursePath points at examples/demo-course/.course-config/course.yml", () => {
+  test("demoCoursePath points at examples/demo-course/.course-config/course.jsonc", () => {
     expect(demoCoursePath("/repo/apps/vscode-extension")).toBe(
-      path.resolve("/repo/examples/demo-course/.course-config/course.yml"),
+      path.resolve("/repo/examples/demo-course/.course-config/course.jsonc"),
     );
   });
 });

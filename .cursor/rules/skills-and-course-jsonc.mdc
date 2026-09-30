@@ -1,0 +1,15 @@
+---
+description: Author skills and course JSONC authoring conventions
+globs: skills/**/*,examples/**/.course-config/**/*
+alwaysApply: false
+---
+
+# Skills & course JSONC
+
+- Skills live under `skills/` and are **not** pnpm workspace packages. Keep `SKILL.md` + `reference.md` aligned with protocol.
+- Generate minimal JSONC; omit fields that defaults cover. Always set `"$schema": "…#/$defs/…"` with a correct relative path.
+- One `source.repository` only; optional `source.root`. Chapter `fromDir`/`toDir` are repo-relative (no `..`).
+- Fill `changedFiles` (path + U/M/D) when scaffolding so Open Course can skip snapshot comparison. Write basic chapter JSONC (`fromDir`/`toDir`) first, then run `scripts/detect-chapter-dirs.mjs --out` to fill `changedFiles`. Snapshots need not be consecutive. Continue after a single-chapter error; when stdout `ok` is false, read `detect-chapter-dirs.result.json` (failures only), then delete that file. If the script cannot run, implement that filler locally. Do not dump compare JSON into the chat.
+- Optional `docs`: `http(s)` URL or file under the chapter snapshot. Do not invent snapshot dirs—ask if detection fails.
+- After generate, print a try-open deep link (`vscode://` / `cursor://…/open?url=`) and the absolute `course.jsonc` path.
+- Demo pair: `examples/demo-course` + `examples/demo-source`. Update both when changing demo pedagogy.

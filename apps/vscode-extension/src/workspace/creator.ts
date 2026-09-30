@@ -28,9 +28,9 @@ import {
 } from "./sourceStore.ts";
 import { writeProgress, type ChapterSnapshotSide } from "./state.ts";
 
-/** Options for creating a learning workspace from a `course.yml` path or git URL. */
+/** Options for creating a learning workspace from a `course.jsonc` path or git URL. */
 export interface CreateLearningWorkspaceOptions {
-  /** Local `course.yml` path (`file:` URLs allowed), GitHub file URL, or git URL to clone. */
+  /** Local `course.jsonc` path (`file:` URLs allowed), GitHub file URL, or git URL to clone. */
   courseRepoUrl: string;
   git: GitClient;
   /** Initialize this folder in place when it is empty (debug sandbox). */
@@ -137,15 +137,15 @@ export interface CourseConfigSource {
 }
 
 /**
- * Resolves course config from a local `course.yml` path or by cloning a git course repository.
+ * Resolves course config from a local `course.jsonc` path or by cloning a git course repository.
  *
- * Local inputs must be the `course.yml` file (or a `file:` URL to it), not a directory.
- * GitHub blob/raw URLs that point at `course.yml` clone the parent repository, then use that path.
- * A git URL may append `#path/to/course.yml` for a nested config. Other remote git URLs are cloned,
- * then `course.yml` is found at the clone root or under `.course-config/`.
+ * Local inputs must be the `course.jsonc` file (or a `file:` URL to it), not a directory.
+ * GitHub blob/raw URLs that point at `course.jsonc` clone the parent repository, then use that path.
+ * A git URL may append `#path/to/course.jsonc` for a nested config. Other remote git URLs are cloned,
+ * then `course.jsonc` is found at the clone root or under `.course-config/`.
  *
  * @param git - Git client
- * @param courseRepoUrl - User-supplied `course.yml` path, GitHub file URL, or git URL
+ * @param courseRepoUrl - User-supplied `course.jsonc` path, GitHub file URL, or git URL
  * @param onLog - Optional progress logger
  */
 export async function resolveCourseConfigDir(
@@ -155,19 +155,19 @@ export async function resolveCourseConfigDir(
 ): Promise<CourseConfigSource> {
   const local = localCourseOrigin(courseRepoUrl);
   if (local !== undefined) {
-    const localConfig = await resolveLocalCourseYml(local);
+    const localConfig = await resolveLocalCourseJsonc(local);
     if (localConfig !== undefined) {
       onLog?.(`Using local course config… (${local})`);
       return localConfig;
     }
     if (!isRemoteGitUrl(courseRepoUrl)) {
-      throw new Error(`course.yml not found: ${courseRepoUrl}`);
+      throw new Error(`course.jsonc not found: ${courseRepoUrl}`);
     }
   }
 
   const remote = parseCourseConfigUrl(courseRepoUrl);
   if (remote === undefined) {
-    throw new Error(`course.yml not found: ${courseRepoUrl}`);
+    throw new Error(`course.jsonc not found: ${courseRepoUrl}`);
   }
 
   onLog?.("Cloning course repository…");
@@ -206,7 +206,7 @@ export async function resolveCourseConfigDir(
         {
           path: COURSE_FILE_NAME,
           message:
-            "course config file was not found (looked in course.yml, then .course-config/course.yml)",
+            "course config file was not found (looked in course.jsonc, then .course-config/course.jsonc)",
         },
       ]);
     }
@@ -223,9 +223,9 @@ export async function resolveCourseConfigDir(
 }
 
 /**
- * Returns the directory that contains a cloned `course.yml`, or throws if the file is missing.
+ * Returns the directory that contains a cloned `course.jsonc`, or throws if the file is missing.
  *
- * @param configFile - Absolute path to the expected `course.yml`
+ * @param configFile - Absolute path to the expected `course.jsonc`
  * @param configRelPath - Posix-relative path shown in the error
  */
 async function configDirFromClonedCourseFile(
@@ -245,14 +245,14 @@ async function configDirFromClonedCourseFile(
 }
 
 /**
- * Resolves a local filesystem path to the directory that contains `course.yml`.
+ * Resolves a local filesystem path to the directory that contains `course.jsonc`.
  *
  * Directories are rejected so Open Course always takes an explicit file.
  *
  * @param local - Absolute filesystem path from {@link localCourseOrigin}
  * @returns Config source, or `undefined` when the path does not exist
  */
-async function resolveLocalCourseYml(local: string): Promise<CourseConfigSource | undefined> {
+async function resolveLocalCourseJsonc(local: string): Promise<CourseConfigSource | undefined> {
   let info: Awaited<ReturnType<typeof stat>>;
   try {
     info = await stat(local);
@@ -272,13 +272,13 @@ async function resolveLocalCourseYml(local: string): Promise<CourseConfigSource 
 }
 
 /**
- * Copies `course.yml` and the configured chapters directory into the learning workspace.
+ * Copies `course.jsonc` and the configured chapters directory into the learning workspace.
  *
  * Does not copy the rest of a course-home tree (source files, git metadata).
  *
- * @param fromConfigDir - Directory that contains `course.yml`
+ * @param fromConfigDir - Directory that contains `course.jsonc`
  * @param toConfigDir - `.learn/course` destination
- * @param chaptersDir - Posix-relative chapters directory from `course.yml`
+ * @param chaptersDir - Posix-relative chapters directory from `course.jsonc`
  */
 async function copyCourseConfigFiles(
   fromConfigDir: string,
@@ -298,7 +298,7 @@ async function copyCourseConfigFiles(
 /**
  * Joins a posix-relative path onto a config directory as a filesystem path.
  *
- * @param configDir - Directory that contains `course.yml`
+ * @param configDir - Directory that contains `course.jsonc`
  * @param relativePosix - Slash-separated path under the config directory
  */
 function joinConfigRelative(configDir: string, relativePosix: string): string {

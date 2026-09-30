@@ -4,7 +4,7 @@ Companion to [`AGENTS.md`](../AGENTS.md). Describes how LearnByDiff is structure
 
 ## Problem model
 
-1. **Course repository** — declares pedagogy in a `course.yml` file (often at the repo root or under `.course-config/`; not the student’s full solution tree).
+1. **Course repository** — declares pedagogy in a `course.jsonc` file (often at the repo root or under `.course-config/`; not the student’s full solution tree).
 2. **Source repository** — holds **directory snapshots** (`fromDir` → `toDir` per chapter), optionally under `source.root`.
 3. **Learning workspace** — student folder created by the extension; owns `.learn/` runtime state and the editable working tree.
 
@@ -13,7 +13,7 @@ Learning is driven by **snapshot diffs**, not `git checkout` of chapter history.
 ## Monorepo boundaries
 
 ```text
-course.yml / chapters/*.yml
+course.jsonc / chapters/*.jsonc
         │
         ▼
 @learn-by-diff/protocol   parse → defaults → validate → Course
@@ -31,30 +31,30 @@ learn-by-diff extension   clone/mirror source → export trees → UI / URI
 ### On disk
 
 ```text
-course.yml                      # Open Course takes this file
-chapters/*.yml                  # default chaptersDir
+course.jsonc                      # Open Course takes this file
+chapters/*.jsonc                # default chaptersDir
 
 # or
 
-.course-config/course.yml
-.course-config/chapters/*.yml   # sort order = course order
+.course-config/course.jsonc
+.course-config/chapters/*.jsonc # sort order = course order
 ```
 
-`chaptersDir` in `course.yml` may point at another directory next to `course.yml` (nested paths allowed; no `..`).
+`chaptersDir` in `course.jsonc` may point at another directory next to `course.jsonc` (nested paths allowed; no `..`).
 
-### `course.yml` (all optional)
+### `course.jsonc` (all optional)
 
 | Field               | Default                                                       |
 | ------------------- | ------------------------------------------------------------- |
 | `id`                | Course home folder; `{repo}-learn` if that home is a git root |
 | `title`             | `id`                                                          |
-| `source.repository` | `.` (directory that contains `course.yml`)                    |
+| `source.repository` | `.` (directory that contains `course.jsonc`)                  |
 | `source.root`       | none                                                          |
-| `chaptersDir`       | `chapters` (directory next to `course.yml`)                   |
+| `chaptersDir`       | `chapters` (directory next to `course.jsonc`)                 |
 
 No `protocolVersion`, no `workspace` block.
 
-### Chapter YAML (all optional)
+### Chapter JSONC (all optional)
 
 | Field               | Default                                                                             |
 | ------------------- | ----------------------------------------------------------------------------------- |
@@ -67,8 +67,10 @@ No `protocolVersion`, no `workspace` block.
 
 Wire editors with:
 
-```yaml
-# yaml-language-server: $schema=<rel>/packages/protocol/schema.json#/$defs/chapter
+```jsonc
+{
+  "$schema": "<rel>/packages/protocol/schema.json#/$defs/chapter",
+}
 ```
 
 ## Extension runtime (`.learn/`)
@@ -91,17 +93,17 @@ Activation today: `onUri` + `onView:learnByDiff.courseView` + `workspaceContains
 
 ## Major surfaces
 
-| Area                                  | Responsibility                                                                             |
-| ------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `workspace/openCourse.ts`             | Shared open-course flow (command + deep link)                                              |
-| `workspace/creator.ts`                | Create learning root, copy config, materialize source, first chapter                       |
-| `workspace/sourceStore.ts`            | Source mirror (git or tree copy); list/read/export chapter subtrees                        |
-| `workspace/session.ts`                | Chapter navigation and snapshot apply                                                      |
-| `snapshot/archive.ts` / `prefetch.ts` | Unique source trees; prefetch during Open Course (and on reopen if missing)                |
-| `ui/explorerView.ts`                  | SCM-like chapter/file tree from cached snapshots; contextValues, inline actions            |
-| `ui/diff.ts` / `openDocs.ts`          | File diffs (`.learn/snapshots`, warmed after open); docs URL / Markdown / file             |
-| `uri/*`                               | `vscode://RuanJiazhen.learn-by-diff/open?url=…` (also `cursor://`)                         |
-| Copy URL commands                     | Current-course Open Course input; workspace `course.yml` scan; one one-click URI at a time |
+| Area                                  | Responsibility                                                                               |
+| ------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `workspace/openCourse.ts`             | Shared open-course flow (command + deep link)                                                |
+| `workspace/creator.ts`                | Create learning root, copy config, materialize source, first chapter                         |
+| `workspace/sourceStore.ts`            | Source mirror (git or tree copy); list/read/export chapter subtrees                          |
+| `workspace/session.ts`                | Chapter navigation and snapshot apply                                                        |
+| `snapshot/archive.ts` / `prefetch.ts` | Unique source trees; prefetch during Open Course (and on reopen if missing)                  |
+| `ui/explorerView.ts`                  | SCM-like chapter/file tree from cached snapshots; contextValues, inline actions              |
+| `ui/diff.ts` / `openDocs.ts`          | File diffs (`.learn/snapshots`, warmed after open); docs URL / Markdown / file               |
+| `uri/*`                               | `vscode://RuanJiazhen.learn-by-diff/open?url=…` (also `cursor://`)                           |
+| Copy URL commands                     | Current-course Open Course input; workspace `course.jsonc` scan; one one-click URI at a time |
 
 Deep link authority = `publisher.name` → `RuanJiazhen.learn-by-diff`.
 
@@ -110,12 +112,12 @@ Deep link authority = `publisher.name` → `RuanJiazhen.learn-by-diff`.
 1. Change protocol and/or extension; keep doc comments on every function.
 2. `vp check` + package tests; pack protocol if needed.
 3. F5 against `sandbox/` + `examples/demo-*`; reload host after rebuild.
-4. Update `schema.json`, fixtures, demo YAML, and skill docs when the protocol surface changes.
+4. Update `schema.json`, fixtures, demo JSONC, and skill docs when the protocol surface changes.
 5. Commit with Conventional Commits, **split by logical change** (protocol → extension → examples → docs).
 
 ## Author skills
 
-`skills/generate-course-config` scaffolds `.course-config` from snapshot dirs. Not part of pnpm. After generate, print a local try-open deep link and the absolute `course.yml` path.
+`skills/generate-course-config` scaffolds `.course-config` from snapshot dirs. Not part of pnpm. After generate, print a local try-open deep link and the absolute `course.jsonc` path.
 
 ## Examples
 

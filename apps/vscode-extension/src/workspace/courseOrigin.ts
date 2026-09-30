@@ -10,11 +10,11 @@ import { isRemoteGitUrl, localCourseOrigin } from "./resolveRepo.ts";
 export interface CourseOpenOrigin {
   /** Original Open Course input. */
   input: string;
-  /** Absolute local `course.yml` when the input was a filesystem path. */
-  localCourseYml?: string;
+  /** Absolute local `course.jsonc` when the input was a filesystem path. */
+  localCourseJsonc?: string;
   /** Git clone URL when the course came from a remote or a local git checkout. */
   gitUrl?: string;
-  /** Posix-relative path to `course.yml` inside the git repository. */
+  /** Posix-relative path to `course.jsonc` inside the git repository. */
   configRelPath?: string;
   /** GitHub ref for blob URLs (branch, tag, or SHA). */
   githubRef?: string;
@@ -33,7 +33,7 @@ export async function readCourseOrigin(
   try {
     const text = await readFile(learningPaths(workspaceRoot).originFile, "utf8");
     const parsed: unknown = JSON.parse(text);
-    return isCourseOpenOrigin(parsed) ? parsed : undefined;
+    return courseOpenOriginFromJson(parsed);
   } catch {
     return undefined;
   }
@@ -55,13 +55,13 @@ export async function writeCourseOrigin(
 }
 
 /**
- * Records how `course.yml` was resolved so later copy-URL commands can rebuild shareable links.
+ * Records how `course.jsonc` was resolved so later copy-URL commands can rebuild shareable links.
  *
  * Local paths also probe git remotes so git/GitHub links work after a filesystem open.
  *
  * @param git - Git client
  * @param courseRepoUrl - Original Open Course input
- * @param configDir - Directory that contains the resolved `course.yml`
+ * @param configDir - Directory that contains the resolved `course.jsonc`
  */
 export async function describeCourseOrigin(
   git: GitClient,
@@ -71,8 +71,8 @@ export async function describeCourseOrigin(
   const origin: CourseOpenOrigin = { input: courseRepoUrl.trim() };
   const local = localCourseOrigin(courseRepoUrl);
   if (local !== undefined && !isRemoteGitUrl(courseRepoUrl.trim())) {
-    origin.localCourseYml = path.join(configDir, COURSE_FILE_NAME);
-    await fillGitFieldsFromCheckout(git, origin, configDir, origin.localCourseYml);
+    origin.localCourseJsonc = path.join(configDir, COURSE_FILE_NAME);
+    await fillGitFieldsFromCheckout(git, origin, configDir, origin.localCourseJsonc);
     return origin;
   }
 
@@ -99,25 +99,25 @@ export async function describeCourseOrigin(
 }
 
 /**
- * Adds git clone URL, in-repo `course.yml` path, and current branch when `dir` is a checkout.
+ * Adds git clone URL, in-repo `course.jsonc` path, and current branch when `dir` is a checkout.
  *
  * @param git - Git client
  * @param origin - Origin document to update
  * @param dir - Directory inside the checkout
- * @param courseYmlPath - Absolute `course.yml` path
+ * @param courseJsoncPath - Absolute `course.jsonc` path
  */
 async function fillGitFieldsFromCheckout(
   git: GitClient,
   origin: CourseOpenOrigin,
   dir: string,
-  courseYmlPath: string,
+  courseJsoncPath: string,
 ): Promise<void> {
   const info = await tryGitCheckoutInfo(git, dir);
   if (info === undefined) {
     return;
   }
   origin.gitUrl = info.originUrl;
-  origin.configRelPath = await posixRelative(info.toplevel, courseYmlPath);
+  origin.configRelPath = await posixRelative(info.toplevel, courseJsoncPath);
   if (info.branch !== "") {
     origin.githubRef = info.branch;
   }
@@ -229,32 +229,71 @@ export async function posixRelative(fromDir: string, toPath: string): Promise<st
 }
 
 /**
- * Type guard for {@link CourseOpenOrigin}.
+ * Parses an origin document.
+ *
+ * Older files stored the local path as `localCourseYml`; that value is copied onto
+ * `localCourseJsonc` when the current field is absent.
  *
  * @param value - Parsed JSON
  */
-function isCourseOpenOrigin(value: unknown): value is CourseOpenOrigin {
+function courseOpenOriginFromJson(value: unknown): CourseOpenOrigin | undefined {
   if (typeof value !== "object" || value === null) {
-    return false;
+    return undefined;
   }
   const record = value as Record<string, unknown>;
   if (typeof record.input !== "string") {
-    return false;
+    return undefined;
   }
-  if (record.localCourseYml !== undefined && typeof record.localCourseYml !== "string") {
-    return false;
+  const localCourseJsonc =
+    stringField(record.localCourseJsonc) ?? stringField(record.localCourseYml);
+  if (!optionalString(record.localCourseJsonc) || !optionalString(record.localCourseYml)) {
+    return undefined;
   }
-  if (record.gitUrl !== undefined && typeof record.gitUrl !== "string") {
-    return false;
+  if (
+    !optionalString(record.gitUrl) ||
+    !optionalString(record.configRelPath) ||
+    !optionalString(record.githubRef) ||
+    !optionalString(record.githubFileUrl)
+  ) {
+    return undefined;
   }
-  if (record.configRelPath !== undefined && typeof record.configRelPath !== "string") {
-    return false;
+  const origin: CourseOpenOrigin = { input: record.input };
+  if (localCourseJsonc !== undefined) {
+    origin.localCourseJsonc = localCourseJsonc;
   }
-  if (record.githubRef !== undefined && typeof record.githubRef !== "string") {
-    return false;
+  const gitUrl = stringField(record.gitUrl);
+  if (gitUrl !== undefined) {
+    origin.gitUrl = gitUrl;
   }
-  if (record.githubFileUrl !== undefined && typeof record.githubFileUrl !== "string") {
-    return false;
+  const configRelPath = stringField(record.configRelPath);
+  if (configRelPath !== undefined) {
+    origin.configRelPath = configRelPath;
   }
-  return true;
+  const githubRef = stringField(record.githubRef);
+  if (githubRef !== undefined) {
+    origin.githubRef = githubRef;
+  }
+  const githubFileUrl = stringField(record.githubFileUrl);
+  if (githubFileUrl !== undefined) {
+    origin.githubFileUrl = githubFileUrl;
+  }
+  return origin;
+}
+
+/**
+ * Returns whether `value` is absent or a string.
+ *
+ * @param value - JSON field
+ */
+function optionalString(value: unknown): boolean {
+  return value === undefined || typeof value === "string";
+}
+
+/**
+ * Returns `value` when it is a string.
+ *
+ * @param value - JSON field
+ */
+function stringField(value: unknown): string | undefined {
+  return typeof value === "string" ? value : undefined;
 }

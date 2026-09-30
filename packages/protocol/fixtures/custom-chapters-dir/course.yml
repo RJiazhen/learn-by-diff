@@ -1,5 +1,0 @@
-id: custom-chapters
-title: Custom Chapters
-source:
-  repository: .
-chaptersDir: lessons

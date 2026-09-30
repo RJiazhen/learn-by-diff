@@ -13,7 +13,7 @@ export function isRemoteGitUrl(value: string): boolean {
 /**
  * Resolves a course origin path for local clones (`file:` URLs or filesystem paths).
  *
- * @param courseRepoUrl - User-supplied `course.yml` path or git URL
+ * @param courseRepoUrl - User-supplied `course.jsonc` path or git URL
  * @returns Absolute path when local; otherwise `undefined`
  */
 export function localCourseOrigin(courseRepoUrl: string): string | undefined {
@@ -32,10 +32,10 @@ export function localCourseOrigin(courseRepoUrl: string): string | undefined {
  *
  * Git URLs stay clone remotes (no path suffix is split off). Absolute local paths
  * are kept. Relative paths and `.` resolve from the directory that contains
- * `course.yml` (omitted / `.` means that directory).
+ * `course.jsonc` (omitted / `.` means that directory).
  *
- * @param declared - Value from `course.yml`
- * @param configDir - Directory that contains the original `course.yml`
+ * @param declared - Value from `course.jsonc`
+ * @param configDir - Directory that contains the original `course.jsonc`
  */
 export function resolveSourceRepository(declared: string, configDir: string): string {
   const trimmed = declared.trim();
@@ -49,10 +49,10 @@ export function resolveSourceRepository(declared: string, configDir: string): st
 }
 
 /**
- * Absolute path to the local demo `course.yml` when running under Extension Development Host.
+ * Absolute path to the local demo `course.jsonc` when running under Extension Development Host.
  *
  * @param extensionPath - `context.extensionPath` (`apps/vscode-extension`)
  */
 export function demoCoursePath(extensionPath: string): string {
-  return path.resolve(extensionPath, "../../examples/demo-course/.course-config/course.yml");
+  return path.resolve(extensionPath, "../../examples/demo-course/.course-config/course.jsonc");
 }
