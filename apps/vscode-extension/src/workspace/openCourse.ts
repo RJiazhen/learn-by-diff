@@ -1,12 +1,12 @@
 import { ProtocolError } from "@learn-by-diff/protocol";
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
+import { showError } from "../commands/showError.ts";
 import {
-  prefetchAllChapterSnapshots,
+  startBackgroundSnapshotPrefetch,
   type SnapshotPrefetchProgress,
 } from "../snapshot/prefetch.ts";
 import { reportSnapshotPrefetchProgress } from "../snapshot/prefetchProgress.ts";
-import { showError } from "../commands/showError.ts";
 import { createLearningWorkspace } from "./creator.ts";
 import { NonEmptyLearningTargetError } from "./errors.ts";
 import {
@@ -32,9 +32,9 @@ export interface OpenCourseOptions {
 
 /**
  * Creates a learning workspace from a `course.jsonc` path, GitHub file URL, or git URL,
- * caches unique chapter snapshots, and opens the folder when needed.
+ * opens that folder, then caches every unique chapter snapshot in the background.
  *
- * Snapshot download uses the same progress notification as workspace creation.
+ * The folder opens before that cache. A host reload resumes any trees still missing.
  *
  * Shared by the command palette flow and browser / OS deep links.
  *
@@ -69,11 +69,14 @@ export async function openCourse(options: OpenCourseOptions): Promise<string | u
   for (;;) {
     let blockedRoot: string | undefined;
     /**
-     * Creates the learning workspace and caches unique chapter snapshots in one notification.
+     * Creates the learning workspace.
+     *
+     * This notification ends before the folder opens. Snapshot caching starts
+     * after the folder is open and does not hold it.
      *
      * @param progress - Opening-course progress reporter
      */
-    async function createWorkspaceAndPrefetchSnapshots(
+    async function createWorkspace(
       progress: vscode.Progress<{ message?: string; increment?: number }>,
     ): Promise<void> {
       /**
@@ -85,22 +88,6 @@ export async function openCourse(options: OpenCourseOptions): Promise<string | u
         output.appendLine(line);
         progress.report({ message: line });
       };
-      /**
-       * Appends a prefetch log line to the LearnByDiff output channel.
-       *
-       * @param line - Message from snapshot prefetch
-       */
-      const onPrefetchLog = (line: string): void => {
-        output.appendLine(line);
-      };
-      /**
-       * Updates the opening-course notification as each unique source tree is cached.
-       *
-       * @param info - Trees completed, total, and the subtree just written
-       */
-      const onPrefetchProgress = (info: SnapshotPrefetchProgress): void => {
-        reportSnapshotPrefetchProgress(progress, info);
-      };
       try {
         const created = await createLearningWorkspace({
           courseRepoUrl: url,
@@ -110,14 +97,6 @@ export async function openCourse(options: OpenCourseOptions): Promise<string | u
           onLog: onCreateLog,
         });
         learningRoot = created.learningRoot;
-        const session = await loadLearningSession(created.learningRoot);
-        if (session === undefined) {
-          return;
-        }
-        await prefetchAllChapterSnapshots(git, session, {
-          onLog: onPrefetchLog,
-          onProgress: onPrefetchProgress,
-        });
       } catch (error) {
         if (error instanceof NonEmptyLearningTargetError) {
           blockedRoot = error.learningRoot;
@@ -142,7 +121,7 @@ export async function openCourse(options: OpenCourseOptions): Promise<string | u
         title: vscode.l10n.t("LearnByDiff: opening course"),
         cancellable: false,
       },
-      createWorkspaceAndPrefetchSnapshots,
+      createWorkspace,
     );
 
     if (learningRoot !== undefined) {
@@ -167,18 +146,94 @@ export async function openCourse(options: OpenCourseOptions): Promise<string | u
   }
 
   const switched = await openLearningWorkspaceIfNeeded(learningRoot);
-  if (switched) {
-    return learningRoot;
-  }
 
   try {
     const session = await loadLearningSession(learningRoot);
-    onSession?.(session);
+    if (session !== undefined) {
+      cacheAllChapterSnapshots(git, output, session);
+    }
+    if (!switched) {
+      onSession?.(session);
+    }
   } catch (error) {
-    onSession?.(undefined);
+    if (!switched) {
+      onSession?.(undefined);
+    }
     showError(error);
   }
   return learningRoot;
+}
+
+/**
+ * Caches every unique chapter snapshot after the learning folder is open.
+ *
+ * Returns immediately. The copy continues in the background and is skipped when
+ * a cache for this workspace is already running.
+ *
+ * @param git - Git client
+ * @param output - LearnByDiff output channel
+ * @param session - Loaded learning session
+ */
+function cacheAllChapterSnapshots(
+  git: GitClient,
+  output: vscode.OutputChannel,
+  session: LearningSession,
+): void {
+  startBackgroundSnapshotPrefetch(git, session, {
+    onLog: appendSnapshotCacheLog,
+    runProgress: showSnapshotCacheProgress,
+  });
+
+  /**
+   * Appends a snapshot-cache log line to the LearnByDiff output channel.
+   *
+   * @param line - Message from snapshot prefetch
+   */
+  function appendSnapshotCacheLog(line: string): void {
+    output.appendLine(line);
+  }
+}
+
+/**
+ * Shows snapshot-cache progress after the course folder is already open.
+ *
+ * @param work - Prefetch body that reports per-tree progress
+ * @param abort - Controller cancelled when the extension deactivates
+ */
+async function showSnapshotCacheProgress(
+  work: (
+    onProgress: (progress: SnapshotPrefetchProgress) => void,
+    signal: AbortSignal,
+  ) => Promise<void>,
+  abort: AbortController,
+): Promise<void> {
+  await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: vscode.l10n.t("LearnByDiff: caching snapshots"),
+      cancellable: false,
+    },
+    reportSnapshotCache,
+  );
+
+  /**
+   * Updates the cache notification as each unique source tree is written.
+   *
+   * @param progress - VS Code progress reporter
+   */
+  function reportSnapshotCache(
+    progress: vscode.Progress<{ message?: string; increment?: number }>,
+  ): Promise<void> {
+    /**
+     * Forwards one tree's progress into the notification.
+     *
+     * @param info - Trees completed, total, and the subtree just written
+     */
+    const onProgress = (info: SnapshotPrefetchProgress): void => {
+      reportSnapshotPrefetchProgress(progress, info);
+    };
+    return work(onProgress, abort.signal);
+  }
 }
 
 /**

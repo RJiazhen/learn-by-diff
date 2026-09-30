@@ -53,10 +53,9 @@ export interface PrefetchChapterSnapshotsOptions {
 /**
  * Starts exporting unique chapter source trees into `.learn/snapshots`.
  *
- * Open Course already prefetches inside its progress notification. Call this
- * when a learning workspace is opened later: it re-checks the on-disk cache and
- * downloads only missing trees (same notification title). No-ops when a prefetch
- * for the same workspace is already running.
+ * Open Course calls this after the learning folder is open, and does not wait
+ * for it. It re-checks the on-disk cache and copies every missing unique tree.
+ * No-ops when a prefetch for the same workspace is already running.
  *
  * @param git - Git client
  * @param session - Loaded learning session

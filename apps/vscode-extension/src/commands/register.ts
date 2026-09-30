@@ -171,8 +171,8 @@ export function registerCommands(
   /**
    * Shows a notification while unique chapter snapshots download.
    *
-   * Uses the same “opening course” title as Open Course so create + prefetch
-   * never appear as two stacked popups. Skipped when the cache is already complete.
+   * Open Course starts this after the folder is open. A reloaded or reopened
+   * workspace runs it again for any trees still missing.
    *
    * @param work - Prefetch body that reports per-tree progress
    * @param abort - Controller cancelled when the extension deactivates
@@ -187,7 +187,7 @@ export function registerCommands(
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: vscode.l10n.t("LearnByDiff: opening course"),
+        title: vscode.l10n.t("LearnByDiff: caching snapshots"),
         cancellable: false,
       },
       reportSnapshotDownload,
