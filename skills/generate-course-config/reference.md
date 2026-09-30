@@ -34,7 +34,7 @@ Load order = chapter **file name** sort order. There is no `tests` field yet.
 
 JSON Schema: `https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json` (`$defs/course`, `$defs/chapter`).
 
-Set `$schema` on each JSONC file (do not rely on workspace `yaml.schemas`):
+Set `$schema` on each JSONC file:
 
 ```jsonc
 {

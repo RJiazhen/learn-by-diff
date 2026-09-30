@@ -19,12 +19,12 @@ import {
 } from "../workspace/loader.ts";
 import { openCourse } from "../workspace/openCourse.ts";
 import {
-  COURSE_YML_FIND_EXCLUDE,
-  COURSE_YML_FIND_INCLUDE,
+  COURSE_JSONC_FIND_EXCLUDE,
+  COURSE_JSONC_FIND_INCLUDE,
   collectOpenCourseLinkSources,
-  collectOpenCourseLinkSourcesForCourseYml,
+  collectOpenCourseLinkSourcesForCourseJsonc,
   currentCourseOpenUrl,
-  isWorkspaceCourseYml,
+  isWorkspaceCourseJsonc,
   oneClickCopyOptions,
   workspaceCourseCopyPicks,
   type OpenCourseLinkKind,
@@ -354,11 +354,11 @@ export function registerCommands(
    * Finds `course.jsonc` files in the open folders and copies one chosen URL.
    */
   async function onCopyWorkspaceCourseUrl(): Promise<void> {
-    const courseYmlPath = await pickWorkspaceCourseYml();
-    if (courseYmlPath === undefined) {
+    const courseJsoncPath = await pickWorkspaceCourseJsonc();
+    if (courseJsoncPath === undefined) {
       return;
     }
-    const sources = await collectOpenCourseLinkSourcesForCourseYml(git, courseYmlPath);
+    const sources = await collectOpenCourseLinkSourcesForCourseJsonc(git, courseJsoncPath);
     const pick = await pickWorkspaceCourseCopyAction(sources);
     if (pick === undefined) {
       return;
@@ -686,16 +686,19 @@ async function copyToClipboard(text: string, message: string): Promise<void> {
 /**
  * Prompts for a workspace `course.jsonc`, skipping the picker when only one exists.
  */
-async function pickWorkspaceCourseYml(): Promise<string | undefined> {
+async function pickWorkspaceCourseJsonc(): Promise<string | undefined> {
   const folders = vscode.workspace.workspaceFolders;
   if (folders === undefined || folders.length === 0) {
     void vscode.window.showWarningMessage(vscode.l10n.t("Open a folder first."));
     return undefined;
   }
-  const uris = await vscode.workspace.findFiles(COURSE_YML_FIND_INCLUDE, COURSE_YML_FIND_EXCLUDE);
+  const uris = await vscode.workspace.findFiles(
+    COURSE_JSONC_FIND_INCLUDE,
+    COURSE_JSONC_FIND_EXCLUDE,
+  );
   const files = uris
     .map((uri) => uri.fsPath)
-    .filter(isWorkspaceCourseYml)
+    .filter(isWorkspaceCourseJsonc)
     .sort();
   if (files.length === 0) {
     void vscode.window.showWarningMessage(

@@ -17,10 +17,10 @@ import {
 import { learningPaths } from "./paths.ts";
 
 /** Glob used with `vscode.workspace.findFiles` to locate `course.jsonc` files. */
-export const COURSE_YML_FIND_INCLUDE = "**/course.jsonc";
+export const COURSE_JSONC_FIND_INCLUDE = "**/course.jsonc";
 
 /** Glob that skips generated and vendor trees when searching for `course.jsonc`. */
-export const COURSE_YML_FIND_EXCLUDE = "**/{node_modules,.git,.learn,dist,build,coverage}/**";
+export const COURSE_JSONC_FIND_EXCLUDE = "**/{node_modules,.git,.learn,dist,build,coverage}/**";
 
 /** Which `url=` source a copied one-click open link uses. */
 export type OpenCourseLinkKind = "local" | "git";
@@ -60,11 +60,11 @@ export async function collectOpenCourseLinkSources(
   workspaceRoot: string,
 ): Promise<OpenCourseLinkSource[]> {
   const paths = learningPaths(workspaceRoot);
-  const learnCourseYml = path.join(paths.courseDir, COURSE_FILE_NAME);
+  const learnCourseJsonc = path.join(paths.courseDir, COURSE_FILE_NAME);
   let origin = await readCourseOrigin(workspaceRoot);
-  origin = await enrichOriginFromLocalGit(git, origin, learnCourseYml);
+  origin = await enrichOriginFromLocalGit(git, origin, learnCourseJsonc);
 
-  const localUrl = await resolveLocalCourseYml(origin, learnCourseYml);
+  const localUrl = await resolveLocalCourseJsonc(origin, learnCourseJsonc);
   return openCourseLinkSourcesFromOrigin(origin, localUrl);
 }
 
@@ -74,14 +74,14 @@ export async function collectOpenCourseLinkSources(
  * Used by the workspace scan command, which is not tied to a learning workspace.
  *
  * @param git - Git client
- * @param courseYmlPath - Absolute `course.jsonc` path
+ * @param courseJsoncPath - Absolute `course.jsonc` path
  */
-export async function collectOpenCourseLinkSourcesForCourseYml(
+export async function collectOpenCourseLinkSourcesForCourseJsonc(
   git: GitClient,
-  courseYmlPath: string,
+  courseJsoncPath: string,
 ): Promise<OpenCourseLinkSource[]> {
-  const origin = await describeCourseOrigin(git, courseYmlPath, path.dirname(courseYmlPath));
-  return openCourseLinkSourcesFromOrigin(origin, courseYmlPath);
+  const origin = await describeCourseOrigin(git, courseJsoncPath, path.dirname(courseJsoncPath));
+  return openCourseLinkSourcesFromOrigin(origin, courseJsoncPath);
 }
 
 /**
@@ -172,7 +172,7 @@ function sourcesInCopyOrder(sources: OpenCourseLinkSource[]): OpenCourseLinkSour
  *
  * @param filePath - Absolute or relative path
  */
-export function isWorkspaceCourseYml(filePath: string): boolean {
+export function isWorkspaceCourseJsonc(filePath: string): boolean {
   if (path.basename(filePath) !== COURSE_FILE_NAME) {
     return false;
   }
@@ -203,21 +203,21 @@ function openCourseLinkSourcesFromOrigin(
  *
  * @param git - Git client
  * @param origin - Stored origin, or `undefined` for older workspaces
- * @param learnCourseYml - `.learn/course/course.jsonc`
+ * @param learnCourseJsonc - `.learn/course/course.jsonc`
  */
 async function enrichOriginFromLocalGit(
   git: GitClient,
   origin: CourseOpenOrigin | undefined,
-  learnCourseYml: string,
+  learnCourseJsonc: string,
 ): Promise<CourseOpenOrigin | undefined> {
   if (origin === undefined) {
-    return describeCourseOrigin(git, learnCourseYml, path.dirname(learnCourseYml));
+    return describeCourseOrigin(git, learnCourseJsonc, path.dirname(learnCourseJsonc));
   }
   if (origin.gitUrl !== undefined) {
     return origin;
   }
   const probeDir =
-    origin.localCourseYml !== undefined ? path.dirname(origin.localCourseYml) : undefined;
+    origin.localCourseJsonc !== undefined ? path.dirname(origin.localCourseJsonc) : undefined;
   if (probeDir === undefined) {
     return origin;
   }
@@ -228,7 +228,7 @@ async function enrichOriginFromLocalGit(
   return {
     ...origin,
     gitUrl: info.originUrl,
-    configRelPath: await posixRelative(info.toplevel, origin.localCourseYml ?? learnCourseYml),
+    configRelPath: await posixRelative(info.toplevel, origin.localCourseJsonc ?? learnCourseJsonc),
     ...(info.branch !== "" ? { githubRef: origin.githubRef ?? info.branch } : {}),
   };
 }
@@ -239,17 +239,17 @@ async function enrichOriginFromLocalGit(
  * Prefers the original file when it still exists.
  *
  * @param origin - Stored origin
- * @param learnCourseYml - Fallback `.learn/course/course.jsonc`
+ * @param learnCourseJsonc - Fallback `.learn/course/course.jsonc`
  */
-async function resolveLocalCourseYml(
+async function resolveLocalCourseJsonc(
   origin: CourseOpenOrigin | undefined,
-  learnCourseYml: string,
+  learnCourseJsonc: string,
 ): Promise<string> {
-  const candidate = origin?.localCourseYml;
+  const candidate = origin?.localCourseJsonc;
   if (candidate !== undefined && (await fileExists(candidate))) {
     return candidate;
   }
-  return learnCourseYml;
+  return learnCourseJsonc;
 }
 
 /**

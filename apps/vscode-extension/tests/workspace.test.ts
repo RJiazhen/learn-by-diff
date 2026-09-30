@@ -30,7 +30,7 @@ async function tempDir(prefix: string): Promise<string> {
 /**
  * Returns the `.course-config/course.jsonc` path under a fixture course tree.
  */
-function nestedCourseYml(courseDir: string): string {
+function nestedCourseJsonc(courseDir: string): string {
   return path.join(courseDir, ".course-config", "course.jsonc");
 }
 
@@ -128,7 +128,7 @@ async function createTwoChapterWorkspace(): Promise<{
 
   const parent = await tempDir("lbd-two-parent-");
   const created = await createLearningWorkspace({
-    courseRepoUrl: nestedCourseYml(courseDir),
+    courseRepoUrl: nestedCourseJsonc(courseDir),
     parentDir: parent,
     git,
   });
@@ -188,7 +188,7 @@ describe("learning workspace", () => {
 
     const parent = await tempDir("lbd-parent-");
     const created = await createLearningWorkspace({
-      courseRepoUrl: nestedCourseYml(course),
+      courseRepoUrl: nestedCourseJsonc(course),
       parentDir: parent,
       git,
     });
@@ -387,7 +387,7 @@ describe("learning workspace", () => {
 
     const parent = await tempDir("lbd-lessons-parent-");
     const created = await createLearningWorkspace({
-      courseRepoUrl: nestedCourseYml(courseDir),
+      courseRepoUrl: nestedCourseJsonc(courseDir),
       parentDir: parent,
       git,
     });
@@ -479,7 +479,7 @@ describe("learning workspace", () => {
 
     const parent = await tempDir("lbd-plain-parent-");
     const created = await createLearningWorkspace({
-      courseRepoUrl: nestedCourseYml(courseDir),
+      courseRepoUrl: nestedCourseJsonc(courseDir),
       parentDir: parent,
       git,
     });
@@ -539,7 +539,7 @@ describe("learning workspace", () => {
     await writeFile(path.join(inPlace, ".gitignore"), "keep-me\ndist/\n", "utf8");
 
     const created = await createLearningWorkspace({
-      courseRepoUrl: nestedCourseYml(courseDir),
+      courseRepoUrl: nestedCourseJsonc(courseDir),
       inPlaceRoot: inPlace,
       git,
     });
@@ -613,7 +613,7 @@ describe("learning workspace", () => {
 
     const parent = await tempDir("lbd-gi-parent-");
     const created = await createLearningWorkspace({
-      courseRepoUrl: nestedCourseYml(courseDir),
+      courseRepoUrl: nestedCourseJsonc(courseDir),
       parentDir: parent,
       git,
     });
@@ -717,7 +717,7 @@ describe("learning workspace", () => {
 
     const parent = await tempDir("lbd-replace-parent-");
     const created = await createLearningWorkspace({
-      courseRepoUrl: nestedCourseYml(courseDir),
+      courseRepoUrl: nestedCourseJsonc(courseDir),
       parentDir: parent,
       git,
     });
@@ -869,7 +869,7 @@ describe("learning workspace", () => {
     await writeFile(keepPath, "keep\n", "utf8");
     await expect(
       createLearningWorkspace({
-        courseRepoUrl: nestedCourseYml(courseDir),
+        courseRepoUrl: nestedCourseJsonc(courseDir),
         inPlaceRoot: occupied,
         git,
       }),
@@ -897,7 +897,7 @@ describe("learning workspace", () => {
     await writeFile(keepPath, "keep\n", "utf8");
     await expect(
       createLearningWorkspace({
-        courseRepoUrl: nestedCourseYml(courseDir),
+        courseRepoUrl: nestedCourseJsonc(courseDir),
         parentDir: parent,
         git,
       }),

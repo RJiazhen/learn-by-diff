@@ -61,7 +61,7 @@ describe("course defaults", () => {
   });
 
   test("defaultCourseId appends -learn when course.jsonc is at a git root", () => {
-    const root = path.join(os.tmpdir(), `lbd-git-root-yml-${String(process.pid)}`);
+    const root = path.join(os.tmpdir(), `lbd-git-root-${String(process.pid)}`);
     fs.mkdirSync(path.join(root, ".git"), { recursive: true });
     try {
       expect(defaultCourseId(root)).toBe(`${path.basename(root)}-learn`);

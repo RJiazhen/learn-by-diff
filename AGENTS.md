@@ -41,7 +41,7 @@ F5 → packs with watch → opens `sandbox/`. Reload Extension Host after code c
 - Prefer **reference via diff** for learning; workspace overwrite is explicit **Chapter Start** / **Chapter Finish** (dirty confirm vs last applied snapshot).
 - One `source.repository` per course; optional `source.root`. No per-chapter remotes.
 - Open Course takes a **`course.jsonc` file path** (or a git URL to clone). Do not pass a directory that might contain config.
-- Schema for authors: a `$schema` property pointing at `schema.json#/$defs/course` or `#/$defs/chapter` (relative path). Do not rely on workspace `yaml.schemas`.
+- Schema for authors: a `$schema` property pointing at `schema.json#/$defs/course` or `#/$defs/chapter` (relative path).
 
 ## Code norms
 

@@ -393,7 +393,7 @@ describe("chapter JSONC write", () => {
   });
 
   test("writeChapterConfigs creates files and updates changedFiles in place", async () => {
-    const configDir = await tempDir("lbd-detect-yaml-");
+    const configDir = await tempDir("lbd-detect-");
     await writeChapterConfigs(configDir, [
       {
         id: "skeleton",

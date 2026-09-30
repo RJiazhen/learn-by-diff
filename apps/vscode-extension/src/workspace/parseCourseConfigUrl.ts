@@ -101,7 +101,7 @@ function tryParseGitHubFileUrl(input: string): GitHubCourseFileOrigin | undefine
   if (host === "raw.githubusercontent.com") {
     const segments = splitPath(parsed.pathname);
     if (segments.length < 4) {
-      throw githubFileMustBeCourseYml(input);
+      throw githubFileMustBeCourseJsonc(input);
     }
     owner = segments[0] ?? "";
     repo = segments[1] ?? "";
@@ -116,7 +116,7 @@ function tryParseGitHubFileUrl(input: string): GitHubCourseFileOrigin | undefine
       return undefined;
     }
     if (segments.length < 5) {
-      throw githubFileMustBeCourseYml(input);
+      throw githubFileMustBeCourseJsonc(input);
     }
     owner = segments[0] ?? "";
     repo = segments[1] ?? "";
@@ -127,10 +127,10 @@ function tryParseGitHubFileUrl(input: string): GitHubCourseFileOrigin | undefine
 
   const split = splitRefAndPath(restSegments);
   if (split === undefined || owner === "" || repo === "") {
-    throw githubFileMustBeCourseYml(input);
+    throw githubFileMustBeCourseJsonc(input);
   }
-  if (!isCourseYmlRelPath(split.filePath)) {
-    throw githubFileMustBeCourseYml(input);
+  if (!isCourseJsoncRelPath(split.filePath)) {
+    throw githubFileMustBeCourseJsonc(input);
   }
 
   return {
@@ -164,14 +164,14 @@ function tryParseGitRepoWithConfigPath(input: string): GitRepoOrigin | undefined
   try {
     fragment = decodeURIComponent(input.slice(hash + 1));
   } catch {
-    throw gitFragmentMustBeCourseYml(input);
+    throw gitFragmentMustBeCourseJsonc(input);
   }
   fragment = fragment.replace(/^\/+/, "").replace(/\/+$/, "");
   if (fragment === "") {
     return { kind: "gitRepo", url: cloneUrl };
   }
-  if (!isCourseYmlRelPath(fragment)) {
-    throw gitFragmentMustBeCourseYml(input);
+  if (!isCourseJsoncRelPath(fragment)) {
+    throw gitFragmentMustBeCourseJsonc(input);
   }
   return { kind: "gitRepo", url: cloneUrl, configRelPath: fragment };
 }
@@ -181,7 +181,7 @@ function tryParseGitRepoWithConfigPath(input: string): GitRepoOrigin | undefined
  *
  * @param filePath - Slash-separated path
  */
-function isCourseYmlRelPath(filePath: string): boolean {
+function isCourseJsoncRelPath(filePath: string): boolean {
   return (
     !pathHasDotDot(filePath) &&
     (filePath === COURSE_FILE_NAME || filePath.endsWith(`/${COURSE_FILE_NAME}`))
@@ -273,7 +273,7 @@ function stripGitSuffix(repo: string): string {
  *
  * @param input - Original user string
  */
-function githubFileMustBeCourseYml(input: string): Error {
+function githubFileMustBeCourseJsonc(input: string): Error {
   return new Error(`GitHub file URL must point at ${COURSE_FILE_NAME}: ${input}`);
 }
 
@@ -282,6 +282,6 @@ function githubFileMustBeCourseYml(input: string): Error {
  *
  * @param input - Original user string
  */
-function gitFragmentMustBeCourseYml(input: string): Error {
+function gitFragmentMustBeCourseJsonc(input: string): Error {
   return new Error(`git URL # fragment must be a ${COURSE_FILE_NAME} path: ${input}`);
 }

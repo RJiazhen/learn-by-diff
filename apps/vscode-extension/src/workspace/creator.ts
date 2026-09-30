@@ -155,7 +155,7 @@ export async function resolveCourseConfigDir(
 ): Promise<CourseConfigSource> {
   const local = localCourseOrigin(courseRepoUrl);
   if (local !== undefined) {
-    const localConfig = await resolveLocalCourseYml(local);
+    const localConfig = await resolveLocalCourseJsonc(local);
     if (localConfig !== undefined) {
       onLog?.(`Using local course config… (${local})`);
       return localConfig;
@@ -252,7 +252,7 @@ async function configDirFromClonedCourseFile(
  * @param local - Absolute filesystem path from {@link localCourseOrigin}
  * @returns Config source, or `undefined` when the path does not exist
  */
-async function resolveLocalCourseYml(local: string): Promise<CourseConfigSource | undefined> {
+async function resolveLocalCourseJsonc(local: string): Promise<CourseConfigSource | undefined> {
   let info: Awaited<ReturnType<typeof stat>>;
   try {
     info = await stat(local);

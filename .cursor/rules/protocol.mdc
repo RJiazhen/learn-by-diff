@@ -7,7 +7,7 @@ alwaysApply: false
 # Protocol package
 
 - Pure Node/TS: no `vscode`, no git side effects. Defaults belong in parse/load (`courseDefaults`, `chapterDefaults`), not in the extension.
-- Keep `schema.json` in sync with types; course/chapter are separate `$defs`. Authors set `$schema` on the JSONC file, not workspace `yaml.schemas`.
+- Keep `schema.json` in sync with types; course/chapter are separate `$defs`. Authors set `$schema` on the JSONC file.
 - Validate only structure/safety (paths, uniqueness). Existence of snapshot dirs is the extension’s job.
 - Load: Open Course / `loadCourseFromFile` take a `course.jsonc` path. Directory lookup (`course.jsonc` then `.course-config/course.jsonc`) remains for cloned remotes and `isCourseRepository`.
 - Optional `chaptersDir` (default `chapters`, relative to the directory that contains `course.jsonc`; no `..` or absolutes).

@@ -8,13 +8,14 @@ import {
   formatOpenCourseDeepLinks,
 } from "../src/uri/formatOpenCourseLink.ts";
 import { describeCourseOrigin, readCourseOrigin } from "../src/workspace/courseOrigin.ts";
+import { learningPaths } from "../src/workspace/paths.ts";
 import { createLearningWorkspace } from "../src/workspace/creator.ts";
 import {
   collectOpenCourseLinkSources,
-  collectOpenCourseLinkSourcesForCourseYml,
+  collectOpenCourseLinkSourcesForCourseJsonc,
   currentCourseOpenUrl,
   gitOpenCourseUrl,
-  isWorkspaceCourseYml,
+  isWorkspaceCourseJsonc,
   oneClickCopyOptions,
   workspaceCourseCopyPicks,
 } from "../src/workspace/openCourseLink.ts";
@@ -58,7 +59,7 @@ describe("formatOpenCourseDeepLink", () => {
   });
 });
 
-describe("oneClickCopyOptions / workspaceCourseCopyPicks / isWorkspaceCourseYml", () => {
+describe("oneClickCopyOptions / workspaceCourseCopyPicks / isWorkspaceCourseJsonc", () => {
   test("builds one URI per scheme and source without joining them", () => {
     const options = oneClickCopyOptions([
       { kind: "local", url: "/tmp/course.jsonc" },
@@ -96,10 +97,10 @@ describe("oneClickCopyOptions / workspaceCourseCopyPicks / isWorkspaceCourseYml"
   });
 
   test("skips .learn and node_modules course.jsonc copies", () => {
-    expect(isWorkspaceCourseYml("/repo/.course-config/course.jsonc")).toBe(true);
-    expect(isWorkspaceCourseYml("/repo/.learn/course/course.jsonc")).toBe(false);
-    expect(isWorkspaceCourseYml("/repo/node_modules/pkg/course.jsonc")).toBe(false);
-    expect(isWorkspaceCourseYml("/repo/README.md")).toBe(false);
+    expect(isWorkspaceCourseJsonc("/repo/.course-config/course.jsonc")).toBe(true);
+    expect(isWorkspaceCourseJsonc("/repo/.learn/course/course.jsonc")).toBe(false);
+    expect(isWorkspaceCourseJsonc("/repo/node_modules/pkg/course.jsonc")).toBe(false);
+    expect(isWorkspaceCourseJsonc("/repo/README.md")).toBe(false);
   });
 });
 
@@ -129,9 +130,9 @@ describe("describeCourseOrigin / collectOpenCourseLinkSources", () => {
     await mkdir(path.join(configDir, "chapters"), { recursive: true });
     await writeFile(path.join(configDir, "start", "a.ts"), "export const a = 1;\n", "utf8");
     await writeFile(path.join(configDir, "done", "a.ts"), "export const a = 2;\n", "utf8");
-    const courseYml = path.join(configDir, "course.jsonc");
+    const courseJsonc = path.join(configDir, "course.jsonc");
     await writeFile(
-      courseYml,
+      courseJsonc,
       `{
   "id": "origin-demo",
   "title": "Origin",
@@ -153,29 +154,42 @@ describe("describeCourseOrigin / collectOpenCourseLinkSources", () => {
     );
 
     const created = await createLearningWorkspace({
-      courseRepoUrl: courseYml,
+      courseRepoUrl: courseJsonc,
       parentDir: await tempDir("lbd-origin-parent-"),
       git,
     });
 
     const origin = await readCourseOrigin(created.learningRoot);
-    expect(origin?.localCourseYml).toBe(courseYml);
+    expect(origin?.localCourseJsonc).toBe(courseJsonc);
     expect(origin?.gitUrl).toBe("https://github.com/org/demo.git");
     expect(origin?.configRelPath).toBe(".course-config/course.jsonc");
 
     const sources = await collectOpenCourseLinkSources(git, created.learningRoot);
     expect(sources.map((source) => source.kind)).toEqual(["local", "git"]);
-    expect(sources[0]?.url).toBe(courseYml);
+    expect(sources[0]?.url).toBe(courseJsonc);
     expect(sources[1]?.url).toBe("https://github.com/org/demo.git#.course-config/course.jsonc");
 
-    expect(await currentCourseOpenUrl(git, created.learningRoot)).toBe(courseYml);
+    expect(await currentCourseOpenUrl(git, created.learningRoot)).toBe(courseJsonc);
 
-    const fromFile = await collectOpenCourseLinkSourcesForCourseYml(git, courseYml);
+    const fromFile = await collectOpenCourseLinkSourcesForCourseJsonc(git, courseJsonc);
     expect(fromFile.map((source) => source.kind)).toEqual(["local", "git"]);
     expect(fromFile[1]?.url).toBe("https://github.com/org/demo.git#.course-config/course.jsonc");
 
     const gitignore = await readFile(path.join(created.learningRoot, ".gitignore"), "utf8");
     expect(gitignore).toContain(".learn/origin.json");
+  });
+
+  test("reads a local course path stored under the previous origin field", async () => {
+    const root = await tempDir("lbd-origin-legacy-");
+    const { learnDir, originFile } = learningPaths(root);
+    await mkdir(learnDir, { recursive: true });
+    await writeFile(
+      originFile,
+      `${JSON.stringify({ input: "/course/course.jsonc", localCourseYml: "/course/course.jsonc" })}\n`,
+      "utf8",
+    );
+    const origin = await readCourseOrigin(root);
+    expect(origin?.localCourseJsonc).toBe("/course/course.jsonc");
   });
 
   test("describes a GitHub file URL origin", async () => {
