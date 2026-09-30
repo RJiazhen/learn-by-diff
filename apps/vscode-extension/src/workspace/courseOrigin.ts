@@ -55,7 +55,7 @@ export async function writeCourseOrigin(
 }
 
 /**
- * Records how `course.yml` was resolved so later Copy Open Course Link can rebuild URLs.
+ * Records how `course.yml` was resolved so later copy-URL commands can rebuild shareable links.
  *
  * Local paths also probe git remotes so git/GitHub links work after a filesystem open.
  *

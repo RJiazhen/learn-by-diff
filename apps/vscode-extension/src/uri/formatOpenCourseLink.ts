@@ -4,6 +4,9 @@ export const OPEN_COURSE_EXTENSION_ID = "RuanJiazhen.learn-by-diff";
 /** URI schemes that host LearnByDiff one-click open links. */
 export const OPEN_COURSE_LINK_SCHEMES = ["vscode", "cursor"] as const;
 
+/** Editor scheme used in a one-click open URI. */
+export type OpenCourseEditorScheme = (typeof OPEN_COURSE_LINK_SCHEMES)[number];
+
 /**
  * Builds a LearnByDiff one-click open URI for one editor scheme.
  *

@@ -3,6 +3,11 @@ import { access } from "node:fs/promises";
 import path from "node:path";
 import type { GitClient } from "../git/client.ts";
 import {
+  formatOpenCourseDeepLink,
+  OPEN_COURSE_LINK_SCHEMES,
+  type OpenCourseEditorScheme,
+} from "../uri/formatOpenCourseLink.ts";
+import {
   describeCourseOrigin,
   posixRelative,
   readCourseOrigin,
@@ -11,8 +16,14 @@ import {
 } from "./courseOrigin.ts";
 import { learningPaths } from "./paths.ts";
 
+/** Glob used with `vscode.workspace.findFiles` to locate `course.yml` files. */
+export const COURSE_YML_FIND_INCLUDE = "**/course.yml";
+
+/** Glob that skips generated and vendor trees when searching for `course.yml`. */
+export const COURSE_YML_FIND_EXCLUDE = "**/{node_modules,.git,.learn,dist,build,coverage}/**";
+
 /** Which `url=` source a copied one-click open link uses. */
-export type OpenCourseLinkKind = "local" | "git" | "github";
+export type OpenCourseLinkKind = "local" | "git";
 
 /** One selectable course URL for a one-click open link. */
 export interface OpenCourseLinkSource {
@@ -21,11 +32,25 @@ export interface OpenCourseLinkSource {
   url: string;
 }
 
+/** One vscode or cursor one-click URI built from a single `url=` source. */
+export interface OneClickCopyOption {
+  scheme: OpenCourseEditorScheme;
+  source: OpenCourseLinkSource;
+  /** Full `vscode://` or `cursor://` URI. */
+  uri: string;
+}
+
+/** Copy action offered after picking a workspace `course.yml`. */
+export type WorkspaceCourseCopyPick =
+  | { kind: "plain-local"; url: string }
+  | { kind: "plain-remote"; url: string }
+  | { kind: "one-click"; option: OneClickCopyOption };
+
 /**
- * Collects local, git, and GitHub `url=` sources for the open learning workspace.
+ * Collects local and git `url=` sources for the open learning workspace.
  *
  * Local always includes a `course.yml` path (original file when it still exists, else the
- * `.learn/course` copy). Git and GitHub are omitted when they cannot be derived.
+ * `.learn/course` copy). Git is omitted when it cannot be derived.
  *
  * @param git - Git client
  * @param workspaceRoot - Learning workspace root
@@ -39,20 +64,137 @@ export async function collectOpenCourseLinkSources(
   let origin = await readCourseOrigin(workspaceRoot);
   origin = await enrichOriginFromLocalGit(git, origin, learnCourseYml);
 
-  const sources: OpenCourseLinkSource[] = [];
   const localUrl = await resolveLocalCourseYml(origin, learnCourseYml);
-  sources.push({ kind: "local", url: localUrl });
+  return openCourseLinkSourcesFromOrigin(origin, localUrl);
+}
 
+/**
+ * Collects local and git `url=` sources for a `course.yml` on disk.
+ *
+ * Used by the workspace scan command, which is not tied to a learning workspace.
+ *
+ * @param git - Git client
+ * @param courseYmlPath - Absolute `course.yml` path
+ */
+export async function collectOpenCourseLinkSourcesForCourseYml(
+  git: GitClient,
+  courseYmlPath: string,
+): Promise<OpenCourseLinkSource[]> {
+  const origin = await describeCourseOrigin(git, courseYmlPath, path.dirname(courseYmlPath));
+  return openCourseLinkSourcesFromOrigin(origin, courseYmlPath);
+}
+
+/**
+ * Returns the original Open Course input for a learning workspace.
+ *
+ * Falls back to the local `course.yml` path when `.learn/origin.json` is missing.
+ *
+ * @param git - Git client
+ * @param workspaceRoot - Learning workspace root
+ */
+export async function currentCourseOpenUrl(
+  git: GitClient,
+  workspaceRoot: string,
+): Promise<string | undefined> {
+  const origin = await readCourseOrigin(workspaceRoot);
+  const input = origin?.input?.trim();
+  if (input !== undefined && input !== "") {
+    return input;
+  }
+  const sources = await collectOpenCourseLinkSources(git, workspaceRoot);
+  return sources.find((source) => source.kind === "local")?.url;
+}
+
+/**
+ * Builds vscode and cursor one-click URIs for each `url=` source, one option per pair.
+ *
+ * Order is git then local within each scheme. Callers copy a single option; this never
+ * joins schemes into one clipboard string.
+ *
+ * @param sources - Local and/or git `url=` values
+ */
+export function oneClickCopyOptions(sources: OpenCourseLinkSource[]): OneClickCopyOption[] {
+  const options: OneClickCopyOption[] = [];
+  for (const scheme of OPEN_COURSE_LINK_SCHEMES) {
+    for (const source of sourcesInCopyOrder(sources)) {
+      options.push({
+        scheme,
+        source,
+        uri: formatOpenCourseDeepLink(scheme, source.url),
+      });
+    }
+  }
+  return options;
+}
+
+/**
+ * Returns workspace copy rows: plain remote/local URLs, then one-click URIs per source.
+ *
+ * Remote and one-click-with-git rows are omitted when the file has no git remote URL.
+ *
+ * @param sources - `url=` sources derived from the chosen `course.yml`
+ */
+export function workspaceCourseCopyPicks(
+  sources: OpenCourseLinkSource[],
+): WorkspaceCourseCopyPick[] {
+  const picks: WorkspaceCourseCopyPick[] = [];
+  for (const source of sourcesInCopyOrder(sources)) {
+    if (source.kind === "git") {
+      picks.push({ kind: "plain-remote", url: source.url });
+    } else {
+      picks.push({ kind: "plain-local", url: source.url });
+    }
+  }
+  for (const option of oneClickCopyOptions(sources)) {
+    picks.push({ kind: "one-click", option });
+  }
+  return picks;
+}
+
+/**
+ * Returns sources in copy-picker order: remote git URL first, then local `course.yml`.
+ *
+ * @param sources - Local and/or git `url=` values
+ */
+function sourcesInCopyOrder(sources: OpenCourseLinkSource[]): OpenCourseLinkSource[] {
+  const ordered: OpenCourseLinkSource[] = [];
+  for (const kind of ["git", "local"] as const) {
+    const source = sources.find((item) => item.kind === kind);
+    if (source !== undefined) {
+      ordered.push(source);
+    }
+  }
+  return ordered;
+}
+
+/**
+ * Returns whether `filePath` is a `course.yml` outside generated trees.
+ *
+ * @param filePath - Absolute or relative path
+ */
+export function isWorkspaceCourseYml(filePath: string): boolean {
+  if (path.basename(filePath) !== COURSE_FILE_NAME) {
+    return false;
+  }
+  const parts = filePath.split(/[/\\]/);
+  return !parts.includes(".learn") && !parts.includes("node_modules");
+}
+
+/**
+ * Builds local and git `url=` sources from an origin document.
+ *
+ * @param origin - Stored or freshly described origin
+ * @param localUrl - Absolute `course.yml` path for the local source
+ */
+function openCourseLinkSourcesFromOrigin(
+  origin: CourseOpenOrigin | undefined,
+  localUrl: string,
+): OpenCourseLinkSource[] {
+  const sources: OpenCourseLinkSource[] = [{ kind: "local", url: localUrl }];
   const gitUrl = gitOpenCourseUrl(origin);
   if (gitUrl !== undefined) {
     sources.push({ kind: "git", url: gitUrl });
   }
-
-  const githubUrl = githubOpenCourseUrl(origin);
-  if (githubUrl !== undefined) {
-    sources.push({ kind: "github", url: githubUrl });
-  }
-
   return sources;
 }
 
@@ -128,61 +270,6 @@ export function gitOpenCourseUrl(origin: CourseOpenOrigin | undefined): string |
     return gitUrl;
   }
   return `${gitUrl}#${rel}`;
-}
-
-/**
- * Builds a GitHub blob/raw `course.yml` URL, or returns the original GitHub file URL.
- *
- * @param origin - Stored origin
- */
-export function githubOpenCourseUrl(origin: CourseOpenOrigin | undefined): string | undefined {
-  const pasted = origin?.githubFileUrl?.trim();
-  if (pasted !== undefined && pasted !== "") {
-    return pasted;
-  }
-  const gitUrl = origin?.gitUrl?.trim();
-  if (gitUrl === undefined || gitUrl === "") {
-    return undefined;
-  }
-  const parts = githubOwnerRepo(gitUrl);
-  if (parts === undefined) {
-    return undefined;
-  }
-  const rel = origin?.configRelPath?.trim() || COURSE_FILE_NAME;
-  const ref = origin?.githubRef?.trim() || "main";
-  return `https://github.com/${parts.owner}/${parts.repo}/blob/${ref}/${rel}`;
-}
-
-/**
- * Extracts GitHub owner and repo from an https, ssh, or `git@` clone URL.
- *
- * @param gitUrl - Clone URL (fragment ignored)
- */
-export function githubOwnerRepo(gitUrl: string): { owner: string; repo: string } | undefined {
-  const withoutFragment = gitUrl.split("#")[0] ?? gitUrl;
-  const httpsMatch = /^(?:https?:\/\/)(?:www\.)?github\.com\/([^/]+)\/([^/]+?)(?:\.git)?\/?$/i.exec(
-    withoutFragment.trim(),
-  );
-  if (httpsMatch !== null) {
-    const owner = httpsMatch[1];
-    const repo = httpsMatch[2];
-    if (owner !== undefined && repo !== undefined) {
-      return { owner, repo };
-    }
-  }
-  const sshMatch =
-    /^(?:git@github\.com:|ssh:\/\/git@github\.com\/)([^/]+)\/([^/]+?)(?:\.git)?\/?$/i.exec(
-      withoutFragment.trim(),
-    );
-  if (sshMatch === null) {
-    return undefined;
-  }
-  const owner = sshMatch[1];
-  const repo = sshMatch[2];
-  if (owner === undefined || repo === undefined) {
-    return undefined;
-  }
-  return { owner, repo };
 }
 
 /**

@@ -60,9 +60,18 @@
         "icon": "$(search)"
       },
       {
-        "command": "learnByDiff.copyOpenCourseLink",
-        "title": "%learnByDiff.copyOpenCourseLink.title%",
+        "command": "learnByDiff.copyCurrentCourseUrl",
+        "title": "%learnByDiff.copyCurrentCourseUrl.title%",
         "icon": "$(copy)"
+      },
+      {
+        "command": "learnByDiff.copyWorkspaceCourseUrl",
+        "title": "%learnByDiff.copyWorkspaceCourseUrl.title%"
+      },
+      {
+        "command": "learnByDiff.copyOneClickOpenUrl",
+        "title": "%learnByDiff.copyOneClickOpenUrl.title%",
+        "icon": "$(link-external)"
       },
       {
         "command": "learnByDiff.openFileDiff",
@@ -159,9 +168,14 @@
           "group": "navigation@3"
         },
         {
-          "command": "learnByDiff.copyOpenCourseLink",
+          "command": "learnByDiff.copyCurrentCourseUrl",
           "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace",
           "group": "navigation@4"
+        },
+        {
+          "command": "learnByDiff.copyOneClickOpenUrl",
+          "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace",
+          "group": "navigation@4.5"
         },
         {
           "command": "learnByDiff.viewAsTree",
@@ -228,7 +242,11 @@
       ],
       "commandPalette": [
         {
-          "command": "learnByDiff.copyOpenCourseLink",
+          "command": "learnByDiff.copyCurrentCourseUrl",
+          "when": "learnByDiff.isLearningWorkspace"
+        },
+        {
+          "command": "learnByDiff.copyOneClickOpenUrl",
           "when": "learnByDiff.isLearningWorkspace"
         },
         {

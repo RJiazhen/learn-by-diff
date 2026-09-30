@@ -3,14 +3,20 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, test } from "vite-plus/test";
 import { GitClient } from "../src/git/client.ts";
-import { formatOpenCourseDeepLinks } from "../src/uri/formatOpenCourseLink.ts";
+import {
+  formatOpenCourseDeepLink,
+  formatOpenCourseDeepLinks,
+} from "../src/uri/formatOpenCourseLink.ts";
 import { describeCourseOrigin, readCourseOrigin } from "../src/workspace/courseOrigin.ts";
 import { createLearningWorkspace } from "../src/workspace/creator.ts";
 import {
   collectOpenCourseLinkSources,
-  githubOpenCourseUrl,
-  githubOwnerRepo,
+  collectOpenCourseLinkSourcesForCourseYml,
+  currentCourseOpenUrl,
   gitOpenCourseUrl,
+  isWorkspaceCourseYml,
+  oneClickCopyOptions,
+  workspaceCourseCopyPicks,
 } from "../src/workspace/openCourseLink.ts";
 
 const git = new GitClient();
@@ -41,23 +47,64 @@ describe("formatOpenCourseDeepLinks", () => {
   });
 });
 
-describe("githubOwnerRepo", () => {
-  test("parses https, ssh, and git@ GitHub clone URLs", () => {
-    expect(githubOwnerRepo("https://github.com/org/repo.git")).toEqual({
-      owner: "org",
-      repo: "repo",
-    });
-    expect(githubOwnerRepo("git@github.com:org/repo.git")).toEqual({ owner: "org", repo: "repo" });
-    expect(githubOwnerRepo("ssh://git@github.com/org/repo.git")).toEqual({
-      owner: "org",
-      repo: "repo",
-    });
-    expect(githubOwnerRepo("https://gitlab.com/org/repo.git")).toBeUndefined();
+describe("formatOpenCourseDeepLink", () => {
+  test("encodes a single editor scheme", () => {
+    expect(formatOpenCourseDeepLink("vscode", "https://github.com/org/course.git")).toBe(
+      "vscode://RuanJiazhen.learn-by-diff/open?url=https%3A%2F%2Fgithub.com%2Forg%2Fcourse.git",
+    );
+    expect(formatOpenCourseDeepLink("cursor", "/tmp/course.yml")).toBe(
+      "cursor://RuanJiazhen.learn-by-diff/open?url=%2Ftmp%2Fcourse.yml",
+    );
   });
 });
 
-describe("gitOpenCourseUrl / githubOpenCourseUrl", () => {
-  test("appends #course.yml path and builds a blob URL", () => {
+describe("oneClickCopyOptions / workspaceCourseCopyPicks / isWorkspaceCourseYml", () => {
+  test("builds one URI per scheme and source without joining them", () => {
+    const options = oneClickCopyOptions([
+      { kind: "local", url: "/tmp/course.yml" },
+      { kind: "git", url: "https://github.com/org/course.git" },
+    ]);
+    expect(options.map((option) => option.uri)).toEqual([
+      "vscode://RuanJiazhen.learn-by-diff/open?url=https%3A%2F%2Fgithub.com%2Forg%2Fcourse.git",
+      "vscode://RuanJiazhen.learn-by-diff/open?url=%2Ftmp%2Fcourse.yml",
+      "cursor://RuanJiazhen.learn-by-diff/open?url=https%3A%2F%2Fgithub.com%2Forg%2Fcourse.git",
+      "cursor://RuanJiazhen.learn-by-diff/open?url=%2Ftmp%2Fcourse.yml",
+    ]);
+  });
+
+  test("lists local, remote, and one-click rows per available source", () => {
+    expect(
+      workspaceCourseCopyPicks([{ kind: "local", url: "/tmp/course.yml" }]).map(
+        (pick) => pick.kind,
+      ),
+    ).toEqual(["plain-local", "one-click", "one-click"]);
+    expect(
+      workspaceCourseCopyPicks([
+        { kind: "local", url: "/tmp/course.yml" },
+        { kind: "git", url: "https://github.com/org/course.git" },
+      ]).map((pick) =>
+        pick.kind === "one-click" ? `${pick.option.scheme}:${pick.option.source.kind}` : pick.kind,
+      ),
+    ).toEqual([
+      "plain-remote",
+      "plain-local",
+      "vscode:git",
+      "vscode:local",
+      "cursor:git",
+      "cursor:local",
+    ]);
+  });
+
+  test("skips .learn and node_modules course.yml copies", () => {
+    expect(isWorkspaceCourseYml("/repo/.course-config/course.yml")).toBe(true);
+    expect(isWorkspaceCourseYml("/repo/.learn/course/course.yml")).toBe(false);
+    expect(isWorkspaceCourseYml("/repo/node_modules/pkg/course.yml")).toBe(false);
+    expect(isWorkspaceCourseYml("/repo/README.md")).toBe(false);
+  });
+});
+
+describe("gitOpenCourseUrl", () => {
+  test("appends #course.yml path when the config is nested", () => {
     const origin = {
       input: "https://github.com/org/course.git",
       gitUrl: "https://github.com/org/course.git",
@@ -67,21 +114,6 @@ describe("gitOpenCourseUrl / githubOpenCourseUrl", () => {
     expect(gitOpenCourseUrl(origin)).toBe(
       "https://github.com/org/course.git#.course-config/course.yml",
     );
-    expect(githubOpenCourseUrl(origin)).toBe(
-      "https://github.com/org/course/blob/main/.course-config/course.yml",
-    );
-  });
-
-  test("prefers a pasted GitHub file URL", () => {
-    expect(
-      githubOpenCourseUrl({
-        input: "https://github.com/org/course/blob/dev/course.yml",
-        gitUrl: "https://github.com/org/course.git",
-        configRelPath: "course.yml",
-        githubRef: "dev",
-        githubFileUrl: "https://github.com/org/course/blob/dev/course.yml",
-      }),
-    ).toBe("https://github.com/org/course/blob/dev/course.yml");
   });
 });
 
@@ -100,13 +132,7 @@ describe("describeCourseOrigin / collectOpenCourseLinkSources", () => {
     const courseYml = path.join(configDir, "course.yml");
     await writeFile(
       courseYml,
-      [
-        "id: origin-demo",
-        "title: Origin",
-        "source:",
-        "  repository: .course-config",
-        "",
-      ].join("\n"),
+      ["id: origin-demo", "title: Origin", "source:", "  repository: .", ""].join("\n"),
       "utf8",
     );
     await writeFile(
@@ -127,10 +153,15 @@ describe("describeCourseOrigin / collectOpenCourseLinkSources", () => {
     expect(origin?.configRelPath).toBe(".course-config/course.yml");
 
     const sources = await collectOpenCourseLinkSources(git, created.learningRoot);
-    expect(sources.map((source) => source.kind)).toEqual(["local", "git", "github"]);
+    expect(sources.map((source) => source.kind)).toEqual(["local", "git"]);
     expect(sources[0]?.url).toBe(courseYml);
     expect(sources[1]?.url).toBe("https://github.com/org/demo.git#.course-config/course.yml");
-    expect(sources[2]?.url).toBe("https://github.com/org/demo/blob/main/.course-config/course.yml");
+
+    expect(await currentCourseOpenUrl(git, created.learningRoot)).toBe(courseYml);
+
+    const fromFile = await collectOpenCourseLinkSourcesForCourseYml(git, courseYml);
+    expect(fromFile.map((source) => source.kind)).toEqual(["local", "git"]);
+    expect(fromFile[1]?.url).toBe("https://github.com/org/demo.git#.course-config/course.yml");
 
     const gitignore = await readFile(path.join(created.learningRoot, ".gitignore"), "utf8");
     expect(gitignore).toContain(".learn/origin.json");
@@ -143,6 +174,9 @@ describe("describeCourseOrigin / collectOpenCourseLinkSources", () => {
       "/tmp/unused",
     );
     expect(origin.gitUrl).toBe("https://github.com/RJiazhen/learn-by-diff.git");
+    expect(origin.input).toBe(
+      "https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.yml",
+    );
     expect(origin.configRelPath).toBe("examples/demo-course/.course-config/course.yml");
     expect(origin.githubRef).toBe("main");
     expect(origin.githubFileUrl).toContain("blob/main/");
