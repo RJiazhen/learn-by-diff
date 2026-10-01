@@ -52,6 +52,7 @@ Fields in `course.jsonc`:
   - Omitted: source is the directory that contains `course.jsonc`.
 - `source.root` (optional): Path of the source tree inside `source.repository`. Omitted means the repository root.
 - `chaptersDir` (optional): Directory of chapter JSONC files, relative to `course.jsonc`. Defaults to `chapters` next to `course.jsonc`.
+- `retain` (optional): `.gitignore`-style patterns for paths that stay when a chapter snapshot is applied. Matching uses gitignore rules from the learning folder root (`node_modules` keeps every `node_modules` directory). Omitted means `node_modules`. `[]` keeps no extra project paths. The workspace `.gitignore` does not control this. See [Retained files](../course-config/retained).
 
 ### chapters/*.jsonc
 
@@ -87,7 +88,7 @@ Fields in each chapter file:
 
 ### Retained files
 
-When you switch chapters, top-level files and folders ignored by `.gitignore` stay in the learning folder. See [Retained files](../course-config/retained).
+When you switch chapters, `.gitignore`-style `retain` patterns stay in the learning folder. Omitted `retain` keeps every `node_modules`. See [Retained files](../course-config/retained).
 
 ## Share a course
 
