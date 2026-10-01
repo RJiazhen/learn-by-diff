@@ -6,7 +6,12 @@ import type {
   ProtocolIssue,
 } from "./types.ts";
 import { COURSE_FILE_NAME, isChapterChangeKind, ProtocolError } from "./types.ts";
-import { isHttpUrl, normalizeRelativeFilePath, normalizeSourceDirPath } from "./sourcePath.ts";
+import {
+  isHttpUrl,
+  normalizeRelativeFilePath,
+  normalizeRetainPattern,
+  normalizeSourceDirPath,
+} from "./sourcePath.ts";
 
 /**
  * Validates a parsed course and its chapters; throws {@link ProtocolError} on failure.
@@ -43,6 +48,37 @@ function validateCourseConfig(config: CourseConfig, issues: ProtocolIssue[]): vo
   requireSourceDirPath(issues, `${COURSE_FILE_NAME}#chaptersDir`, config.chaptersDir);
   if (config.source.root !== undefined && config.source.root.trim() !== "") {
     requireSourceDirPath(issues, `${COURSE_FILE_NAME}#source.root`, config.source.root);
+  }
+  validateRetainPaths(issues, config.retain);
+}
+
+/**
+ * Collects issues for `retain` patterns (gitignore rules, unique, no Windows absolutes).
+ *
+ * @param issues - Accumulator
+ * @param retain - Patterns that a snapshot replace must not delete
+ */
+function validateRetainPaths(issues: ProtocolIssue[], retain: readonly string[]): void {
+  const seen = new Set<string>();
+  for (const [index, value] of retain.entries()) {
+    const itemPath = `${COURSE_FILE_NAME}#retain[${String(index)}]`;
+    const normalized = normalizeRetainPattern(value);
+    if (normalized === undefined) {
+      issues.push({
+        path: itemPath,
+        message:
+          "must be a non-empty .gitignore-style pattern (wildcards and leading '/' allowed; no Windows absolute paths)",
+      });
+      continue;
+    }
+    if (seen.has(normalized)) {
+      issues.push({
+        path: itemPath,
+        message: `duplicate retain pattern "${normalized}"`,
+      });
+      continue;
+    }
+    seen.add(normalized);
   }
 }
 

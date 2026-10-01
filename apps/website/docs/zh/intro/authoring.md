@@ -52,6 +52,7 @@ npx skills add RJiazhen/learn-by-diff@generate-course-config -y
   - 默认值：空，表示源码就在 `course.jsonc` 所在目录。
 - `source.root`(可选)：源码在 `source.repository` 中的相对路径，默认值为空，表示源码就在 `source.repository` 的根目录。
 - `chaptersDir`(可选)：章节 JSONC 所在目录，相对 `course.jsonc` 文件的地址。默认值为 `chapters`，即章节配置文件就在 `course.jsonc` 所在目录的 `chapters` 目录下。
+- `retain`(可选)：切换章节快照时留下的路径，写法与 `.gitignore` 相同（从学习目录根匹配；`node_modules` 会保留任意位置的同名目录）。省略时为 `node_modules`。写成 `[]` 则不额外保留项目路径。工作区 `.gitignore` 不控制这项。详见 [保留文件](../course-config/retained)。
 
 ### chapters/*.jsonc
 

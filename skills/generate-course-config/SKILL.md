@@ -31,6 +31,7 @@ Copy and track:
 - [ ] Resolve source root + chapter fromDir/toDir (user args or exploration)
 - [ ] Confirm pairs with the user when ambiguous (need not be consecutive snapshots)
 - [ ] Write course.jsonc + basic chapters/*.jsonc (fromDir/toDir; no changedFiles yet)
+- [ ] Set `retain` from snapshot `.gitignore` files (fallback: project markers; omit when only `node_modules` or none)
 - [ ] Run detector to fill changedFiles
 - [ ] If stdout `ok` is false, read `detect-chapter-dirs.result.json` (failures only)
 - [ ] Delete `detect-chapter-dirs.result.json` if it exists
@@ -124,6 +125,44 @@ Layout (you write `course.jsonc` and basic `chapters/*.jsonc`; the detector fill
     …
 ```
 
+#### `retain`
+
+`retain` uses **`.gitignore` matching rules** from the learning root. An explicit list **replaces** the default `["node_modules"]`; it does not merge with it.
+
+**1. Prefer snapshot `.gitignore` files**
+
+For every chapter `fromDir` and `toDir`, read that snapshot’s `.gitignore` (and a nested `.gitignore` only when the snapshot root has none). Also read a `.gitignore` at the source root when snapshots have none.
+
+- Keep non-empty lines that are not comments (`#…`).
+- Drop blank lines.
+- Keep gitignore syntax as written (`node_modules/`, `/dist`, `*.log`, `!keep.txt`, …).
+- If a pattern comes from a nested file under `app/.gitignore` and is root-anchored (`/dist`), rewrite it relative to the snapshot root (`app/dist`). Unanchored patterns (`node_modules`) stay as-is — they already match any depth.
+- Union patterns from all snapshots, dedupe, and sort.
+
+**2. Fallback: project markers** (only when no usable `.gitignore` patterns were found)
+
+| Markers                                                                                               | `retain` paths     |
+| ----------------------------------------------------------------------------------------------------- | ------------------ |
+| `package.json`, `pnpm-workspace.yaml`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `bun.lock` | `node_modules`     |
+| `Cargo.toml`                                                                                          | `target`           |
+| `go.mod`                                                                                              | _(none)_           |
+| `pyproject.toml`, `requirements.txt`, `Pipfile`, `setup.py`                                           | `.venv`            |
+| `pubspec.yaml`                                                                                        | `.dart_tool`       |
+| `pom.xml`                                                                                             | `target`           |
+| `build.gradle`, `build.gradle.kts`                                                                    | `build`, `.gradle` |
+| `composer.json`                                                                                       | `vendor`           |
+| `Gemfile`                                                                                             | `.bundle`          |
+| `*.csproj`, `*.fsproj`, `*.sln`                                                                       | `bin`, `obj`       |
+| `mix.exs`                                                                                             | `_build`, `deps`   |
+| `Package.swift`                                                                                       | `.build`           |
+
+Emit ecosystem **basenames** only (e.g. `node_modules`). Nested marker locations do not need a nested retain path.
+
+**3. Write or omit**
+
+- Omit `retain` when the collected list is empty, or when every entry is only `node_modules` / `node_modules/` (the protocol default).
+- Otherwise write the explicit sorted list. A Rust course whose `.gitignore` has `target/` becomes `"retain": ["target/"]`, not `node_modules` plus `target`.
+
 `course.jsonc` template (all fields optional; omit what defaults cover):
 
 ```jsonc
@@ -135,6 +174,7 @@ Layout (you write `course.jsonc` and basic `chapters/*.jsonc`; the detector fill
     // "root": "<optional prefix under repository>"
   },
   // "chaptersDir": "chapters" // optional; default is `chapters` next to this file
+  // "retain": ["target/"] // optional; prefer snapshot .gitignore; omit when only node_modules
 }
 ```
 

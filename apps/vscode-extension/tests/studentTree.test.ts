@@ -79,6 +79,22 @@ describe("hasStudentEditsSinceChapterStart", () => {
     expect(await hasStudentEditsSinceChapterStart(git, workspace, store, "start")).toBe(true);
   });
 
+  test("ignores a retain path that is not gitignored", async () => {
+    const store = await tempDir("lbd-retain-store-");
+    const workspace = await tempDir("lbd-retain-ws-");
+    await mkdir(path.join(store, "start", "src"), { recursive: true });
+    await writeFile(path.join(store, "start", "src", "index.ts"), "export const v = 1;\n", "utf8");
+    await mkdir(path.join(workspace, "src"), { recursive: true });
+    await writeFile(path.join(workspace, "src", "index.ts"), "export const v = 1;\n", "utf8");
+    await mkdir(path.join(workspace, "target"), { recursive: true });
+    await writeFile(path.join(workspace, "target", "debug"), "bin\n", "utf8");
+
+    expect(await hasStudentEditsSinceChapterStart(git, workspace, store, "start", ["target"])).toBe(
+      false,
+    );
+    expect(await hasStudentEditsSinceChapterStart(git, workspace, store, "start", [])).toBe(true);
+  });
+
   test("ignores README.md present only in the snapshot", async () => {
     const store = await tempDir("lbd-readme-store-");
     const workspace = await tempDir("lbd-readme-ws-");

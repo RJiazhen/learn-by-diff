@@ -52,6 +52,7 @@ GitHub リポジトリ URL を渡せば、エージェントがソースを読�
   - 省略: ソースは `course.jsonc` があるディレクトリ。
 - `source.root`（任意）: `source.repository` 内のソースディレクトリ。省略時はリポジトリルート。
 - `chaptersDir`（任意）: 章 JSONC のディレクトリ。`course.jsonc` からの相対パス。省略時は `course.jsonc` の隣の `chapters`。
+- `retain`（任意）: 章スナップショット適用時に残すパス。`.gitignore` と同じ規則（学習フォルダーのルートから。`node_modules` はどの階層の同名ディレクトリも残す）。省略時は `node_modules`。`[]` は追加のプロジェクトパスを残さない。ワークスペースの `.gitignore` では制御しない。詳しくは [残すファイル](../course-config/retained)。
 
 ### chapters/*.jsonc
 
@@ -87,7 +88,7 @@ GitHub リポジトリ URL を渡せば、エージェントがソースを読�
 
 ### 残すファイル
 
-章を切り替えると、`.gitignore` で無視されているトップレベルのファイルやフォルダーは学習フォルダーに残ります。書き方は [残すファイル](../course-config/retained) を参照してください。
+章を切り替えると、`retain` は `.gitignore` と同じ規則でパスを残します。省略時はどの階層の `node_modules` も残ります。書き方は [残すファイル](../course-config/retained) を参照してください。
 
 ## コースを共有する
 

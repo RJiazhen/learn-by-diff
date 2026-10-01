@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@learn-by-diff/protocol": "workspace:*",
+    "ignore": "catalog:",
     "jsonc-parser": "catalog:"
   },
   "devDependencies": {

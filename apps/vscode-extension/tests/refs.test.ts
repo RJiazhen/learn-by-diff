@@ -28,7 +28,13 @@ describe("chapterRefWorkspaceName", () => {
   test("includes ordinal, title, and status", () => {
     const course = {
       configDir: "/tmp/course",
-      config: { id: "demo", title: "Demo", source: { repository: "." }, chaptersDir: "chapters" },
+      config: {
+        id: "demo",
+        title: "Demo",
+        source: { repository: "." },
+        chaptersDir: "chapters",
+        retain: ["node_modules"],
+      },
       chapters: [
         { id: "skeleton", title: "Canvas skeleton", fromDir: "start", toDir: "skeleton" },
         { id: "particles", title: "Particles", fromDir: "skeleton", toDir: "particles" },

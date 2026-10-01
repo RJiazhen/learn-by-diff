@@ -10,6 +10,13 @@ export const CHAPTER_FILE_EXTENSION = ".jsonc";
 /** Default directory of per-chapter JSONC next to `course.jsonc` (`chaptersDir` when omitted). */
 export const CHAPTERS_DIR_NAME = "chapters";
 
+/**
+ * Paths kept across a snapshot replace when `course.jsonc` omits `retain`.
+ *
+ * An explicit `retain` array, including `[]`, replaces this default.
+ */
+export const DEFAULT_RETAIN_PATHS = ["node_modules"] as const;
+
 /** SCM-style letters for an author-declared from/to file difference. */
 export const CHAPTER_CHANGE_KINDS = ["U", "M", "D"] as const;
 
@@ -59,6 +66,7 @@ export interface CourseSource {
  * - `title` ← `id`
  * - `source.repository` ← `.` (directory that contains `course.jsonc`)
  * - `chaptersDir` ← `chapters` (next to `course.jsonc`)
+ * - `retain` ← `node_modules` (explicit `[]` keeps no author paths)
  *
  * Protocol evolves by adding optional fields only; there is no `protocolVersion` gate.
  */
@@ -71,6 +79,13 @@ export interface CourseConfig {
    * Defaults to `chapters`. Nested paths allowed; no `..` or absolutes.
    */
   chaptersDir: string;
+  /**
+   * `.gitignore`-style patterns for paths a snapshot replace must not delete.
+   * Matching follows gitignore rules from the learning folder root (e.g. `node_modules`
+   * keeps every `node_modules` directory). Omitted means `node_modules`. Explicit `[]`
+   * keeps no author paths.
+   */
+  retain: string[];
 }
 
 /**

@@ -52,6 +52,7 @@ npx skills add RJiazhen/learn-by-diff@generate-course-config -y
   - 預設值：空，表示原始碼就在 `course.jsonc` 所在目錄。
 - `source.root`（可選）：原始碼在 `source.repository` 中的相對路徑，預設為空，表示原始碼就在 `source.repository` 的根目錄。
 - `chaptersDir`（可選）：章節 JSONC 所在目錄，相對 `course.jsonc` 檔案的位址。預設為 `chapters`，即章節設定檔在 `course.jsonc` 所在目錄的 `chapters` 目錄下。
+- `retain`（可選）：切換章節快照時留下的路徑，寫法與 `.gitignore` 相同（從學習目錄根匹配；`node_modules` 會保留任意位置的同名目錄）。省略時為 `node_modules`。寫成 `[]` 則不額外保留專案路徑。工作區 `.gitignore` 不控制這項。詳見 [保留檔案](../course-config/retained)。
 
 ### chapters/*.jsonc
 
@@ -87,7 +88,7 @@ npx skills add RJiazhen/learn-by-diff@generate-course-config -y
 
 ### 保留檔案
 
-切換章節時，`.gitignore` 忽略的頂層檔案與資料夾會留在學習目錄中。規則寫法見 [保留檔案](../course-config/retained)。
+切換章節時，`retain` 使用與 `.gitignore` 相同的規則留下路徑。省略 `retain` 時保留任意位置的 `node_modules`。寫法見 [保留檔案](../course-config/retained)。
 
 ## 分享製作好的課程
 

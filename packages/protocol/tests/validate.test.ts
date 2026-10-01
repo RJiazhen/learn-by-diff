@@ -19,6 +19,7 @@ const validConfig = {
   title: "Demo",
   source: { repository: "https://example.com/src.git" },
   chaptersDir: "chapters",
+  retain: ["node_modules"],
 };
 
 const validChapter = {
@@ -79,6 +80,32 @@ describe("course defaults", () => {
     expect(config.title).toBe("my-course");
     expect(config.source.repository).toBe(".");
     expect(config.chaptersDir).toBe("chapters");
+    expect(config.retain).toEqual(["node_modules"]);
+  });
+
+  test("applyCourseDefaults keeps an explicit retain list and an explicit empty list", () => {
+    const kept = applyCourseDefaults(
+      {
+        id: "demo",
+        title: "Demo",
+        source: { repository: "." },
+        chaptersDir: "chapters",
+        retain: ["target", "node_modules/"],
+      },
+      "/repo/demo/.course-config",
+    );
+    expect(kept.retain).toEqual(["target", "node_modules/"]);
+    const empty = applyCourseDefaults(
+      {
+        id: "demo",
+        title: "Demo",
+        source: { repository: "." },
+        chaptersDir: "chapters",
+        retain: [],
+      },
+      "/repo/demo/.course-config",
+    );
+    expect(empty.retain).toEqual([]);
   });
 });
 
@@ -103,6 +130,14 @@ describe("parseCourseJsonc", () => {
   test("parses comments and a trailing comma", () => {
     const config = parseCourseJsonc('{ /* dir */ "chaptersDir": "lessons", }\n', "course.jsonc");
     expect(config.chaptersDir).toBe("lessons");
+  });
+
+  test("parses retain and keeps an explicit empty list", () => {
+    expect(parseCourseJsonc('{ "retain": ["target"] }\n', "course.jsonc").retain).toEqual([
+      "target",
+    ]);
+    expect(parseCourseJsonc('{ "retain": [] }\n', "course.jsonc").retain).toEqual([]);
+    expect(parseCourseJsonc("{}\n", "course.jsonc").retain).toBeUndefined();
   });
 
   test("parses optional source.root", () => {
@@ -354,6 +389,38 @@ describe("validateCourse", () => {
     expect(() =>
       validateCourse(validConfig, [{ ...validChapter, fromDir: "../secret" }], "/tmp/config"),
     ).toThrow(/fromDir/);
+  });
+
+  test("rejects unsafe and duplicate retain patterns", () => {
+    expect(() =>
+      validateCourse({ ...validConfig, retain: ["../secret"] }, [validChapter], "/tmp/config"),
+    ).toThrow(/retain/);
+    expect(() =>
+      validateCourse({ ...validConfig, retain: ["C:\\Windows"] }, [validChapter], "/tmp/config"),
+    ).toThrow(/retain/);
+    expect(() =>
+      validateCourse(
+        { ...validConfig, retain: ["target", "target"] },
+        [validChapter],
+        "/tmp/config",
+      ),
+    ).toThrow(/duplicate retain pattern/);
+  });
+
+  test("accepts gitignore-style retain patterns and an explicit empty list", () => {
+    expect(() =>
+      validateCourse(
+        {
+          ...validConfig,
+          retain: ["*.code-workspace", "/dist", "node_modules/", "!node_modules/.bin", ".git"],
+        },
+        [validChapter],
+        "/tmp/config",
+      ),
+    ).not.toThrow();
+    expect(() =>
+      validateCourse({ ...validConfig, retain: [] }, [validChapter], "/tmp/config"),
+    ).not.toThrow();
   });
 
   test("rejects unsafe chaptersDir paths", () => {

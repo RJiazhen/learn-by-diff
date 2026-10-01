@@ -28,6 +28,36 @@ export function normalizeSourceDirPath(value: string): string | undefined {
 }
 
 /**
+ * Normalizes a `retain` gitignore-style pattern.
+ *
+ * Keeps trailing slashes, wildcards, leading `/` (root-anchored), and `!` negation.
+ * Rejects empty patterns and Windows/UNC absolute paths. Posix absolute paths that
+ * start with `/` are allowed — in gitignore that means “from the learning root”.
+ *
+ * @param value - Raw retain entry from `course.jsonc`
+ * @returns Trimmed pattern, or `undefined` when invalid
+ */
+export function normalizeRetainPattern(value: string): string | undefined {
+  const trimmed = value.trim();
+  if (trimmed === "") {
+    return undefined;
+  }
+  if (/^[a-zA-Z]:[\\/]/.test(trimmed) || trimmed.startsWith("\\\\")) {
+    return undefined;
+  }
+  if (trimmed.includes("\0")) {
+    return undefined;
+  }
+  const posix = trimmed.replaceAll("\\", "/");
+  const withoutBang = posix.startsWith("!") ? posix.slice(1) : posix;
+  const segments = withoutBang.split("/").filter((segment) => segment !== "");
+  if (segments.some((segment) => segment === "..")) {
+    return undefined;
+  }
+  return posix;
+}
+
+/**
  * Returns whether `value` is an `http:` or `https:` URL.
  *
  * @param value - Declared docs string
