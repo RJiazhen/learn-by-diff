@@ -4,13 +4,14 @@
 
 No field is required in the JSONC file.
 
-| Field               | Default                                                                           | Notes                                                       |
-| ------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `id`                | Parent dir of `.course-config`; `{repoName}-learn` when that parent is a git root | Also used as the default learning folder name               |
-| `title`             | same as `id`                                                                      | Display name                                                |
-| `source.repository` | `.` (directory that contains `course.jsonc`)                                      | Git URL or path; relative paths resolve from that directory |
-| `source.root`       | _(none)_                                                                          | Prefix joined in front of every chapter `fromDir` / `toDir` |
-| `chaptersDir`       | `chapters` (next to `course.jsonc`)                                               | Nested paths allowed; no `..` or absolutes                  |
+| Field               | Default                                                                           | Notes                                                                                                                                                                                                                            |
+| ------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                | Parent dir of `.course-config`; `{repoName}-learn` when that parent is a git root | Also used as the default learning folder name                                                                                                                                                                                    |
+| `title`             | same as `id`                                                                      | Display name                                                                                                                                                                                                                     |
+| `source.repository` | `.` (directory that contains `course.jsonc`)                                      | Git URL or path; relative paths resolve from that directory                                                                                                                                                                      |
+| `source.root`       | _(none)_                                                                          | Prefix joined in front of every chapter `fromDir` / `toDir`                                                                                                                                                                      |
+| `chaptersDir`       | `chapters` (next to `course.jsonc`)                                               | Nested paths allowed; no `..` or absolutes                                                                                                                                                                                       |
+| `retain`            | `["node_modules"]`                                                                | `.gitignore`-style patterns kept on snapshot replace. Prefer patterns from each snapshot’s `.gitignore`; fall back to project markers (see SKILL.md). Omit when only `node_modules` / none. Explicit list replaces this default. |
 
 There is no `protocolVersion` or `workspace` block yet — the protocol only adds optional fields over time.
 
