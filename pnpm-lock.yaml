@@ -208,6 +208,9 @@ catalogs:
     '@types/node':
       specifier: ^24
       version: 24.13.3
+    ignore:
+      specifier: ^7.0.11
+      version: 7.0.11
     jsonc-parser:
       specifier: ^3.3.1
       version: 3.3.1
@@ -241,6 +244,9 @@ importers:
       '@learn-by-diff/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol
+      ignore:
+        specifier: 'catalog:'
+        version: 7.0.11
       jsonc-parser:
         specifier: 'catalog:'
         version: 3.3.1
@@ -2356,8 +2362,8 @@ packages:
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
 
-  ignore@7.0.6:
-    resolution: {integrity: sha512-BAg6QkE8W+TuQLrrw0Ugr7HegXduRuuj8/ti2kSOc+jz1dmx8/WNcjr6XGnq5YpDWxFwwaavqD0+jIUOKelTsw==}
+  ignore@7.0.11:
+    resolution: {integrity: sha512-YChdK5txDjwGUvgR7oCJcLGkwi3LDh8Zx8tS7ndYciLEg/oOCL26VUBSUEtgS7EjiybcBqFxh5j0rAdDX7/bbg==}
     engines: {node: '>= 4'}
 
   index-to-position@1.2.0:
@@ -5046,7 +5052,7 @@ snapshots:
     dependencies:
       '@sindresorhus/merge-streams': 2.3.0
       fast-glob: 3.3.3
-      ignore: 7.0.6
+      ignore: 7.0.11
       path-type: 6.0.0
       slash: 5.1.0
       unicorn-magic: 0.3.0
@@ -5129,7 +5135,7 @@ snapshots:
   ieee754@1.2.1:
     optional: true
 
-  ignore@7.0.6: {}
+  ignore@7.0.11: {}
 
   index-to-position@1.2.0: {}
 

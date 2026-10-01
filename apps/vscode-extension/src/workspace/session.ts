@@ -78,6 +78,7 @@ export async function applyChapterSnapshot(
       session.workspaceRoot,
       sourceMirror,
       currentChapterSnapshotSubtree(session),
+      session.course.config.retain,
     );
     if (hasEdits) {
       throw new DirtyWorkspaceError(session.workspaceRoot);

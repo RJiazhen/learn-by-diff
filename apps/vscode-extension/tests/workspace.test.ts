@@ -209,6 +209,12 @@ describe("learning workspace", () => {
     expect(gitignore).toContain("*.code-workspace");
     expect(gitignore).not.toMatch(/^\.learn\/$/m);
     const createdPaths = learningPaths(created.learningRoot);
+    const copiedCourse = await readFile(path.join(createdPaths.courseDir, "course.jsonc"), "utf8");
+    expect(copiedCourse).toContain('"node_modules"');
+    expect(copiedCourse).toContain('".git"');
+    expect(copiedCourse).toContain('".learn"');
+    expect(copiedCourse).toContain('".gitignore"');
+    expect(copiedCourse).toContain('"*.code-workspace"');
     const workspaceJson = JSON.parse(await readFile(createdPaths.workspaceFile, "utf8")) as {
       folders: { name: string; path: string }[];
     };
@@ -753,7 +759,7 @@ describe("learning workspace", () => {
     });
   });
 
-  test("applyChapterSnapshot preserves gitignored folders such as node_modules", async () => {
+  test("applyChapterSnapshot keeps retain paths and removes gitignored extras", async () => {
     const { learningRoot } = await createTwoChapterWorkspace();
     await mkdir(path.join(learningRoot, "node_modules", "leftpad"), { recursive: true });
     await writeFile(
@@ -763,24 +769,44 @@ describe("learning workspace", () => {
     );
     await mkdir(path.join(learningRoot, "dist"), { recursive: true });
     await writeFile(path.join(learningRoot, "dist", "app.js"), "console.log(1);\n", "utf8");
+    await writeFile(path.join(learningRoot, "pkg", "keep.txt"), "stay\n", "utf8");
+    await writeFile(path.join(learningRoot, "pkg", "stale.ts"), "export const old = 1;\n", "utf8");
     const gitignore = await readFile(path.join(learningRoot, ".gitignore"), "utf8");
-    await writeFile(path.join(learningRoot, ".gitignore"), `${gitignore}dist/\n`, "utf8");
+    await writeFile(
+      path.join(learningRoot, ".gitignore"),
+      gitignore
+        .split("\n")
+        .filter((line) => line.trim() !== "node_modules/")
+        .join("\n") + "dist/\n",
+      "utf8",
+    );
+    const courseFile = path.join(learningPaths(learningRoot).courseDir, "course.jsonc");
+    const courseText = await readFile(courseFile, "utf8");
+    await writeFile(
+      courseFile,
+      courseText.replace('"node_modules"', '"node_modules",\n    "pkg/keep.txt"'),
+      "utf8",
+    );
     const session = await loadLearningSession(learningRoot);
     expect(session).toBeDefined();
     if (session === undefined) {
       return;
     }
 
-    await applyChapterSnapshot(git, session, "two", "start");
+    await applyChapterSnapshot(git, session, "two", "start", true);
     expect(await readFile(path.join(learningRoot, "pkg/index.ts"), "utf8")).toBe(
       "export const v = 2;\n",
     );
     expect(
       await readFile(path.join(learningRoot, "node_modules", "leftpad", "index.js"), "utf8"),
     ).toBe("module.exports = 1;\n");
-    expect(await readFile(path.join(learningRoot, "dist", "app.js"), "utf8")).toBe(
-      "console.log(1);\n",
-    );
+    expect(await readFile(path.join(learningRoot, "pkg/keep.txt"), "utf8")).toBe("stay\n");
+    await expect(access(path.join(learningRoot, "pkg/stale.ts"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+    await expect(access(path.join(learningRoot, "dist/app.js"))).rejects.toMatchObject({
+      code: "ENOENT",
+    });
   });
 
   test("applyChapterSnapshot throws when the student tree differs from the last snapshot", async () => {

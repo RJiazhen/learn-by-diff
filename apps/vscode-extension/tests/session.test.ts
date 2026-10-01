@@ -19,6 +19,7 @@ const session: LearningSession = {
       title: "Demo",
       source: { repository: "https://example.com/src.git" },
       chaptersDir: "chapters",
+      retain: ["node_modules"],
     },
     chapters: [
       {

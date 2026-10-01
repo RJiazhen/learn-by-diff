@@ -2,6 +2,7 @@ import { stat } from "node:fs/promises";
 import { isCourseRepository, loadCourseFromConfigDir, type Course } from "@learn-by-diff/protocol";
 import { isEmptyLearningTarget } from "./emptyTarget.ts";
 import { learningPaths } from "./paths.ts";
+import { ensureBuiltinRetain } from "./retain.ts";
 import { readProgress, type LearningProgress } from "./state.ts";
 
 /** Loaded learning session: course copy plus progress. */
@@ -31,6 +32,8 @@ export async function isLearningWorkspace(workspaceRoot: string): Promise<boolea
  *
  * Missing `appliedSide` is treated as `start`. Older `appliedStart` (when it differs
  * from `chapter`) is used as the applied chapter so the badge matches files on disk.
+ * Built-in `retain` paths are written into the copied `course.jsonc` when they are missing
+ * so an older learning folder still keeps `.git` and `.learn` across a snapshot replace.
  *
  * @param workspaceRoot - Learning repository root
  */
@@ -44,7 +47,9 @@ export async function loadLearningSession(
   if (progress === undefined) {
     return undefined;
   }
-  const course = await loadCourseFromConfigDir(learningPaths(workspaceRoot).courseDir);
+  const { courseDir } = learningPaths(workspaceRoot);
+  await ensureBuiltinRetain(courseDir);
+  const course = await loadCourseFromConfigDir(courseDir);
   return {
     course,
     progress: {
