@@ -1,8 +1,8 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import type { CourseConfig, CourseSource } from "./types.ts";
-import { COURSE_CONFIG_DIR, CHAPTERS_DIR_NAME } from "./types.ts";
-import { normalizeSourceDirPath } from "./sourcePath.ts";
+import { COURSE_CONFIG_DIR, CHAPTERS_DIR_NAME, DEFAULT_RETAIN_PATHS } from "./types.ts";
+import { normalizeRetainPattern, normalizeSourceDirPath } from "./sourcePath.ts";
 
 /** Sparse `course.jsonc` fields before load-time defaults. */
 export interface ParsedCourseFields {
@@ -11,6 +11,11 @@ export interface ParsedCourseFields {
   source: CourseSource;
   /** Empty when omitted in JSONC; {@link applyCourseDefaults} fills `chapters`. */
   chaptersDir: string;
+  /**
+   * Author `retain` paths before defaults.
+   * `undefined` means the field was omitted; `[]` is an explicit empty list.
+   */
+  retain?: string[];
 }
 
 /**
@@ -57,6 +62,7 @@ export function defaultCourseId(configDir: string): string {
  * - `title` ← `id`
  * - `source.repository` ← `.` (directory that contains `course.jsonc`)
  * - `chaptersDir` ← `chapters` (directory next to `course.jsonc`)
+ * - `retain` ← `node_modules` when omitted; an explicit array is kept (including `[]`)
  *
  * @param partial - Parsed fields (empty strings mean omitted)
  * @param configDir - Absolute config directory used for path-based defaults
@@ -77,7 +83,24 @@ export function applyCourseDefaults(partial: ParsedCourseFields, configDir: stri
       ...(root !== undefined && root !== "" ? { root } : {}),
     },
     chaptersDir,
+    retain: normalizeRetainPaths(partial.retain),
   };
+}
+
+/**
+ * Fills omitted `retain` with {@link DEFAULT_RETAIN_PATHS} and normalizes listed patterns.
+ *
+ * Invalid patterns are left unchanged so {@link validateCourse} can report them.
+ * An explicit empty array stays empty. Trailing slashes and wildcards are preserved
+ * so gitignore matching stays intact.
+ *
+ * @param retain - Parsed `retain`, or `undefined` when the field was omitted
+ */
+function normalizeRetainPaths(retain: string[] | undefined): string[] {
+  if (retain === undefined) {
+    return [...DEFAULT_RETAIN_PATHS];
+  }
+  return retain.map((entry) => normalizeRetainPattern(entry) ?? entry);
 }
 
 /**

@@ -39,6 +39,12 @@
         }
       }
     },
+    "gitignorePattern": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S",
+      "description": "A .gitignore-style pattern relative to the learning folder root. Leading '/' anchors to that root; a pattern without '/' matches in any directory. Trailing '/' matches directories only."
+    },
     "courseSource": {
       "type": "object",
       "additionalProperties": false,
@@ -57,7 +63,7 @@
     "course": {
       "type": "object",
       "additionalProperties": false,
-      "description": "All fields optional. Defaults: id from course home (or `{repo}-learn` at a git root), title=id, source.repository=`.` (directory that contains course.jsonc), chaptersDir=`chapters` (next to course.jsonc).",
+      "description": "All fields optional. Defaults: id from course home (or `{repo}-learn` at a git root), title=id, source.repository=`.` (directory that contains course.jsonc), chaptersDir=`chapters` (next to course.jsonc), retain=`[\"node_modules\"]` (explicit `[]` keeps no author paths).",
       "properties": {
         "$schema": {
           "type": "string",
@@ -77,6 +83,14 @@
         "chaptersDir": {
           "$ref": "#/$defs/sourceDirPath",
           "description": "Directory of chapter JSONC files, relative to the directory that contains course.jsonc. Defaults to `chapters`. Nested paths allowed; no absolute paths or '..' segments."
+        },
+        "retain": {
+          "type": "array",
+          "uniqueItems": true,
+          "description": ".gitignore-style patterns for paths a snapshot replace must not delete. Matching follows gitignore rules from the learning folder root (e.g. `node_modules` keeps every `node_modules` directory). Omitted means `[\"node_modules\"]`. Explicit `[]` keeps no author paths.",
+          "items": {
+            "$ref": "#/$defs/gitignorePattern"
+          }
         }
       }
     },

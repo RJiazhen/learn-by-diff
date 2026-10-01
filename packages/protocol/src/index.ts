@@ -4,6 +4,7 @@ export {
   CHAPTER_FILE_EXTENSION,
   COURSE_CONFIG_DIR,
   COURSE_FILE_NAME,
+  DEFAULT_RETAIN_PATHS,
   isChapterChangeKind,
   ProtocolError,
 } from "./types.ts";
@@ -27,6 +28,7 @@ export { parseChapterJsonc, parseCourseJsonc } from "./parse.ts";
 export {
   isHttpUrl,
   normalizeRelativeFilePath,
+  normalizeRetainPattern,
   normalizeSourceDirPath,
   resolveSourceSubtreePath,
 } from "./sourcePath.ts";

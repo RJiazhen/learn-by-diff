@@ -33,6 +33,7 @@ describe("loadCourse", () => {
     expect(course.config.title).toBe("empty-course");
     expect(course.config.source.repository).toBe(".");
     expect(course.config.chaptersDir).toBe("chapters");
+    expect(course.config.retain).toEqual(["node_modules"]);
     expect(course.chapters.map((chapter) => chapter.id)).toEqual(["hello"]);
   });
 
