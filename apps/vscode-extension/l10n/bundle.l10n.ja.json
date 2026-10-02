@@ -20,7 +20,7 @@
   "Could not add “{0}” to this window. Open it in a new window?": "「{0}」をこのウィンドウに追加できませんでした。新しいウィンドウで開きますか？",
   "Open in New Window": "新しいウィンドウで開く",
   "File {0} is not an entry file for chapter {1}.": "ファイル {0} は章 {1} のエントリファイルではありません。",
-  "LearnByDiff: Next Chapter": "LearnByDiff: 次の章",
+  "Next Chapter": "次の章",
   "LearnByDiff: Search Chapter": "LearnByDiff: 章を検索",
   "Filter by chapter title or id": "章のタイトルまたは ID で絞り込む",
   "Open File Diff": "ファイルの差分を開く",

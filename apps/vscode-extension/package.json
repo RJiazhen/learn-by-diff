@@ -43,21 +43,25 @@
       {
         "command": "learnByDiff.openCourse",
         "title": "%learnByDiff.openCourse.title%",
+        "category": "LearnByDiff",
         "icon": "$(folder-opened)"
       },
       {
         "command": "learnByDiff.nextChapter",
         "title": "%learnByDiff.nextChapter.title%",
+        "category": "LearnByDiff",
         "icon": "$(arrow-right)"
       },
       {
         "command": "learnByDiff.previousChapter",
         "title": "%learnByDiff.previousChapter.title%",
+        "category": "LearnByDiff",
         "icon": "$(arrow-left)"
       },
       {
         "command": "learnByDiff.searchChapter",
         "title": "%learnByDiff.searchChapter.title%",
+        "category": "LearnByDiff",
         "icon": "$(search)"
       },
       {
@@ -68,20 +72,24 @@
       {
         "command": "learnByDiff.copyCurrentCourseUrl",
         "title": "%learnByDiff.copyCurrentCourseUrl.title%",
+        "category": "LearnByDiff",
         "icon": "$(copy)"
       },
       {
         "command": "learnByDiff.copyWorkspaceCourseUrl",
-        "title": "%learnByDiff.copyWorkspaceCourseUrl.title%"
+        "title": "%learnByDiff.copyWorkspaceCourseUrl.title%",
+        "category": "LearnByDiff"
       },
       {
         "command": "learnByDiff.copyOneClickOpenUrl",
         "title": "%learnByDiff.copyOneClickOpenUrl.title%",
+        "category": "LearnByDiff",
         "icon": "$(link-external)"
       },
       {
         "command": "learnByDiff.openFileDiff",
-        "title": "%learnByDiff.openFileDiff.title%"
+        "title": "%learnByDiff.openFileDiff.title%",
+        "category": "LearnByDiff"
       },
       {
         "command": "learnByDiff.applyChapterStart",

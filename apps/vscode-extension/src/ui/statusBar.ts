@@ -31,7 +31,7 @@ export function registerStatusBar(
     const position = chapterPosition(session.course, chapter.id);
     const side = localizedSnapshotStatus(appliedSnapshotSide(session.progress));
     item.text = `$(mortar-board) ${position} ${chapter.title} · ${side}`;
-    item.tooltip = vscode.l10n.t("LearnByDiff: Next Chapter");
+    item.tooltip = vscode.l10n.t("Next Chapter");
     item.show();
   }
 
