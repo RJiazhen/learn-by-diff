@@ -33,7 +33,7 @@ describe("chapterRowIsExpandable", () => {
 
 describe("chapterStatusIconId", () => {
   test("uses the Not Started and Completed action icons", () => {
-    expect(chapterStatusIconId("start")).toBe("circle-outline");
-    expect(chapterStatusIconId("finish")).toBe("check");
+    expect(chapterStatusIconId("start")).toBe("circle-large");
+    expect(chapterStatusIconId("finish")).toBe("pass");
   });
 });

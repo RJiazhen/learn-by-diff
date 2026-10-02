@@ -86,13 +86,13 @@
       {
         "command": "learnByDiff.applyChapterStart",
         "title": "%learnByDiff.applyChapterStart.title%",
-        "icon": "$(circle-outline)",
+        "icon": "$(circle-large)",
         "enablement": "!(viewItem =~ /^chapter-start(-docs)?$/) || learnByDiff.studentHasEdits"
       },
       {
         "command": "learnByDiff.applyChapterFinish",
         "title": "%learnByDiff.applyChapterFinish.title%",
-        "icon": "$(check)",
+        "icon": "$(pass)",
         "enablement": "!(viewItem =~ /^chapter-finish(-docs)?$/) || learnByDiff.studentHasEdits"
       },
       {

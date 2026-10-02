@@ -4,6 +4,14 @@ import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
 import { writeChapterArchives } from "../snapshot/archive.ts";
 import {
+  cacheEntryMatchesChapter,
+  readChapterChangeCache,
+  sourceStoreRevision,
+  upsertCachedChapterChange,
+  writeChapterChangeCache,
+  type ChapterChangeCacheFile,
+} from "../workspace/chapterChangeCache.ts";
+import {
   chapterFromToShareSnapshot,
   listChangedFilesInSnapshots,
   snapshotsHaveAnyChange,
@@ -12,14 +20,6 @@ import {
 } from "../workspace/entryChange.ts";
 import type { LearningSession } from "../workspace/loader.ts";
 import { learningPaths } from "../workspace/paths.ts";
-import {
-  cacheEntryMatchesChapter,
-  readChapterChangeCache,
-  sourceStoreRevision,
-  upsertCachedChapterChange,
-  writeChapterChangeCache,
-  type ChapterChangeCacheFile,
-} from "../workspace/chapterChangeCache.ts";
 import { chapterOrdinal, currentChapter } from "../workspace/session.ts";
 import { appliedSnapshotSide, type ChapterSnapshotSide } from "../workspace/state.ts";
 import { chapterRowIsExpandable, chapterStatusIconId } from "./chapterRow.ts";

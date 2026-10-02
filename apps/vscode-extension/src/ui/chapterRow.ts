@@ -33,12 +33,12 @@ export function chapterRowIsExpandable(
 /**
  * Returns the codicon id for an applied chapter status.
  *
- * Matches the Not Started (`circle-outline`) and Completed (`check`) action
+ * Matches the Not Started (`circle-large`) and Completed (`pass`) action
  * icons so the row can show that icon in front of the title. The status words
  * stay in the row tooltip.
  *
  * @param side - Start (`fromDir`) or finish (`toDir`)
  */
-export function chapterStatusIconId(side: ChapterSnapshotSide): "circle-outline" | "check" {
-  return side === "finish" ? "check" : "circle-outline";
+export function chapterStatusIconId(side: ChapterSnapshotSide): "circle-large" | "pass" {
+  return side === "finish" ? "pass" : "circle-large";
 }
