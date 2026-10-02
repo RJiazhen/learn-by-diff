@@ -61,6 +61,11 @@
         "icon": "$(search)"
       },
       {
+        "command": "learnByDiff.scrollToCurrentChapter",
+        "title": "%learnByDiff.scrollToCurrentChapter.title%",
+        "icon": "$(target)"
+      },
+      {
         "command": "learnByDiff.copyCurrentCourseUrl",
         "title": "%learnByDiff.copyCurrentCourseUrl.title%",
         "icon": "$(copy)"
@@ -164,6 +169,11 @@
           "group": "navigation@2"
         },
         {
+          "command": "learnByDiff.scrollToCurrentChapter",
+          "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace",
+          "group": "navigation@2.5"
+        },
+        {
           "command": "learnByDiff.searchChapter",
           "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace",
           "group": "navigation@3"
@@ -248,6 +258,10 @@
         },
         {
           "command": "learnByDiff.copyOneClickOpenUrl",
+          "when": "learnByDiff.isLearningWorkspace"
+        },
+        {
+          "command": "learnByDiff.scrollToCurrentChapter",
           "when": "learnByDiff.isLearningWorkspace"
         },
         {

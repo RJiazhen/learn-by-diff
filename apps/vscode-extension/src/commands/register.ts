@@ -330,6 +330,17 @@ export function registerCommands(
   );
 
   /**
+   * Scrolls the course view to the applied chapter without expanding or selecting it.
+   */
+  async function onScrollToCurrentChapter(): Promise<void> {
+    await tree.revealCurrentChapter({ expand: false });
+  }
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("learnByDiff.scrollToCurrentChapter", onScrollToCurrentChapter),
+  );
+
+  /**
    * Copies the URL that was used to open the current learning workspace.
    *
    * This is the Open Course input (local path, git URL, or GitHub file URL), not a
