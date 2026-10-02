@@ -16,6 +16,7 @@
   "learnByDiff.openChapterFinishFolder.title": "Open Completed Folder",
   "learnByDiff.viewAsTree.title": "View as Tree",
   "learnByDiff.viewAsList.title": "View as List",
+  "learnByDiff.chapterMore.label": "More",
   "learnByDiff.courseView.name": "Learn By Diff",
   "learnByDiff.viewsWelcome.loading": "Loading…",
   "learnByDiff.viewsWelcome.openCourse": "Open a LearnByDiff course to start learning.\n[Open Course](command:learnByDiff.openCourse)",

@@ -16,6 +16,7 @@
   "learnByDiff.openChapterFinishFolder.title": "開啟已完成資料夾",
   "learnByDiff.viewAsTree.title": "樹狀檢視",
   "learnByDiff.viewAsList.title": "清單檢視",
+  "learnByDiff.chapterMore.label": "更多",
   "learnByDiff.courseView.name": "Learn By Diff",
   "learnByDiff.viewsWelcome.loading": "正在載入…",
   "learnByDiff.viewsWelcome.openCourse": "開啟 LearnByDiff 課程開始學習。\n[開啟課程](command:learnByDiff.openCourse)",

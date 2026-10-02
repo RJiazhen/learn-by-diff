@@ -1,6 +1,6 @@
 import type { ChapterChangedFile } from "@learn-by-diff/protocol";
 import { describe, expect, test } from "vite-plus/test";
-import { chapterRowIsExpandable } from "../src/ui/chapterRow.ts";
+import { chapterRowIsExpandable, chapterStatusIconId } from "../src/ui/chapterRow.ts";
 
 const oneChange: ChapterChangedFile[] = [{ path: "a.ts", kind: "M" }];
 
@@ -28,5 +28,12 @@ describe("chapterRowIsExpandable", () => {
   test("keeps the chevron when the chapter has at least one from/to diff", () => {
     expect(chapterRowIsExpandable(undefined, true)).toBe(true);
     expect(chapterRowIsExpandable(["a.ts"], true)).toBe(true);
+  });
+});
+
+describe("chapterStatusIconId", () => {
+  test("uses the Not Started and Completed action icons", () => {
+    expect(chapterStatusIconId("start")).toBe("circle-large");
+    expect(chapterStatusIconId("finish")).toBe("pass");
   });
 });
