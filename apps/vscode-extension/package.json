@@ -153,52 +153,59 @@
         "when": "learnByDiff.ready && !learnByDiff.isLearningWorkspace"
       }
     ],
+    "submenus": [
+      {
+        "id": "learnByDiff.chapterMore",
+        "label": "%learnByDiff.chapterMore.label%",
+        "icon": "$(ellipsis)"
+      }
+    ],
     "menus": {
       "view/title": [
         {
           "command": "learnByDiff.openCourse",
           "when": "view == learnByDiff.courseView && learnByDiff.ready",
-          "group": "navigation@0"
+          "group": "more@1"
         },
         {
           "command": "learnByDiff.previousChapter",
           "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace",
-          "group": "navigation@1"
+          "group": "more@2"
         },
         {
           "command": "learnByDiff.nextChapter",
           "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace",
-          "group": "navigation@2"
+          "group": "more@3"
         },
         {
           "command": "learnByDiff.scrollToCurrentChapter",
           "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace",
-          "group": "navigation@2.5"
+          "group": "navigation@1"
         },
         {
           "command": "learnByDiff.searchChapter",
           "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace",
-          "group": "navigation@3"
+          "group": "navigation@2"
         },
         {
           "command": "learnByDiff.copyCurrentCourseUrl",
           "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace",
-          "group": "navigation@4"
+          "group": "more@4"
         },
         {
           "command": "learnByDiff.copyOneClickOpenUrl",
           "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace",
-          "group": "navigation@4.5"
+          "group": "more@5"
         },
         {
           "command": "learnByDiff.viewAsTree",
           "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace && learnByDiff.viewMode == 'list'",
-          "group": "navigation@5"
+          "group": "navigation@3"
         },
         {
           "command": "learnByDiff.viewAsList",
           "when": "view == learnByDiff.courseView && learnByDiff.isLearningWorkspace && learnByDiff.viewMode != 'list'",
-          "group": "navigation@5"
+          "group": "navigation@3"
         }
       ],
       "view/item/context": [
@@ -218,14 +225,9 @@
           "group": "inline@3"
         },
         {
-          "command": "learnByDiff.openChapterStartFolder",
+          "submenu": "learnByDiff.chapterMore",
           "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
           "group": "inline@4"
-        },
-        {
-          "command": "learnByDiff.openChapterFinishFolder",
-          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
-          "group": "inline@5"
         },
         {
           "command": "learnByDiff.applyChapterStart",
@@ -251,6 +253,18 @@
           "command": "learnByDiff.openChapterFinishFolder",
           "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
           "group": "navigation@5"
+        }
+      ],
+      "learnByDiff.chapterMore": [
+        {
+          "command": "learnByDiff.openChapterStartFolder",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
+          "group": "navigation@1"
+        },
+        {
+          "command": "learnByDiff.openChapterFinishFolder",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
+          "group": "navigation@2"
         }
       ],
       "commandPalette": [

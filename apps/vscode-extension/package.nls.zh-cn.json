@@ -16,6 +16,7 @@
   "learnByDiff.openChapterFinishFolder.title": "打开已完成文件夹",
   "learnByDiff.viewAsTree.title": "树状视图",
   "learnByDiff.viewAsList.title": "列表视图",
+  "learnByDiff.chapterMore.label": "更多",
   "learnByDiff.courseView.name": "Learn By Diff",
   "learnByDiff.viewsWelcome.loading": "正在加载…",
   "learnByDiff.viewsWelcome.openCourse": "打开 LearnByDiff 课程开始学习。\n[打开课程](command:learnByDiff.openCourse)",

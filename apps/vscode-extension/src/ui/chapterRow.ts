@@ -1,4 +1,5 @@
 import type { ChapterChangedFile } from "@learn-by-diff/protocol";
+import type { ChapterSnapshotSide } from "../workspace/state.ts";
 
 /**
  * Returns whether a chapter row should show an expand chevron.
@@ -27,4 +28,17 @@ export function chapterRowIsExpandable(
     return hasChanges;
   }
   return true;
+}
+
+/**
+ * Returns the codicon id for an applied chapter status.
+ *
+ * Matches the Not Started (`circle-outline`) and Completed (`check`) action
+ * icons so the row can show that icon in front of the title. The status words
+ * stay in the row tooltip.
+ *
+ * @param side - Start (`fromDir`) or finish (`toDir`)
+ */
+export function chapterStatusIconId(side: ChapterSnapshotSide): "circle-outline" | "check" {
+  return side === "finish" ? "check" : "circle-outline";
 }

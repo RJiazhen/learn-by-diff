@@ -39,6 +39,6 @@ Expand a chapter in the Learn By Diff view to see its change list. Click a file 
 
 ## Chapter compare
 
-To run different chapter snapshots side by side, click **Open Not Started folder** or **Open Completed folder** next to a chapter name. That snapshot is downloaded and added as its own folder in the workspace.
+To run different chapter snapshots side by side, click the **...** button on the chapter, then **Open Not Started folder** or **Open Completed folder**. That snapshot is downloaded and added as its own folder in the workspace.
 
 <img src="../images/features-chapter-compare.png" alt="Chapter compare" style="height: 400px; width: auto; margin: 0 auto; display: block;"/>

@@ -22,7 +22,7 @@ import {
 } from "../workspace/chapterChangeCache.ts";
 import { chapterOrdinal, currentChapter } from "../workspace/session.ts";
 import { appliedSnapshotSide, type ChapterSnapshotSide } from "../workspace/state.ts";
-import { chapterRowIsExpandable } from "./chapterRow.ts";
+import { chapterRowIsExpandable, chapterStatusIconId } from "./chapterRow.ts";
 import { localizedSnapshotStatus } from "./labels.ts";
 
 /** URI scheme used to decorate chapter rows. */
@@ -659,6 +659,10 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
   /**
    * Builds a chapter row with a zero-padded ordinal prefix.
    *
+   * The applied status uses the same icon as its action button, placed in
+   * front of the title. The status words are only in the tooltip, because
+   * inline actions clip a trailing description.
+   *
    * The row is collapsible only when the chapter has from/to file diffs (or
    * classification is still pending). Unchanged chapters have no expand chevron.
    *
@@ -674,6 +678,7 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
     total: number,
   ): CourseTreeItem {
     const ordinal = chapterOrdinal(Math.max(index, 0), total);
+    const status = appliedSide === undefined ? undefined : localizedSnapshotStatus(appliedSide);
     const expandable = chapterRowIsExpandable(
       chapter.entryFiles,
       this.chapterHasKnownChanges(chapter),
@@ -697,8 +702,9 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
     } else {
       item.contextValue = `chapter${sideToken}`;
     }
-    const status = appliedSide === undefined ? undefined : localizedSnapshotStatus(appliedSide);
-    item.description = status;
+    if (appliedSide !== undefined) {
+      item.iconPath = new vscode.ThemeIcon(chapterStatusIconId(appliedSide));
+    }
     item.tooltip = `${ordinal}-${chapter.title}${
       status === undefined ? "" : ` (${status})`
     }${hasDocs ? `\n${vscode.l10n.t("Docs: {0}", chapter.docs ?? "")}` : ""}`;
