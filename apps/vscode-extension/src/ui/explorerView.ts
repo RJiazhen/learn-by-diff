@@ -180,21 +180,31 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
   }
 
   /**
-   * Expands the current chapter so its entry files are visible (does not steal selection).
+   * Scrolls the applied chapter into view without selecting it.
+   *
+   * @param options - `expand: false` only scrolls, so the title-bar jump does not open the row
    */
-  async revealCurrentChapter(): Promise<void> {
-    await this.revealChapter(undefined, { select: false, focus: false });
+  async revealCurrentChapter(options?: { expand?: boolean }): Promise<void> {
+    await this.revealChapter(undefined, {
+      select: false,
+      focus: false,
+      expand: options?.expand,
+    });
   }
 
   /**
    * Reveals a chapter row in the Learn By Diff view.
    *
    * @param chapterId - Chapter to reveal, or `undefined` for the applied chapter
-   * @param options - Reveal behavior; search uses select + focus so the row is obvious
+   * @param options - Reveal behavior; search uses select + focus so the row is obvious.
+   *   `expand` defaults to opening the row.
    */
   async revealChapter(
     chapterId?: string,
-    options: { select: boolean; focus: boolean } = { select: true, focus: true },
+    options: { select: boolean; focus: boolean; expand?: boolean } = {
+      select: true,
+      focus: true,
+    },
   ): Promise<void> {
     if (this.session === undefined || this.treeView === undefined) {
       return;
@@ -220,7 +230,7 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
         await vscode.commands.executeCommand("learnByDiff.courseView.focus");
       }
       await this.treeView.reveal(element, {
-        expand: true,
+        expand: options.expand !== false,
         select: options.select,
         focus: options.focus,
       });
