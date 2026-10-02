@@ -9,7 +9,7 @@ alwaysApply: false
 - Depend on `@learn-by-diff/protocol` **dist** (workspace package). Rebuild protocol if types/runtime diverge.
 - Learning state lives under `.learn/` (`paths.ts`). Do not point the student GIT_DIR at the source mirror.
 - Open-course flow is shared: `workspace/openCourse.ts` (command palette + URI handler). Parse links in `uri/parseOpenCourseUri.ts`.
-- Explorer: chapter `contextValue` encodes applied side/docs (`chapter`, `chapter-start`, `chapter-finish`, `*-docs`). Inline menus in `package.json`.
+- Explorer: chapter `contextValue` encodes applied side/docs (`chapter`, `chapter-start`, `chapter-finish`, `*-docs`). Inline menus in `package.json`. Only the current chapter has `-start` or `-finish`. Its matching status command is disabled via `enablement` until `learnByDiff.studentHasEdits` (`chapter-start` → `applyChapterStart`, `chapter-finish` → `applyChapterFinish`). The other status button stays enabled. Do not swap those clauses.
 - Commands: register in `commands/register.ts`; keep errors via `showError`. Prefer small modules under `workspace/` and `ui/`.
 - User-facing strings: `package.nls*.json` for contributes; `vscode.l10n.t` + `l10n/bundle.l10n.{zh-cn,zh-tw,ja}.json` at runtime. Keep `.learn/refs/` folder names English.
 - Activation: `onUri` + `onView:learnByDiff.courseView` + learning-workspace detect. Chapter Start / Finish export `fromDir` / `toDir` with dirty confirm vs last applied snapshot.

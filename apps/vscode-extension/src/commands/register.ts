@@ -1,3 +1,4 @@
+import path from "node:path";
 import * as vscode from "vscode";
 import type { GitClient } from "../git/client.ts";
 import { openChapterFileDiff } from "../ui/diff.ts";
@@ -39,6 +40,7 @@ import {
   currentChapter,
   nextChapter,
   previousChapter,
+  sessionHasStudentEdits,
 } from "../workspace/session.ts";
 import type { ChapterSnapshotSide } from "../workspace/state.ts";
 import {
@@ -70,12 +72,21 @@ export function registerCommands(
      */
     dispose: () => {
       stopBackgroundSnapshotPrefetch();
+      if (studentEditCheckTimer !== undefined) {
+        clearTimeout(studentEditCheckTimer);
+      }
     },
   });
   const isDevHost = context.extensionMode === vscode.ExtensionMode.Development;
   const defaultCourseUrl = isDevHost ? demoCoursePath(context.extensionPath) : undefined;
   /** Learning root last pushed into the UI; used so folder-change restore can re-check snapshots without resetting Explorer. */
   let appliedWorkspaceRoot: string | undefined;
+  /** Session whose student tree drives the status-change button. */
+  let activeSession: LearningSession | undefined;
+  /** Drops a stale edit check when a newer one has started. */
+  let studentEditCheckGeneration = 0;
+  /** Debounce handle for workspace file events. */
+  let studentEditCheckTimer: ReturnType<typeof setTimeout> | undefined;
 
   /**
    * Returns the learning workspace folder path when one is open.
@@ -160,13 +171,85 @@ export function registerCommands(
    */
   function applySession(session: LearningSession | undefined): void {
     appliedWorkspaceRoot = session?.workspaceRoot;
+    activeSession = session;
     setSession(session);
+    scheduleStudentEditCheck(0);
     if (session === undefined) {
       stopBackgroundSnapshotPrefetch();
       return;
     }
     startSnapshotPrefetch(session);
   }
+
+  /**
+   * Publishes `learnByDiff.studentHasEdits` so the button matching the current
+   * status (Not Started or Completed) can stay disabled until the student edits.
+   *
+   * A newer check supersedes an in-flight one. Failures leave the button disabled.
+   */
+  async function publishStudentHasEdits(): Promise<void> {
+    const generation = ++studentEditCheckGeneration;
+    const session = activeSession;
+    let hasEdits = false;
+    if (session !== undefined) {
+      try {
+        hasEdits = await sessionHasStudentEdits(git, session);
+      } catch {
+        hasEdits = false;
+      }
+    }
+    if (generation !== studentEditCheckGeneration) {
+      return;
+    }
+    await vscode.commands.executeCommand("setContext", "learnByDiff.studentHasEdits", hasEdits);
+  }
+
+  /**
+   * Queues a student-edit check. Workspace events wait briefly so a save
+   * does not compare the tree once per changed file.
+   *
+   * @param delayMs - Wait before comparing; `0` still runs after the current turn
+   */
+  function scheduleStudentEditCheck(delayMs = 300): void {
+    if (studentEditCheckTimer !== undefined) {
+      clearTimeout(studentEditCheckTimer);
+    }
+    studentEditCheckTimer = setTimeout(() => {
+      studentEditCheckTimer = undefined;
+      void publishStudentHasEdits();
+    }, delayMs);
+  }
+
+  /**
+   * Re-checks student edits after a file change in the learning workspace.
+   *
+   * Ignores `.git`, `.learn`, and `node_modules`, which do not count as edits.
+   *
+   * @param uri - File that was created, changed, or deleted
+   */
+  function onStudentTreeChanged(uri: vscode.Uri): void {
+    const session = activeSession;
+    if (session === undefined) {
+      return;
+    }
+    const relative = path.relative(session.workspaceRoot, uri.fsPath);
+    if (relative.startsWith("..") || path.isAbsolute(relative)) {
+      return;
+    }
+    const top = relative.split(path.sep)[0];
+    if (top === ".git" || top === ".learn" || top === "node_modules") {
+      return;
+    }
+    scheduleStudentEditCheck();
+  }
+
+  const studentTreeWatcher = vscode.workspace.createFileSystemWatcher("**/*");
+  context.subscriptions.push(
+    studentTreeWatcher,
+    studentTreeWatcher.onDidCreate(onStudentTreeChanged),
+    studentTreeWatcher.onDidChange(onStudentTreeChanged),
+    studentTreeWatcher.onDidDelete(onStudentTreeChanged),
+  );
 
   /**
    * Shows a notification while unique chapter snapshots download.
@@ -676,7 +759,9 @@ export function registerCommands(
         return;
       }
     }
+    activeSession = session;
     setSession(session);
+    scheduleStudentEditCheck(0);
     await tree.revealCurrentChapter();
   }
 
