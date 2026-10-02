@@ -108,6 +108,7 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
   /**
    * Stores the created tree view so current chapter rows can be revealed,
    * and tracks which chapters are expanded for tree-mode folder auto-expand.
+   * Chapter selection is released so inline actions stay hover-only.
    *
    * @param treeView - View registered for `learnByDiff.courseView`
    */
@@ -123,6 +124,40 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
         this.expandedChapterIds.delete(event.element.chapterId);
       }
     });
+    treeView.onDidChangeSelection((event) => {
+      void this.releaseChapterActionPin(event.selection);
+    });
+  }
+
+  /**
+   * Drops a chapter row's selection and keyboard focus so its inline actions
+   * show only while the pointer is over the row.
+   *
+   * Deferred one turn so a click on an inline action still runs. `list.clear`
+   * clears both selection and focus; clearing selection alone leaves the row
+   * focused, and the workbench still shows actions for that state. File and
+   * folder selections are left alone.
+   *
+   * @param selection - Rows selected when the selection event fired
+   */
+  private async releaseChapterActionPin(selection: readonly CourseTreeItem[]): Promise<void> {
+    if (!selection.some((item) => item.kind === "chapter")) {
+      return;
+    }
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
+    if (
+      this.treeView === undefined ||
+      !this.treeView.selection.some((item) => item.kind === "chapter")
+    ) {
+      return;
+    }
+    try {
+      await vscode.commands.executeCommand("list.clear");
+    } catch {
+      // Command unavailable in this host.
+    }
   }
 
   /**
