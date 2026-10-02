@@ -71,21 +71,34 @@ export async function applyChapterSnapshot(
   if (chapter === undefined) {
     throw new Error(`unknown chapter: ${chapterId}`);
   }
-  if (!force) {
-    const { sourceMirror } = learningPaths(session.workspaceRoot);
-    const hasEdits = await hasStudentEditsSinceChapterStart(
-      git,
-      session.workspaceRoot,
-      sourceMirror,
-      currentChapterSnapshotSubtree(session),
-      session.course.config.retain,
-    );
-    if (hasEdits) {
-      throw new DirtyWorkspaceError(session.workspaceRoot);
-    }
+  if (!force && (await sessionHasStudentEdits(git, session))) {
+    throw new DirtyWorkspaceError(session.workspaceRoot);
   }
   await checkoutChapter(git, session.workspaceRoot, session.course, chapterId, side);
   session.progress = { chapter: chapterId, completed: false, appliedSide: side };
+}
+
+/**
+ * Returns whether the student tree differs from the snapshot for the current chapter status.
+ *
+ * Not Started compares `fromDir`; Completed compares `toDir`. The same rules as a
+ * status change: `.git`, `.learn`, gitignored paths, and `retain` paths do not count.
+ *
+ * @param git - Git client
+ * @param session - Active learning session
+ */
+export async function sessionHasStudentEdits(
+  git: GitClient,
+  session: LearningSession,
+): Promise<boolean> {
+  const { sourceMirror } = learningPaths(session.workspaceRoot);
+  return hasStudentEditsSinceChapterStart(
+    git,
+    session.workspaceRoot,
+    sourceMirror,
+    currentChapterSnapshotSubtree(session),
+    session.course.config.retain,
+  );
 }
 
 /**
