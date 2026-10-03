@@ -62,5 +62,11 @@
   "Copied the generate course prompt to the clipboard.": "已将生成课程提示复制到剪贴板。",
   "LearnByDiff: Install Generate Course Skill": "LearnByDiff: 安装生成课程 Skill",
   "Choose the snapshot folder": "选择快照文件夹",
-  "npx was not found on PATH. Install Node.js and reopen the window.": "未在 PATH 中找到 npx。请安装 Node.js 并重新打开窗口。"
+  "npx was not found on PATH. Install Node.js and reopen the window.": "未在 PATH 中找到 npx。请安装 Node.js 并重新打开窗口。",
+  "LearnByDiff: loading official courses": "LearnByDiff：正在加载官方课程",
+  "Downloading course config…": "正在下载课程配置…",
+  "Could not download course.jsonc. Check the URL and try again.": "无法下载 course.jsonc。请检查 URL 后重试。",
+  "LearnByDiff: downloading chapter config": "LearnByDiff：正在下载章节配置",
+  "Could not load the official course list. Enter a course.jsonc path or URL instead.": "无法加载官方课程列表。请改为输入 course.jsonc 路径或 URL。",
+  "Official courses": "官方课程"
 }

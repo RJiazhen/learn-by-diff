@@ -164,8 +164,13 @@
       },
       {
         "view": "learnByDiff.courseView",
+        "contents": "%learnByDiff.viewsWelcome.downloadingChapterConfig%",
+        "when": "learnByDiff.ready && learnByDiff.downloadingChapterConfig"
+      },
+      {
+        "view": "learnByDiff.courseView",
         "contents": "%learnByDiff.viewsWelcome.openCourse%",
-        "when": "learnByDiff.ready && !learnByDiff.isLearningWorkspace"
+        "when": "learnByDiff.ready && !learnByDiff.isLearningWorkspace && !learnByDiff.downloadingChapterConfig"
       }
     ],
     "submenus": [

@@ -20,6 +20,7 @@
   "learnByDiff.chapterMore.label": "更多",
   "learnByDiff.courseView.name": "Learn By Diff",
   "learnByDiff.viewsWelcome.loading": "正在加载…",
+  "learnByDiff.viewsWelcome.downloadingChapterConfig": "正在下载章节配置…",
   "learnByDiff.viewsWelcome.openCourse": "打开 LearnByDiff 课程开始学习。\n[打开课程](command:learnByDiff.openCourse)",
   "learnByDiff.currentChapter.colorDescription": "Learn By Diff 视图中当前章节的高亮颜色"
 }

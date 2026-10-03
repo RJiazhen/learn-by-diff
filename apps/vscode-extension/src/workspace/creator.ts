@@ -88,42 +88,13 @@ export async function createLearningWorkspace(
     await ensureBuiltinRetain(paths.courseDir);
 
     const course = await loadCourseFromConfigDir(paths.courseDir);
-
-    const sourceRepository = resolveSourceRepository(
-      course.config.source.repository,
-      courseConfigSource.configDir,
-    );
-    await materializeSourceStore(git, sourceRepository, paths.sourceMirror, onLog);
-
-    const first = course.chapters[0];
-    if (first === undefined) {
-      throw new Error("course has no chapters");
-    }
-    const fromSubtree = resolveSourceSubtreePath(course.config.source, first.fromDir);
-    const toSubtree = resolveSourceSubtreePath(course.config.source, first.toDir);
-    if (fromSubtree !== undefined) {
-      await assertSourceSubtree(git, paths.sourceMirror, fromSubtree);
-    }
-    if (toSubtree !== undefined) {
-      await assertSourceSubtree(git, paths.sourceMirror, toSubtree);
-    }
-
-    onLog?.(
-      `Exporting chapter ${first.id} (${fromSubtree === undefined ? "∅" : `${fromSubtree}/`})…`,
-    );
-    await replaceStudentTreeFromSource(
+    await installCourseSourceAndFirstChapter(
       git,
       learningRoot,
-      paths.sourceMirror,
-      fromSubtree,
-      course.config.retain,
+      course,
+      courseConfigSource.configDir,
+      onLog,
     );
-
-    await writeProgress(learningRoot, {
-      chapter: first.id,
-      completed: false,
-      appliedSide: "start",
-    });
     await writeCourseOrigin(
       learningRoot,
       await describeCourseOrigin(git, courseRepoUrl, courseConfigSource.configDir),
@@ -135,6 +106,63 @@ export async function createLearningWorkspace(
   } finally {
     await courseConfigSource.cleanup();
   }
+}
+
+/**
+ * Clones or copies the course source and exports chapter 1 into the student tree.
+ *
+ * `sourceConfigDir` resolves a relative `source.repository`. `.` is the directory
+ * that contained the original `course.jsonc`. Writes `.learn/progress.json`.
+ *
+ * @param git - Git client
+ * @param workspaceRoot - Learning repository root
+ * @param course - Loaded course whose config is already under `.learn/course`
+ * @param sourceConfigDir - Directory used to resolve a relative source repository
+ * @param onLog - Optional progress logger
+ */
+export async function installCourseSourceAndFirstChapter(
+  git: GitClient,
+  workspaceRoot: string,
+  course: Course,
+  sourceConfigDir: string,
+  onLog?: (line: string) => void,
+): Promise<void> {
+  const paths = learningPaths(workspaceRoot);
+  const sourceRepository = resolveSourceRepository(
+    course.config.source.repository,
+    sourceConfigDir,
+  );
+  await materializeSourceStore(git, sourceRepository, paths.sourceMirror, onLog);
+
+  const first = course.chapters[0];
+  if (first === undefined) {
+    throw new Error("course has no chapters");
+  }
+  const fromSubtree = resolveSourceSubtreePath(course.config.source, first.fromDir);
+  const toSubtree = resolveSourceSubtreePath(course.config.source, first.toDir);
+  if (fromSubtree !== undefined) {
+    await assertSourceSubtree(git, paths.sourceMirror, fromSubtree);
+  }
+  if (toSubtree !== undefined) {
+    await assertSourceSubtree(git, paths.sourceMirror, toSubtree);
+  }
+
+  onLog?.(
+    `Exporting chapter ${first.id} (${fromSubtree === undefined ? "∅" : `${fromSubtree}/`})…`,
+  );
+  await replaceStudentTreeFromSource(
+    git,
+    workspaceRoot,
+    paths.sourceMirror,
+    fromSubtree,
+    course.config.retain,
+  );
+
+  await writeProgress(workspaceRoot, {
+    chapter: first.id,
+    completed: false,
+    appliedSide: "start",
+  });
 }
 
 /** Temporary or in-place course config directory used while creating a workspace. */
@@ -446,6 +474,7 @@ const LEARN_GITIGNORE_RULES = [
   ".learn/snapshots/",
   ".learn/refs/",
   ".learn/origin.json",
+  ".learn/chapter-config-download.json",
   "*.code-workspace",
   "node_modules/",
 ];

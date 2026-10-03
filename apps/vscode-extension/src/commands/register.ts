@@ -18,7 +18,10 @@ import {
   loadLearningSession,
   type LearningSession,
 } from "../workspace/loader.ts";
+import { readChapterConfigDownloadRecord } from "../workspace/chapterConfigDownload.ts";
 import { openCourse } from "../workspace/openCourse.ts";
+import { resumeChapterConfigDownload } from "../workspace/resumeChapterConfigDownload.ts";
+import { promptOpenCourseUrl } from "./promptOpenCourse.ts";
 import {
   COURSE_JSONC_FIND_EXCLUDE,
   COURSE_JSONC_FIND_INCLUDE,
@@ -122,6 +125,15 @@ export function registerCommands(
       try {
         if (await openLearningWorkspaceIfNeeded(root)) {
           awaitingHostReload = true;
+          return undefined;
+        }
+        if ((await readChapterConfigDownloadRecord(root)) !== undefined) {
+          resumeChapterConfigDownload({
+            git,
+            workspaceRoot: root,
+            onLog: onPrefetchLog,
+            onReady: applySession,
+          });
           return undefined;
         }
         const session = await loadLearningSession(root);
@@ -319,25 +331,18 @@ export function registerCommands(
 
   context.subscriptions.push(
     vscode.commands.registerCommand("learnByDiff.openCourse", async () => {
-      const url = await vscode.window.showInputBox({
-        title: vscode.l10n.t("LearnByDiff: Open Course"),
-        prompt: isDevHost
-          ? vscode.l10n.t(
-              "Path to course.jsonc (prefilled with local examples/demo-course/.course-config/course.jsonc)",
-            )
-          : vscode.l10n.t(
-              "Path to course.jsonc, a GitHub course.jsonc URL, or a git URL to a course repository",
-            ),
-        placeHolder: "/path/to/course.jsonc",
-        value: defaultCourseUrl,
-        ignoreFocusOut: true,
+      const picked = await promptOpenCourseUrl({
+        isDevHost,
+        defaultCourseUrl,
+        output,
       });
-      if (url === undefined || url.trim() === "") {
+      if (picked === undefined) {
         return;
       }
 
       await openCourse({
-        courseRepoUrl: url.trim(),
+        courseRepoUrl: picked.courseRepoUrl,
+        courseJsoncText: picked.courseJsoncText,
         git,
         output,
         onSession: applySession,
