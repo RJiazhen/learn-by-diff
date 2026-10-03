@@ -627,6 +627,9 @@ export function registerCommands(
       if (item?.kind !== "file" || item.relativePath === undefined) {
         return;
       }
+      // Click already selected the row. Clear before any other await so a later
+      // view focus cannot scroll that row to the center of the list.
+      await tree.clearSelection();
       // Use loadFromRoot (not restore): restore refreshes the tree + re-selects the
       // chapter, which flashes selection when opening a file diff.
       const session = await loadFromRoot();
@@ -634,9 +637,6 @@ export function registerCommands(
         return;
       }
       try {
-        // Click selects the row; clear before slow archive work so it never stays highlighted.
-        await new Promise<void>((resolve) => setTimeout(resolve, 0));
-        await tree.clearSelection();
         await openChapterFileDiff(git, session, item.chapterId, item.relativePath);
       } catch (error) {
         showError(error);

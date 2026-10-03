@@ -240,28 +240,20 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
   }
 
   /**
-   * Clears any tree selection so opening a diff does not leave a sticky file highlight.
-   * Refocuses the active editor group afterward when the tree had to take focus to clear.
+   * Clears tree selection and keyboard focus after a diff-file click.
+   *
+   * Uses `list.clear` on the list that already has focus. Focusing the view
+   * to clear would reveal the selected row at the vertical center, scrolling
+   * the list and then snapping that row back to center on later scrolls.
    */
   async clearSelection(): Promise<void> {
     if (this.treeView === undefined || this.treeView.selection.length === 0) {
       return;
     }
     try {
-      await vscode.commands.executeCommand("list.clearSelection");
+      await vscode.commands.executeCommand("list.clear");
     } catch {
       // Command unavailable in this host.
-    }
-    if (this.treeView.selection.length === 0) {
-      return;
-    }
-    // Selection APIs only affect the focused list; reclaim focus briefly, then return.
-    try {
-      await vscode.commands.executeCommand("learnByDiff.courseView.focus");
-      await vscode.commands.executeCommand("list.clearSelection");
-      await vscode.commands.executeCommand("workbench.action.focusActiveEditorGroup");
-    } catch {
-      // View or editor commands unavailable.
     }
   }
 
