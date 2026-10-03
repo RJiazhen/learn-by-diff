@@ -7,8 +7,7 @@ Thanks for contributing. This repo is a pnpm + [Vite+](https://viteplus.dev/) mo
 Requires Node 22+, pnpm, Git, and the `vp` CLI from Vite+ (or use `pnpm exec vp`).
 
 ```bash
-pnpm install
-git config core.hooksPath .githooks
+pnpm install   # sets core.hooksPath to .vite-hooks/_
 pnpm exec vp check
 pnpm exec vp run -r test
 pnpm exec vp run @learn-by-diff/protocol#pack
@@ -38,7 +37,7 @@ Press **F5** (`Run Extension`). The prelaunch task runs `vp pack --watch`, then 
 
 ## Publish (maintainers)
 
-Bump `version` in [`apps/vscode-extension/package.json`](apps/vscode-extension/package.json) and push that commit. With `core.hooksPath` set to `.githooks`, the `pre-push` hook creates and pushes annotated tag `vX.Y.Z` matching that field. You can still push the tag yourself. GitHub Actions then copies root [`README.md`](README.md) into the extension folder, packages one VSIX, and publishes it to:
+Bump `version` in [`apps/vscode-extension/package.json`](apps/vscode-extension/package.json) and push that commit. After `pnpm install`, `core.hooksPath` is `.vite-hooks/_`, so [`.vite-hooks/pre-push`](.vite-hooks/pre-push) creates and pushes annotated tag `vX.Y.Z` matching that field. You can still push the tag yourself. GitHub Actions then copies root [`README.md`](README.md) into the extension folder, packages one VSIX, and publishes it to:
 
 - Visual Studio Marketplace (`VSCE_PAT`)
 - Open VSX (`OVSX_PAT`)

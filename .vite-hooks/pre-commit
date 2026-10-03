@@ -1,1 +1,7 @@
+#!/bin/sh
+# Rebuilds the skill JSONC helper (unminified, JSDoc comments kept), then lints and formats staged files.
+set -e
+root=$(git rev-parse --show-toplevel)
+pnpm --dir "$root/packages/generate-course-config" exec vp build
+git add -- "$root/skills/generate-course-config/scripts/chapter-jsonc.mjs"
 vp staged
