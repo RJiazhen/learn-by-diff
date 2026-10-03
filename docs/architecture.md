@@ -82,12 +82,68 @@ Under a learning workspace root:
 | `.learn/progress.json`                   | Applied chapter id / start or finish snapshot                                      |
 | `.learn/course/`                         | Copy of course config                                                              |
 | `.learn/origin.json`                     | Open Course origin for copy-link (gitignored)                                      |
+| `.learn/chapter-config-download.json`    | Present only while remote chapter JSONC is not downloaded yet; deleted when done   |
 | `.learn/source.git/`                     | Materialized source store (mirror)                                                 |
 | `.learn/snapshots/dirs/<source-dir>/`    | Cached source trees (one copy per unique `fromDir`/`toDir`; prefetched after open) |
 | `.learn/refs/<ordinal>-<title> (status)` | Runnable copy; folder name matches Explorer                                        |
 | `{root}.code-workspace`                  | Multi-root window (named after the course dir)                                     |
 
 Activation today: `onUri` + `onView:learnByDiff.courseView` + `workspaceContains:.learn/progress.json`. Explorer view **Learn By Diff** is always shown; `viewsWelcome` + Open Course in the view More Actions menu when the folder is not a learning workspace.
+
+### Open Course process
+
+Entry points: command `learnByDiff.openCourse` (picker) and URI handler `vscode://` / `cursor://` → `openCourse`.
+
+```mermaid
+flowchart TD
+  start([Open Course]) --> entry{Entry}
+  entry -->|command| picker[Show QuickPick immediately]
+  entry -->|deep link| openCourseFn[openCourse]
+
+  picker --> catalogBg[Background: load courses.jsonc + each course.jsonc]
+  catalogBg --> fillList[Fill official course rows]
+  picker --> accept{Accept}
+  accept -->|official row with text| selRemote[Selection + courseJsoncText]
+  accept -->|typed GitHub course.jsonc URL| dlConfig[Busy: download course.jsonc]
+  dlConfig -->|ok| selRemote
+  dlConfig -->|fail| picker
+  accept -->|typed local path / git URL| selLocal[Selection without courseJsoncText]
+  fillList -.-> accept
+  selRemote --> openCourseFn
+  selLocal --> openCourseFn
+
+  openCourseFn --> parent{Parent folder}
+  parent -->|in-place empty learning root| create
+  parent -->|pick parent| create
+  create{courseJsoncText set?}
+  create -->|yes remote| prepare[prepareRemoteCourseWorkspace]
+  create -->|no| full[createLearningWorkspace]
+  prepare --> writeCourse["Write .learn/course/course.jsonc"]
+  writeCourse --> pending["Write chapter-config-download.json completed: false"]
+  pending --> openWs[openLearningWorkspaceIfNeeded]
+  full --> openWs
+
+  openWs -->|host reload| restore[restore on activate]
+  openWs -->|same window| afterOpen{courseJsoncText set?}
+  restore --> pendingCheck{chapter-config-download.json?}
+  pendingCheck -->|yes| resume
+  pendingCheck -->|no| session[loadLearningSession + snapshot prefetch]
+  afterOpen -->|yes| resume[resumeChapterConfigDownload]
+  afterOpen -->|no| session
+
+  resume --> tip[Set learnByDiff.downloadingChapterConfig tip]
+  tip --> dlChapters[Download chapter JSONC]
+  dlChapters --> clearPending[Delete chapter-config-download.json]
+  clearPending --> install[installCourseSourceAndFirstChapter]
+  install --> sessionReady[loadLearningSession → tree + snapshot prefetch]
+```
+
+Notes:
+
+- The picker stays busy until remote **`course.jsonc`** downloads finish (catalog rows and a typed GitHub file URL). **Chapter JSONC is not** part of that wait.
+- Official catalog: [`RJiazhen/learn-by-diff-courses`](https://github.com/RJiazhen/learn-by-diff-courses) `courses.jsonc` on `main`. Catalog failure still allows a typed path or URL.
+- Remote prepare writes `.learn/chapter-config-download.json` (`completed: false`). After the workspace is open, resume downloads chapter JSONC, deletes that file, then materializes source and chapter 1. The Learn By Diff view tip uses context `learnByDiff.downloadingChapterConfig`.
+- Local / full clone path uses `createLearningWorkspace` (course + chapters + source + chapter 1) before the folder opens; snapshot trees still prefetch in the background afterward.
 
 **Not Started** / **Completed** export that chapter’s `fromDir` or `toDir` into the student tree and mark the row with that status (QuickPick only when the tree differs from the last applied snapshot).
 
@@ -100,6 +156,7 @@ View More Actions holds Open Course, previous/next chapter, and both copy-URL co
 | Area                                  | Responsibility                                                                               |
 | ------------------------------------- | -------------------------------------------------------------------------------------------- |
 | `workspace/openCourse.ts`             | Shared open-course flow (command + deep link)                                                |
+| `workspace/officialCourses.ts`        | Official `courses.jsonc` catalog; each row’s `course.jsonc` fills the Open Course list       |
 | `workspace/creator.ts`                | Create learning root, copy config, materialize source, first chapter                         |
 | `workspace/sourceStore.ts`            | Source mirror (git or tree copy); list/read/export chapter subtrees                          |
 | `workspace/session.ts`                | Chapter navigation and snapshot apply                                                        |

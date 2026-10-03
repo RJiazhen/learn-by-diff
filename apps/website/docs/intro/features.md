@@ -11,7 +11,7 @@ If the current workspace is not a learning course, click **Open Course**, or run
 
 <img src="../images/features-open-course.png" alt="Open a course" style="height: 400px; width: auto; margin: 0 auto; display: block;"/>
 
-Enter the course config URL in the input box and confirm.
+Select an official course, or type a `course.jsonc` path or URL and confirm.
 
 ## Switch and inspect chapters
 

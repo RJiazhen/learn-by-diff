@@ -21,7 +21,7 @@ Explorer の **LEARN BY DIFF** ビューのタイトルバーで「コースを�
 
 <img src="https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/apps/website/docs/images/open-course-button.png" alt="コースを開くボタン" style="max-width: 300px; display: block; margin: 0 auto;">
 
-次のデモコース設定 URL を貼り付けて確定します。
+一覧から公式コースを選ぶか、次のデモコース設定 URL を貼り付けて確定します。
 
 ```text
 https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc
