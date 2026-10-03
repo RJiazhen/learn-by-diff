@@ -11,7 +11,7 @@ outline: deep
 
 <img src="../../images/features-open-course.png" alt="コースを開く" style="height: 400px; width: auto; margin: 0 auto; display: block;"/>
 
-入力欄にコース設定ファイルの URL を入れて確定します。
+一覧から公式コースを選ぶと開きます。course.jsonc のパスまたは URL を入力して確定することもできます。
 
 ## 章の切り替えと確認
 

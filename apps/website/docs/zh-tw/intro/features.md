@@ -11,7 +11,7 @@ outline: deep
 
 <img src="../../images/features-open-course.png" alt="開啟課程" style="height: 400px; width: auto; margin: 0 auto; display: block;"/>
 
-然後在輸入框中輸入課程設定檔的 URL，點 **「確定」** 即可開啟課程。
+在清單中點選一門官方課程即可開啟。也可以在輸入框中填入 course.jsonc 路徑或 URL 並確認。
 
 ## 章節切換與檢視
 

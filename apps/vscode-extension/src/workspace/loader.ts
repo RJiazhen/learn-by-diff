@@ -1,6 +1,7 @@
 import { stat } from "node:fs/promises";
 import { isCourseRepository, loadCourseFromConfigDir, type Course } from "@learn-by-diff/protocol";
 import { isEmptyLearningTarget } from "./emptyTarget.ts";
+import { readChapterConfigDownloadRecord } from "./chapterConfigDownload.ts";
 import { learningPaths } from "./paths.ts";
 import { ensureBuiltinRetain } from "./retain.ts";
 import { readProgress, type LearningProgress } from "./state.ts";
@@ -83,7 +84,8 @@ export async function isInPlaceLearningTarget(dir: string): Promise<boolean> {
 /**
  * Returns the first folder that is a LearnByDiff learning workspace.
  *
- * Used when Explorer is multi-root (student tree plus chapter reference folders).
+ * A folder that only has a pending chapter-config download is included so that
+ * download can resume after the window opens. Used when Explorer is multi-root.
  *
  * @param folderPaths - Open workspace folder paths, typically in Explorer order
  */
@@ -92,6 +94,11 @@ export async function findLearningWorkspaceRoot(
 ): Promise<string | undefined> {
   for (const folder of folderPaths) {
     if (await isLearningWorkspace(folder)) {
+      return folder;
+    }
+  }
+  for (const folder of folderPaths) {
+    if ((await readChapterConfigDownloadRecord(folder)) !== undefined) {
       return folder;
     }
   }

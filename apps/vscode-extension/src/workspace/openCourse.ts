@@ -8,6 +8,8 @@ import {
 } from "../snapshot/prefetch.ts";
 import { reportSnapshotPrefetchProgress } from "../snapshot/prefetchProgress.ts";
 import { createLearningWorkspace } from "./creator.ts";
+import { prepareRemoteCourseWorkspace } from "./remoteCourseWorkspace.ts";
+import { resumeChapterConfigDownload } from "./resumeChapterConfigDownload.ts";
 import { NonEmptyLearningTargetError } from "./errors.ts";
 import {
   findLearningWorkspaceRoot,
@@ -20,6 +22,11 @@ import { openLearningWorkspaceIfNeeded } from "./workspaceFolders.ts";
 /** Options for opening a course into a learning workspace. */
 export interface OpenCourseOptions {
   courseRepoUrl: string;
+  /**
+   * Raw `course.jsonc` already downloaded while the Open Course picker was open.
+   * When set, chapter JSONC files are not copied during workspace creation.
+   */
+  courseJsoncText?: string;
   git: GitClient;
   output: vscode.OutputChannel;
   /**
@@ -42,7 +49,7 @@ export interface OpenCourseOptions {
  * @returns Absolute learning root when created; `undefined` when cancelled or failed
  */
 export async function openCourse(options: OpenCourseOptions): Promise<string | undefined> {
-  const { courseRepoUrl, git, output, onSession } = options;
+  const { courseRepoUrl, courseJsoncText, git, output, onSession } = options;
   const url = courseRepoUrl.trim();
   if (url === "") {
     return undefined;
@@ -89,14 +96,25 @@ export async function openCourse(options: OpenCourseOptions): Promise<string | u
         progress.report({ message: line });
       };
       try {
-        const created = await createLearningWorkspace({
-          courseRepoUrl: url,
-          inPlaceRoot,
-          parentDir,
-          git,
-          onLog: onCreateLog,
-        });
-        learningRoot = created.learningRoot;
+        if (courseJsoncText !== undefined) {
+          learningRoot = await prepareRemoteCourseWorkspace({
+            courseRepoUrl: url,
+            courseJsoncText,
+            inPlaceRoot,
+            parentDir,
+            git,
+            onLog: onCreateLog,
+          });
+        } else {
+          const created = await createLearningWorkspace({
+            courseRepoUrl: url,
+            inPlaceRoot,
+            parentDir,
+            git,
+            onLog: onCreateLog,
+          });
+          learningRoot = created.learningRoot;
+        }
       } catch (error) {
         if (error instanceof NonEmptyLearningTargetError) {
           blockedRoot = error.learningRoot;
@@ -146,6 +164,26 @@ export async function openCourse(options: OpenCourseOptions): Promise<string | u
   }
 
   const switched = await openLearningWorkspaceIfNeeded(learningRoot);
+
+  if (courseJsoncText !== undefined) {
+    if (!switched) {
+      /**
+       * Appends a chapter-config download line to the LearnByDiff output channel.
+       *
+       * @param line - Message from the download
+       */
+      const appendOpenLog = (line: string): void => {
+        output.appendLine(line);
+      };
+      resumeChapterConfigDownload({
+        git,
+        workspaceRoot: learningRoot,
+        onLog: appendOpenLog,
+        onReady: onSession,
+      });
+    }
+    return learningRoot;
+  }
 
   try {
     const session = await loadLearningSession(learningRoot);

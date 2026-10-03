@@ -21,7 +21,7 @@
 
 <img src="https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/apps/website/docs/images/open-course-button.png" alt="打开课程按钮" style="max-width: 300px; display: block; margin: 0 auto;">
 
-填入以下 demo 课程配置地址并确认：
+从列表中选择一门官方课程，或填入以下 demo 课程配置地址并确认：
 
 ```text
 https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc

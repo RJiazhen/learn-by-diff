@@ -11,7 +11,7 @@ outline: deep
 
 <img src="../../images/features-open-course.png" alt="打开课程" style="height: 400px; width: auto; margin: 0 auto; display: block;"/>
 
-然后在弹出的输入框中输入课程配置文件的 URL，然后点击 **「确定」** 按钮，即可打开课程。
+在列表中点选一门官方课程即可打开。也可以在输入框中填入 course.jsonc 路径或 URL 并确认。
 
 ## 章节切换与查看
 

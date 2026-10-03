@@ -22,7 +22,7 @@ Click **Open Course** on the **LEARN BY DIFF** view title bar in Explorer (or ru
 
 <img src="../images/open-course-button.png" alt="Open Course button" style="height: 300px; width: auto; margin: 0 auto;" />
 
-Paste this demo course config URL and confirm:
+Select an official course, or paste this demo course config URL and confirm:
 
 ```text
 https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc

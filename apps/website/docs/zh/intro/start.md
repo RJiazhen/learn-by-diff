@@ -22,7 +22,7 @@ LearnByDiff 适用于 **VS Code**、**Cursor**，以及其他基于 VS Code 的 
 
 <img src="../../images/open-course-button.png" alt="open course button" style="height: 300px; width: auto; margin: 0 auto;" />
 
-填入以下 demo 课程配置文件地址并确认：
+从列表中选择一门官方课程，或填入以下 demo 课程配置文件地址并确认：
 
 ```text
 https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc
