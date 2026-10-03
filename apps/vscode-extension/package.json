@@ -93,6 +93,12 @@
         "category": "LearnByDiff"
       },
       {
+        "command": "learnByDiff.installGenerateCourseSkill",
+        "title": "%learnByDiff.installGenerateCourseSkill.title%",
+        "category": "LearnByDiff",
+        "icon": "$(tools)"
+      },
+      {
         "command": "learnByDiff.applyChapterStart",
         "title": "%learnByDiff.applyChapterStart.title%",
         "icon": "$(circle-large)",
@@ -277,6 +283,10 @@
         }
       ],
       "commandPalette": [
+        {
+          "command": "learnByDiff.installGenerateCourseSkill",
+          "when": "workspaceFolderCount > 0"
+        },
         {
           "command": "learnByDiff.copyCurrentCourseUrl",
           "when": "learnByDiff.isLearningWorkspace"
