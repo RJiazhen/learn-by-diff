@@ -57,5 +57,10 @@
   "VS Code": "VS Code",
   "Cursor": "Cursor",
   "Local course.jsonc path": "本地 course.jsonc 路径",
-  "Remote git URL": "远程 git URL"
+  "Remote git URL": "远程 git URL",
+  "LearnByDiff: installing generate course skill": "LearnByDiff: 正在安装生成课程 Skill",
+  "Copied the generate course prompt to the clipboard.": "已将生成课程提示复制到剪贴板。",
+  "LearnByDiff: Install Generate Course Skill": "LearnByDiff: 安装生成课程 Skill",
+  "Choose the snapshot folder": "选择快照文件夹",
+  "npx was not found on PATH. Install Node.js and reopen the window.": "未在 PATH 中找到 npx。请安装 Node.js 并重新打开窗口。"
 }

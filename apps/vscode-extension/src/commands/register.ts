@@ -49,6 +49,11 @@ import {
 } from "../workspace/workspaceFolders.ts";
 import type { OpenCourseEditorScheme } from "../uri/formatOpenCourseLink.ts";
 import { registerUriHandler } from "../uri/registerUriHandler.ts";
+import {
+  buildGenerateCoursePrompt,
+  installGenerateCourseSkill,
+  NPX_NOT_FOUND_MESSAGE,
+} from "../author/generateCoursePrompt.ts";
 import { showError } from "./showError.ts";
 
 /**
@@ -521,6 +526,50 @@ export function registerCommands(
   );
 
   /**
+   * Installs generate-course-config in the open folder, then copies the agent prompt.
+   *
+   * The prompt uses placeholder paths the author replaces in chat.
+   */
+  async function onInstallGenerateCourseSkill(): Promise<void> {
+    const snapshotPath = await pickSnapshotRoot();
+    if (snapshotPath === undefined) {
+      return;
+    }
+    try {
+      await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: vscode.l10n.t("LearnByDiff: installing generate course skill"),
+        },
+        /**
+         * Runs the skill install in the chosen snapshot folder.
+         */
+        async function runInstall(): Promise<void> {
+          await installGenerateCourseSkill(snapshotPath);
+        },
+      );
+    } catch (error) {
+      if (error instanceof Error && error.message === NPX_NOT_FOUND_MESSAGE) {
+        void vscode.window.showErrorMessage(vscode.l10n.t(NPX_NOT_FOUND_MESSAGE));
+        return;
+      }
+      showError(error);
+      return;
+    }
+    await copyToClipboard(
+      buildGenerateCoursePrompt(),
+      vscode.l10n.t("Copied the generate course prompt to the clipboard."),
+    );
+  }
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "learnByDiff.installGenerateCourseSkill",
+      onInstallGenerateCourseSkill,
+    ),
+  );
+
+  /**
    * Applies the start snapshot for the chapter row the user clicked.
    *
    * @param item - Explorer chapter row
@@ -766,6 +815,41 @@ export function registerCommands(
   }
 
   void restore();
+}
+
+/**
+ * Resolves the workspace folder that holds chapter snapshots.
+ *
+ * One open folder is used as-is. Several folders ask the user to pick.
+ *
+ * @returns Absolute folder path, or `undefined` when none is open or the pick is cancelled
+ */
+async function pickSnapshotRoot(): Promise<string | undefined> {
+  const folders = vscode.workspace.workspaceFolders ?? [];
+  if (folders.length === 0) {
+    void vscode.window.showWarningMessage(vscode.l10n.t("Open a folder first."));
+    return undefined;
+  }
+  if (folders.length === 1) {
+    return folders[0]?.uri.fsPath;
+  }
+  /**
+   * Maps a workspace folder to a QuickPick row.
+   *
+   * @param folder - Open workspace folder
+   */
+  function toPick(folder: vscode.WorkspaceFolder): vscode.QuickPickItem & { fsPath: string } {
+    return {
+      label: folder.name,
+      description: folder.uri.fsPath,
+      fsPath: folder.uri.fsPath,
+    };
+  }
+  const selected = await vscode.window.showQuickPick(folders.map(toPick), {
+    title: vscode.l10n.t("LearnByDiff: Install Generate Course Skill"),
+    placeHolder: vscode.l10n.t("Choose the snapshot folder"),
+  });
+  return selected?.fsPath;
 }
 
 /**

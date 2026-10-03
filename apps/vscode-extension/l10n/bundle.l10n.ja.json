@@ -57,5 +57,10 @@
   "VS Code": "VS Code",
   "Cursor": "Cursor",
   "Local course.jsonc path": "ローカルの course.jsonc パス",
-  "Remote git URL": "リモート git URL"
+  "Remote git URL": "リモート git URL",
+  "LearnByDiff: installing generate course skill": "LearnByDiff: コース生成 Skill をインストールしています",
+  "Copied the generate course prompt to the clipboard.": "コース生成プロンプトをクリップボードにコピーしました。",
+  "LearnByDiff: Install Generate Course Skill": "LearnByDiff: コース生成 Skill をインストール",
+  "Choose the snapshot folder": "スナップショットフォルダーを選択",
+  "npx was not found on PATH. Install Node.js and reopen the window.": "PATH に npx が見つかりません。Node.js をインストールしてウィンドウを開き直してください。"
 }

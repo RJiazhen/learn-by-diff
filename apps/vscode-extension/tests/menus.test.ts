@@ -5,6 +5,7 @@ type MenuContribution = {
   command?: string;
   submenu?: string;
   group?: string;
+  when?: string;
 };
 
 type CommandContribution = {
@@ -133,6 +134,20 @@ describe("course view menus", () => {
       "learnByDiff.copyWorkspaceCourseUrl",
       "learnByDiff.copyOneClickOpenUrl",
       "learnByDiff.openFileDiff",
+      "learnByDiff.installGenerateCourseSkill",
     ]);
+  });
+
+  test("install generate course skill is palette-only when a folder is open", () => {
+    const palette = menuItems("commandPalette").find(
+      (item) => item.command === "learnByDiff.installGenerateCourseSkill",
+    );
+    expect(palette?.when).toBe("workspaceFolderCount > 0");
+    for (const menuId of ["view/title", "view/item/context", "learnByDiff.chapterMore"]) {
+      const listed = menuItems(menuId).some(
+        (item) => item.command === "learnByDiff.installGenerateCourseSkill",
+      );
+      expect(listed).toBe(false);
+    }
   });
 });
