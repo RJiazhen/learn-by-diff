@@ -24,5 +24,5 @@
 
 - 汇报 PR 链接、`gh pr checks` 状态
 - 列出未通过项
-- 站点随 `main` 部署到 GitHub Pages：`https://rjiazhen.github.io/learn-by-diff/`（PR 上没有独立预览环境）
+- 站点在版本 tag（`v*`）推送时部署到 GitHub Pages：`https://rjiazhen.github.io/learn-by-diff/`（PR 上没有独立预览环境）
 - 工作区干净且已推送时，验收通过后再次执行本 skill 进入 Merge；若还有未提交改动，先走 Commit（不 push）；仅未推送则走 Ship

@@ -2,9 +2,8 @@ name: Website
 
 on:
   push:
-    branches:
-      - main
-      - master
+    tags:
+      - "v*"
   workflow_dispatch:
 
 permissions:
