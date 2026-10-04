@@ -113,37 +113,75 @@ export async function removeChapterConfigDownloadRecord(workspaceRoot: string): 
   await rm(learningPaths(workspaceRoot).chapterConfigDownloadFile, { force: true });
 }
 
+/** Options for {@link downloadChapterConfigFiles}. */
+export interface DownloadChapterConfigFilesOptions {
+  /** Called once with sorted chapter basenames before parallel downloads start. */
+  onChapterNames?: (fileNames: readonly string[]) => void;
+  /** Called after each chapter JSONC is written (may overlap across files). */
+  onChapterFile?: (fileName: string) => Promise<void>;
+}
+
 /**
  * Downloads chapter JSONC files described by `record` into `chaptersDir`.
  *
- * Does not update the pending record. The caller deletes that record after this resolves.
+ * File names are sorted like protocol `loadChapters` (`localeCompare`). The first
+ * chapter downloads alone so its row can appear sooner; remaining files download
+ * in parallel afterward. Does not update the pending record; the caller deletes
+ * that record after this resolves.
  *
  * @param record - Pending download
  * @param chaptersDir - Absolute directory that will hold the chapter JSONC files
  * @param fetchJson - Reads the GitHub contents listing
  * @param fetchText - Reads one raw chapter file
+ * @param options - Optional per-file completion hook
  */
 export async function downloadChapterConfigFiles(
   record: ChapterConfigDownloadRecord,
   chaptersDir: string,
   fetchJson: (url: string) => Promise<unknown>,
   fetchText: (url: string) => Promise<string | undefined>,
+  options: DownloadChapterConfigFilesOptions = {},
 ): Promise<void> {
   const listing = await fetchJson(githubContentsUrl(record));
   if (!Array.isArray(listing)) {
     throw new Error(`chapter config directory is not a file list: ${record.chaptersRelPath}`);
   }
+  const names = listing
+    .map((item) => githubContentFileName(item))
+    .filter((name): name is string => name !== undefined)
+    .sort((left, right) => left.localeCompare(right));
+  options.onChapterNames?.(names);
   await mkdir(chaptersDir, { recursive: true });
-  for (const item of listing) {
-    const name = githubContentFileName(item);
-    if (name === undefined) {
-      continue;
-    }
+  const [firstName, ...restNames] = names;
+  if (firstName === undefined) {
+    return;
+  }
+  // Chapter 1 alone, then overlap its post-write work with the remaining downloads.
+  await writeChapterFile(firstName);
+  const firstReady = options.onChapterFile?.(firstName) ?? Promise.resolve();
+  await Promise.all([firstReady, ...restNames.map((name) => downloadOneChapterFile(name))]);
+
+  /**
+   * Fetches and writes one chapter JSONC file without running the completion hook.
+   *
+   * @param name - Chapter JSONC basename
+   */
+  async function writeChapterFile(name: string): Promise<void> {
     const text = await fetchText(githubRawChapterUrl(record, name));
     if (text === undefined) {
       throw new Error(`chapter config file was not downloaded: ${name}`);
     }
     await writeFile(path.join(chaptersDir, name), text, "utf8");
+  }
+
+  /**
+   * Fetches, writes, and reports one chapter JSONC file.
+   *
+   * @param name - Chapter JSONC basename
+   */
+  async function downloadOneChapterFile(name: string): Promise<void> {
+    await writeChapterFile(name);
+    await options.onChapterFile?.(name);
   }
 }
 

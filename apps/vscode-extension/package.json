@@ -165,7 +165,7 @@
       {
         "view": "learnByDiff.courseView",
         "contents": "%learnByDiff.viewsWelcome.downloadingChapterConfig%",
-        "when": "learnByDiff.ready && learnByDiff.downloadingChapterConfig"
+        "when": "learnByDiff.ready && learnByDiff.downloadingChapterConfig && !learnByDiff.isLearningWorkspace"
       },
       {
         "view": "learnByDiff.courseView",

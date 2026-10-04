@@ -33,8 +33,13 @@ export interface OpenCourseOptions {
    * When set, skip the folder picker and use this parent (or in-place root rules still apply).
    */
   parentDir?: string;
-  /** Updates UI after an in-place open. */
+  /** Updates UI after an in-place open (final session, may start snapshot prefetch). */
   onSession?: (session: LearningSession | undefined) => void;
+  /**
+   * Updates UI as each remote chapter becomes ready (config + snapshots).
+   * Chapter 1 is always first. Prefer `prefetch: false` in the handler.
+   */
+  onChapterReady?: (session: LearningSession) => void;
 }
 
 /**
@@ -49,7 +54,7 @@ export interface OpenCourseOptions {
  * @returns Absolute learning root when created; `undefined` when cancelled or failed
  */
 export async function openCourse(options: OpenCourseOptions): Promise<string | undefined> {
-  const { courseRepoUrl, courseJsoncText, git, output, onSession } = options;
+  const { courseRepoUrl, courseJsoncText, git, output, onSession, onChapterReady } = options;
   const url = courseRepoUrl.trim();
   if (url === "") {
     return undefined;
@@ -179,6 +184,7 @@ export async function openCourse(options: OpenCourseOptions): Promise<string | u
         git,
         workspaceRoot: learningRoot,
         onLog: appendOpenLog,
+        onChapterReady,
         onReady: onSession,
       });
     }

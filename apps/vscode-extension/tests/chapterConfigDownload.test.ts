@@ -94,4 +94,90 @@ describe("downloadChapterConfigFiles", () => {
     await removeChapterConfigDownloadRecord(workspaceRoot);
     expect(await readChapterConfigDownloadRecord(workspaceRoot)).toBeUndefined();
   });
+
+  test("downloads the first chapter alone, then the rest in parallel", async () => {
+    const record = chapterConfigDownloadRecordFromCourse(courseUrl, courseJsonc);
+    expect(record).toBeDefined();
+    if (record === undefined) {
+      return;
+    }
+    const chaptersDir = path.join(await tempDir(), "chapters");
+    let inFlight = 0;
+    let maxInFlightAfterFirst = 0;
+    let firstCompleted = false;
+    const startedAfterFirst: string[] = [];
+    const completed: string[] = [];
+    let listed: readonly string[] | undefined;
+
+    /**
+     * Returns an unsorted GitHub directory listing so the downloader must sort.
+     */
+    async function fetchJson(): Promise<unknown> {
+      return [
+        { name: "003-c.jsonc", type: "file" },
+        { name: "002-b.jsonc", type: "file" },
+        { name: "001-a.jsonc", type: "file" },
+      ];
+    }
+
+    /**
+     * Delays each fetch so overlapping later downloads can be observed.
+     *
+     * @param url - Raw file URL
+     */
+    async function fetchText(url: string): Promise<string> {
+      const name = url.includes("001-a.jsonc")
+        ? "001-a.jsonc"
+        : url.includes("002-b.jsonc")
+          ? "002-b.jsonc"
+          : "003-c.jsonc";
+      if (firstCompleted) {
+        startedAfterFirst.push(name);
+      }
+      inFlight += 1;
+      if (firstCompleted) {
+        maxInFlightAfterFirst = Math.max(maxInFlightAfterFirst, inFlight);
+      }
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 30);
+      });
+      inFlight -= 1;
+      if (name === "001-a.jsonc") {
+        return '{ "id": "a" }\n';
+      }
+      if (name === "002-b.jsonc") {
+        return '{ "id": "b" }\n';
+      }
+      return '{ "id": "c" }\n';
+    }
+
+    await downloadChapterConfigFiles(record, chaptersDir, fetchJson, fetchText, {
+      /**
+       * Captures sorted names before downloads start.
+       *
+       * @param names - Chapter JSONC basenames
+       */
+      onChapterNames: (names) => {
+        listed = names;
+      },
+      /**
+       * Records each file after it is written.
+       *
+       * @param fileName - Chapter JSONC basename
+       */
+      onChapterFile: async (fileName) => {
+        completed.push(fileName);
+        if (fileName === "001-a.jsonc") {
+          firstCompleted = true;
+        }
+      },
+    });
+
+    expect(listed).toEqual(["001-a.jsonc", "002-b.jsonc", "003-c.jsonc"]);
+    expect(completed[0]).toBe("001-a.jsonc");
+    expect(new Set(completed)).toEqual(new Set(["001-a.jsonc", "002-b.jsonc", "003-c.jsonc"]));
+    expect(startedAfterFirst).toEqual(expect.arrayContaining(["002-b.jsonc", "003-c.jsonc"]));
+    expect(maxInFlightAfterFirst).toBeGreaterThan(1);
+    expect(await readFile(path.join(chaptersDir, "001-a.jsonc"), "utf8")).toBe('{ "id": "a" }\n');
+  });
 });
