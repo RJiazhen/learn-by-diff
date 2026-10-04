@@ -25,7 +25,10 @@ export default defineConfig({
     },
     deps: {
       neverBundle: ["vscode"],
-      alwaysBundle: ["@learn-by-diff/protocol", "jsonc-parser"],
+      // Published VSIX omits node_modules (see .vscodeignore). A leftover
+      // require() of `ignore` throws while the extension module loads, so
+      // activation never registers commands and the course view stays on Loading.
+      alwaysBundle: ["@learn-by-diff/protocol", "jsonc-parser", "ignore"],
       onlyBundle: false,
     },
   },
