@@ -46,4 +46,4 @@ git branch -d <feature-branch> 2>/dev/null || true
 ```
 
 - 汇报已合并的 PR URL，以及 §2 关闭的 Issue（或已经是关闭状态）
-- 网站由 `.github/workflows/website.yml` 在 `main` 上部署到 GitHub Pages：https://rjiazhen.github.io/learn-by-diff/
+- 网站由 `.github/workflows/website.yml` 在版本 tag（`v*`）推送时部署到 GitHub Pages：https://rjiazhen.github.io/learn-by-diff/
