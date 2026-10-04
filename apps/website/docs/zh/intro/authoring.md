@@ -9,17 +9,26 @@ outline: deep
 
 ## 快速创建课程
 
-哪怕不熟悉课程配置文件需要填写什么信息，你也可以通过使用本工具配套的 Skill 来快速生成课程配置文件。
+哪怕不清楚课程配置文件需要填写什么信息，你也可以通过本插件提供的 skill 和 AI Agent 来快速生成课程配置文件。
 
-使用以下命令安装本项目配套的 [课程生成 Skill](https://github.com/RuanJiazhen/learn-by-diff/tree/main/skills/generate-course-config.md)：
+1. 先在 IDE 中打开存放源码快照的文件夹（命令在未打开文件夹时不可用；也不在 Learn By Diff 视图上）。
+2. 打开命令面板，运行 **LearnByDiff: 安装生成课程 Skill**。扩展会在该文件夹安装 [课程生成 Skill](https://github.com/RuanJiazhen/learn-by-diff/tree/main/skills/generate-course-config.md)，并把一段可粘贴的 `/generate-course-config` 提示词复制到剪贴板。
+3. 把提示词贴进 Agent 对话，按需改写其中的占位路径后发送即可生成课程配置：
+
+```text
+Snapshot path: ./path/to/chapter/code/root/folder
+Target folder: ./course-config
+```
+
+也可以不经过扩展命令，在快照目录里手动执行：
 
 ```bash
 npx skills add RJiazhen/learn-by-diff@generate-course-config -y
 ```
 
-然后在源代码所处目录下运行 `/generate-course-config` 命令，即可生成课程配置文件。
+然后再运行 `/generate-course-config`。
 
-或者在运行时提供源代码的 github 仓库地址，Agent 也会自动去读取源代码并生成课程配置文件。
+或者在运行时提供源代码的 GitHub 仓库地址，Agent 也会自动去读取源代码并生成课程配置文件。
 
 ## 课程配置文件
 
