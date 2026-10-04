@@ -19,17 +19,16 @@ After a course is open, Explorer shows a **Learn By Diff** view with the chapter
 
 <img src="../images/features-chapter-switch-and-view.png" alt="Switch and inspect chapters" style="height: 400px; width: auto; margin: 0 auto; display: block;"/>
 
-That view includes:
+In the Learn By Diff view, you can use these actions:
 
-| Action                      | What it does                                    |
-| --------------------------- | ----------------------------------------------- |
-| **Previous / Next chapter** | Switch to the adjacent chapter’s start snapshot |
-| **Search chapter**          | Find a chapter by title or id and reveal it     |
-| **Open chapter docs**       | Open this chapter’s documentation               |
-| **Not Started**             | Apply this chapter’s start snapshot             |
-| **Completed**               | Apply this chapter’s finish snapshot            |
+| Action                          | What it does                                                         |
+| ------------------------------- | -------------------------------------------------------------------- |
+| **Scroll to Current Chapter**   | Reveal the current chapter                                           |
+| **Search chapter**              | Find a chapter by title or id; fuzzy search is supported             |
+| **Open chapter docs**           | Open this chapter’s documentation                                    |
+| **Not Started** / **Completed** | Switch the workspace code to that chapter’s start or finish snapshot |
 
-You can edit files freely. Switching chapters asks whether to **overwrite the current folder**. `.gitignore`-style `retain` patterns stay (omitted `retain` keeps every `node_modules`). See [Retained files](../course-config/retained).
+When you switch snapshots, you are asked whether to **overwrite the current folder**, so accidental overwrites are less likely.
 
 ## File compare
 
