@@ -168,7 +168,7 @@ export function registerCommands(
    * Checks `.learn/snapshots` and downloads any missing unique source trees.
    *
    * Safe to call on every workspace open; no-ops when a run for this root is
-   * already in progress, and skips the notification when the cache is complete.
+   * already in progress, and skips status-bar progress when the cache is complete.
    *
    * @param session - Active learning session
    */
@@ -269,7 +269,7 @@ export function registerCommands(
   );
 
   /**
-   * Shows a notification while unique chapter snapshots download.
+   * Shows status-bar progress while unique chapter snapshots download.
    *
    * Open Course starts this after the folder is open. A reloaded or reopened
    * workspace runs it again for any trees still missing.
@@ -286,7 +286,7 @@ export function registerCommands(
   ): Promise<void> {
     await vscode.window.withProgress(
       {
-        location: vscode.ProgressLocation.Notification,
+        location: vscode.ProgressLocation.Window,
         title: vscode.l10n.t("LearnByDiff: caching snapshots"),
         cancellable: false,
       },
@@ -294,7 +294,7 @@ export function registerCommands(
     );
 
     /**
-     * Drives the download notification while unique source trees are cached.
+     * Drives the status-bar progress while unique source trees are cached.
      *
      * @param progress - VS Code progress reporter
      */
@@ -302,7 +302,7 @@ export function registerCommands(
       progress: vscode.Progress<{ message?: string; increment?: number }>,
     ): Promise<void> {
       /**
-       * Updates the notification message and bar as each unique source tree is cached.
+       * Updates the status-bar message as each unique source tree is cached.
        *
        * @param info - Trees completed, total, and the subtree just written
        */

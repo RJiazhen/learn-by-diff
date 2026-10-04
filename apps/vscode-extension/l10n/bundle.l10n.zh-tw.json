@@ -66,7 +66,7 @@
   "LearnByDiff: loading official courses": "LearnByDiff：正在載入官方課程",
   "Downloading course config…": "正在下載課程設定…",
   "Could not download course.jsonc. Check the URL and try again.": "無法下載 course.jsonc。請檢查 URL 後再試一次。",
-  "LearnByDiff: downloading chapter config": "LearnByDiff：正在下載章節設定",
+  "LearnByDiff: downloading course": "LearnByDiff：正在下載課程",
   "Could not load the official course list. Enter a course.jsonc path or URL instead.": "無法載入官方課程清單。請改為輸入 course.jsonc 路徑或 URL。",
   "Official courses": "官方課程"
 }
