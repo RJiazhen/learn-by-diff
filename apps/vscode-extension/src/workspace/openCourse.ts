@@ -233,7 +233,7 @@ function cacheAllChapterSnapshots(
 }
 
 /**
- * Shows snapshot-cache progress after the course folder is already open.
+ * Shows snapshot-cache progress in the status bar after the course folder is already open.
  *
  * @param work - Prefetch body that reports per-tree progress
  * @param abort - Controller cancelled when the extension deactivates
@@ -247,7 +247,7 @@ async function showSnapshotCacheProgress(
 ): Promise<void> {
   await vscode.window.withProgress(
     {
-      location: vscode.ProgressLocation.Notification,
+      location: vscode.ProgressLocation.Window,
       title: vscode.l10n.t("LearnByDiff: caching snapshots"),
       cancellable: false,
     },
@@ -255,7 +255,7 @@ async function showSnapshotCacheProgress(
   );
 
   /**
-   * Updates the cache notification as each unique source tree is written.
+   * Updates the status-bar cache progress as each unique source tree is written.
    *
    * @param progress - VS Code progress reporter
    */
@@ -263,7 +263,7 @@ async function showSnapshotCacheProgress(
     progress: vscode.Progress<{ message?: string; increment?: number }>,
   ): Promise<void> {
     /**
-     * Forwards one tree's progress into the notification.
+     * Forwards one tree's progress into the status bar.
      *
      * @param info - Trees completed, total, and the subtree just written
      */

@@ -2,9 +2,9 @@ import * as vscode from "vscode";
 import type { SnapshotPrefetchProgress } from "./prefetch.ts";
 
 /**
- * Updates a VS Code notification with one unique source-tree download step.
+ * Updates status-bar progress with one unique source-tree download step.
  *
- * @param progress - Notification progress reporter
+ * @param progress - Status-bar progress reporter
  * @param info - Trees completed, total, and the subtree just written
  */
 export function reportSnapshotPrefetchProgress(

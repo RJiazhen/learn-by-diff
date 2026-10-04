@@ -67,7 +67,7 @@ async function setDownloadingChapterConfig(downloading: boolean): Promise<void> 
 }
 
 /**
- * Shows a notification while chapter JSONC files download, then continues course setup.
+ * Shows status-bar progress while chapter JSONC files download, then continues course setup.
  *
  * Keeps the pending record when the download fails so a later open can retry.
  *
@@ -82,7 +82,7 @@ async function runResume(options: ResumeChapterConfigDownloadOptions): Promise<v
   try {
     await vscode.window.withProgress(
       {
-        location: vscode.ProgressLocation.Notification,
+        location: vscode.ProgressLocation.Window,
         title: vscode.l10n.t("LearnByDiff: downloading chapter config"),
         cancellable: false,
       },

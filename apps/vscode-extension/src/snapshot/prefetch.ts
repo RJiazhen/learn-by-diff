@@ -14,7 +14,7 @@ export interface SnapshotPrefetchProgress {
   total: number;
   /** Source subtree just written, or `undefined` for an empty snapshot. */
   subtree: string | undefined;
-  /** Notification increment for this step (`100 / total`). */
+  /** Share of this step toward 100% (`100 / total`). Window progress ignores discrete increments. */
   increment: number;
 }
 
@@ -36,7 +36,7 @@ export type SnapshotPrefetchProgressWrap = (
 export interface StartSnapshotPrefetchOptions {
   /** Optional logger (LearnByDiff output channel). */
   onLog?: (line: string) => void;
-  /** Optional UI wrapper (notification progress). */
+  /** Optional UI wrapper (status-bar progress). */
   runProgress?: SnapshotPrefetchProgressWrap;
 }
 
