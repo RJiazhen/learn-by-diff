@@ -36,9 +36,9 @@ export type CourseViewMode = "tree" | "list";
 
 const VIEW_MODE_STATE_KEY = "learnByDiff.viewMode";
 
-/** Tree row for a course chapter, folder, or entry file. */
+/** Tree row for a course chapter, folder, entry file, or download status. */
 export type CourseTreeItem = vscode.TreeItem & {
-  kind: "chapter" | "folder" | "file";
+  kind: "chapter" | "folder" | "file" | "status";
   chapterId: string;
   /** File path or folder prefix relative to the chapter tree root. */
   relativePath?: string;
@@ -56,6 +56,8 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
   private session: LearningSession | undefined;
   private treeView: vscode.TreeView<CourseTreeItem> | undefined;
   private viewMode: CourseViewMode;
+  /** True while later chapter configs/snapshots are still downloading after chapter 1 is shown. */
+  private downloadingMoreChapters = false;
   private readonly chapterElements = new Map<string, CourseTreeItem>();
   /** Chapter ids the user (or reveal) has expanded — used to auto-expand folder trees. */
   private readonly expandedChapterIds = new Set<string>();
@@ -163,20 +165,50 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
   /**
    * Replaces the session shown in the tree and refreshes.
    *
+   * When `grow` is set, keeps expand/cache state so incremental chapter downloads
+   * can append rows without resetting the view.
+   *
    * @param session - Active session, or `undefined` to clear
+   * @param options - `grow: true` for progressive chapter reveals
    */
-  setSession(session: LearningSession | undefined): void {
+  setSession(session: LearningSession | undefined, options: { grow?: boolean } = {}): void {
+    const sameRoot =
+      session !== undefined &&
+      this.session !== undefined &&
+      session.workspaceRoot === this.session.workspaceRoot;
+    const grow = options.grow === true && sameRoot;
     this.session = session;
     this.chapterElements.clear();
-    this.expandedChapterIds.clear();
-    this.changedFiles.clear();
-    this.knownHasChanges.clear();
-    this.diskChangeCache = undefined;
+    if (!grow) {
+      this.expandedChapterIds.clear();
+      this.changedFiles.clear();
+      this.knownHasChanges.clear();
+      this.diskChangeCache = undefined;
+    }
+    if (session === undefined) {
+      this.downloadingMoreChapters = false;
+    }
     this.emitter.fire(undefined);
-    if (session !== undefined) {
+    if (session !== undefined && !grow) {
       void this.revealCurrentChapter();
       void this.hideUnchangedChapterChevrons();
     }
+  }
+
+  /**
+   * Shows or hides a root-level “Downloading course…” row under the chapter list.
+   *
+   * Used after chapter 1 is visible while later chapters are still downloading. The
+   * empty-view welcome tip only covers the pre-session phase.
+   *
+   * @param downloading - Whether more chapter files are still in flight
+   */
+  setDownloadingMoreChapters(downloading: boolean): void {
+    if (this.downloadingMoreChapters === downloading) {
+      return;
+    }
+    this.downloadingMoreChapters = downloading;
+    this.emitter.fire(undefined);
   }
 
   /**
@@ -270,7 +302,7 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
    * @param element - Tree element
    */
   getParent(element: CourseTreeItem): CourseTreeItem | undefined {
-    if (element.kind === "chapter") {
+    if (element.kind === "chapter" || element.kind === "status") {
       return undefined;
     }
     const chapterItem = this.chapterElements.get(element.chapterId);
@@ -305,14 +337,18 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
       const current = currentChapter(this.session);
       const appliedSide = appliedSnapshotSide(this.session.progress);
       const total = this.session.course.chapters.length;
-      return this.session.course.chapters.map((chapter, index) => {
+      const chapters = this.session.course.chapters.map((chapter, index) => {
         const side = chapter.id === current.id ? appliedSide : undefined;
         const item = this.buildChapterItem(chapter, side, index, total);
         this.chapterElements.set(chapter.id, item);
         return item;
       });
+      if (this.downloadingMoreChapters) {
+        return [...chapters, this.buildDownloadingStatusItem()];
+      }
+      return chapters;
     }
-    if (element.kind === "file") {
+    if (element.kind === "file" || element.kind === "status") {
       return [];
     }
 
@@ -705,6 +741,22 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
       path: `/${chapter.id}`,
       query: appliedSide ?? "",
     });
+    return item;
+  }
+
+  /**
+   * Builds a non-interactive root row shown while later chapters are still downloading.
+   */
+  private buildDownloadingStatusItem(): CourseTreeItem {
+    const item = new vscode.TreeItem(
+      vscode.l10n.t("Downloading course…"),
+      vscode.TreeItemCollapsibleState.None,
+    ) as CourseTreeItem;
+    item.kind = "status";
+    item.chapterId = "";
+    item.contextValue = "download-status";
+    item.iconPath = new vscode.ThemeIcon("cloud-download");
+    item.tooltip = vscode.l10n.t("Downloading course…");
     return item;
   }
 

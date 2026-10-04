@@ -132,17 +132,21 @@ flowchart TD
   afterOpen -->|no| session
 
   resume --> tip[Set learnByDiff.downloadingChapterConfig tip]
-  tip --> dlChapters[Download chapter JSONC]
-  dlChapters --> clearPending[Delete chapter-config-download.json]
-  clearPending --> install[installCourseSourceAndFirstChapter]
-  install --> sessionReady[loadLearningSession → tree + snapshot prefetch]
+  tip --> sourceAndFirst[Materialize source parallel with chapter 1 JSONC]
+  sourceAndFirst --> snap1[Snapshot chapter 1 then show row]
+  sourceAndFirst --> dlRest[Download remaining JSONC in parallel]
+  dlRest --> perChapter[Per later file: snapshot then show row]
+  snap1 --> rows[Finished rows in course order]
+  perChapter --> rows
+  rows --> clearPending[Delete chapter-config-download.json]
+  clearPending --> sessionReady[Final session + snapshot prefetch]
 ```
 
 Notes:
 
 - The picker stays busy until remote **`course.jsonc`** downloads finish (catalog rows and a typed GitHub file URL). **Chapter JSONC is not** part of that wait.
 - Official catalog: [`RJiazhen/learn-by-diff-courses`](https://github.com/RJiazhen/learn-by-diff-courses) `courses.jsonc` on `main`. Catalog failure still allows a typed path or URL.
-- Remote prepare writes `.learn/chapter-config-download.json` (`completed: false`). After the workspace is open, resume downloads chapter JSONC, deletes that file, then materializes source and chapter 1. That download shows status-bar progress (`ProgressLocation.Window`). The Learn By Diff view tip uses context `learnByDiff.downloadingChapterConfig`.
+- Remote prepare writes `.learn/chapter-config-download.json` (`completed: false`). After the workspace is open, resume materializes the source **in parallel with** chapter 1’s JSONC download, then downloads remaining chapter JSONC **in parallel**. As each file lands it caches that chapter’s snapshots. Status-bar progress uses `ProgressLocation.Window`. The empty-view tip (`learnByDiff.downloadingChapterConfig`) shows only before chapter 1 appears; afterward a tree status row keeps “Downloading course…” until every chapter finishes. Later chapters that finish earlier stay hidden until chapter 1 is ready; then finished rows appear in course order without waiting for the whole course.
 - Local / full clone path uses `createLearningWorkspace` (course + chapters + source + chapter 1) before the folder opens; snapshot trees still prefetch in the background afterward.
 
 **Not Started** / **Completed** export that chapter’s `fromDir` or `toDir` into the student tree and mark the row with that status (QuickPick only when the tree differs from the last applied snapshot).

@@ -16,11 +16,13 @@ export class LearnByDiffUriHandler implements vscode.UriHandler {
    * @param git - Git CLI client
    * @param output - Output channel for clone/materialize logs
    * @param onSession - Updates Explorer / status when opening in place
+   * @param onChapterReady - Incremental chapter rows during remote config download
    */
   constructor(
     private readonly git: GitClient,
     private readonly output: vscode.OutputChannel,
     private readonly onSession: (session: LearningSession | undefined) => void,
+    private readonly onChapterReady?: (session: LearningSession) => void,
   ) {}
 
   /**
@@ -50,6 +52,7 @@ export class LearnByDiffUriHandler implements vscode.UriHandler {
       git: this.git,
       output: this.output,
       onSession: this.onSession,
+      onChapterReady: this.onChapterReady,
     });
   }
 }
@@ -61,15 +64,19 @@ export class LearnByDiffUriHandler implements vscode.UriHandler {
  * @param git - Git CLI client
  * @param output - Shared output channel
  * @param onSession - Session UI updater
+ * @param onChapterReady - Incremental chapter rows during remote config download
  */
 export function registerUriHandler(
   context: vscode.ExtensionContext,
   git: GitClient,
   output: vscode.OutputChannel,
   onSession: (session: LearningSession | undefined) => void,
+  onChapterReady?: (session: LearningSession) => void,
 ): void {
   context.subscriptions.push(
-    vscode.window.registerUriHandler(new LearnByDiffUriHandler(git, output, onSession)),
+    vscode.window.registerUriHandler(
+      new LearnByDiffUriHandler(git, output, onSession, onChapterReady),
+    ),
   );
 }
 

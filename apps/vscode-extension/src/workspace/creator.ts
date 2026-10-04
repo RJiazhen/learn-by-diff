@@ -127,13 +127,55 @@ export async function installCourseSourceAndFirstChapter(
   sourceConfigDir: string,
   onLog?: (line: string) => void,
 ): Promise<void> {
+  await materializeCourseSource(git, workspaceRoot, course, sourceConfigDir, onLog);
+  await applyFirstChapterStart(git, workspaceRoot, course, onLog);
+}
+
+/**
+ * Clones or copies the course source into `.learn/source.git`.
+ *
+ * Does not export the student tree or write progress. Call
+ * {@link applyFirstChapterStart} when chapter 1 is ready.
+ *
+ * @param git - Git client
+ * @param workspaceRoot - Learning repository root
+ * @param course - Course whose `source.repository` to materialize
+ * @param sourceConfigDir - Directory used to resolve a relative source repository
+ * @param onLog - Optional progress logger
+ */
+export async function materializeCourseSource(
+  git: GitClient,
+  workspaceRoot: string,
+  course: Course,
+  sourceConfigDir: string,
+  onLog?: (line: string) => void,
+): Promise<void> {
   const paths = learningPaths(workspaceRoot);
   const sourceRepository = resolveSourceRepository(
     course.config.source.repository,
     sourceConfigDir,
   );
   await materializeSourceStore(git, sourceRepository, paths.sourceMirror, onLog);
+}
 
+/**
+ * Exports chapter 1 into the student tree and writes `.learn/progress.json`.
+ *
+ * Requires {@link materializeCourseSource} first. Asserts that chapter 1's
+ * `fromDir` / `toDir` exist in the source store.
+ *
+ * @param git - Git client
+ * @param workspaceRoot - Learning repository root
+ * @param course - Course that includes at least chapter 1
+ * @param onLog - Optional progress logger
+ */
+export async function applyFirstChapterStart(
+  git: GitClient,
+  workspaceRoot: string,
+  course: Course,
+  onLog?: (line: string) => void,
+): Promise<void> {
+  const paths = learningPaths(workspaceRoot);
   const first = course.chapters[0];
   if (first === undefined) {
     throw new Error("course has no chapters");

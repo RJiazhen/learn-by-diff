@@ -67,6 +67,7 @@
   "Downloading course config…": "コース設定をダウンロードしています…",
   "Could not download course.jsonc. Check the URL and try again.": "course.jsonc をダウンロードできませんでした。URL を確認して再試行してください。",
   "LearnByDiff: downloading course": "LearnByDiff: コースをダウンロードしています",
+  "Downloading course…": "コースをダウンロードしています…",
   "Could not load the official course list. Enter a course.jsonc path or URL instead.": "公式コース一覧を読み込めませんでした。course.jsonc のパスまたは URL を入力してください。",
   "Official courses": "公式コース"
 }

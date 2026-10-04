@@ -33,9 +33,10 @@ export function activate(context: vscode.ExtensionContext): void {
    * Pushes session into tree, status bar, and `when` clause context.
    *
    * @param session - Active learning session
+   * @param options - Passed through to the course tree (`grow` for incremental rows)
    */
-  function setSession(session: LearningSession | undefined): void {
-    tree.setSession(session);
+  function setSession(session: LearningSession | undefined, options?: { grow?: boolean }): void {
+    tree.setSession(session, options);
     decorations.refresh();
     updateStatus(session);
     void vscode.commands.executeCommand(

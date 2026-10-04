@@ -71,7 +71,7 @@ export function registerCommands(
   context: vscode.ExtensionContext,
   git: GitClient,
   tree: CourseTreeProvider,
-  setSession: (session: LearningSession | undefined) => void,
+  setSession: (session: LearningSession | undefined, options?: { grow?: boolean }) => void,
 ): void {
   const output = vscode.window.createOutputChannel("LearnByDiff");
   context.subscriptions.push(output, {
@@ -132,6 +132,7 @@ export function registerCommands(
             git,
             workspaceRoot: root,
             onLog: onPrefetchLog,
+            onChapterReady: applyChapterReadySession,
             onReady: applySession,
           });
           return undefined;
@@ -180,22 +181,43 @@ export function registerCommands(
   }
 
   /**
-   * Pushes session into the UI and starts background chapter-snapshot prefetch.
+   * Pushes an incremental chapter-ready session into the UI without starting prefetch.
+   *
+   * Keeps a “Downloading course…” row in the tree until the final session arrives.
+   * Snapshots for revealed chapters are already cached by the resume pipeline.
+   *
+   * @param session - Partial session with finished chapters only
+   */
+  function applyChapterReadySession(session: LearningSession): void {
+    applySession(session, { prefetch: false, downloadingMore: true, grow: true });
+  }
+
+  /**
+   * Pushes session into the UI and optionally starts background snapshot prefetch.
    *
    * Prefetch is skipped when `session` is undefined (not a learning workspace).
    *
    * @param session - Active learning session, or `undefined` to clear
+   * @param options - `prefetch: false` skips background caching; `downloadingMore`
+   *   shows a status row while later chapters are still downloading; `grow` keeps
+   *   expand state while rows append during remote download
    */
-  function applySession(session: LearningSession | undefined): void {
+  function applySession(
+    session: LearningSession | undefined,
+    options: { prefetch?: boolean; downloadingMore?: boolean; grow?: boolean } = {},
+  ): void {
     appliedWorkspaceRoot = session?.workspaceRoot;
     activeSession = session;
-    setSession(session);
+    setSession(session, { grow: options.grow === true });
+    tree.setDownloadingMoreChapters(session !== undefined && options.downloadingMore === true);
     scheduleStudentEditCheck(0);
     if (session === undefined) {
       stopBackgroundSnapshotPrefetch();
       return;
     }
-    startSnapshotPrefetch(session);
+    if (options.prefetch !== false) {
+      startSnapshotPrefetch(session);
+    }
   }
 
   /**
@@ -313,7 +335,7 @@ export function registerCommands(
     }
   }
 
-  registerUriHandler(context, git, output, applySession);
+  registerUriHandler(context, git, output, applySession, applyChapterReadySession);
 
   /**
    * Re-loads session and re-checks snapshot cache when Explorer roots change.
@@ -346,6 +368,7 @@ export function registerCommands(
         git,
         output,
         onSession: applySession,
+        onChapterReady: applyChapterReadySession,
       });
     }),
   );
