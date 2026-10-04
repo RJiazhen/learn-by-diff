@@ -30,7 +30,7 @@ https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course
 
 In the folder picker, choose a directory for the learning workspace. Course files download into that folder.
 
-<image src="../images/demo-course-screenshot.png" alt="demo course screenshot" style="height: 500px; width: auto; margin: 0 auto;" />
+<img src="../images/demo-course-screenshot.png" alt="demo course screenshot" style="height: 500px; width: auto; margin: 0 auto;" />
 
 > Layout of the learning workspace after download
 
