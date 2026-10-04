@@ -9,15 +9,24 @@ outline: deep
 
 ## すばやく作る
 
-設定ファイルに何を書けばよいか分からなくても、付属の Skill で生成できます。
+設定ファイルに何を書けばよいか分からなくても、この拡張機能の skill と AI エージェントでコース設定をすばやく生成できます。
 
-[コース生成 Skill](https://github.com/RJiazhen/learn-by-diff/tree/main/skills/generate-course-config.md) をインストールします。
+1. まず IDE でソーススナップショットがあるフォルダを開きます（フォルダ未オープン時はコマンドが使えません。Learn By Diff ビュー上にもありません）。
+2. コマンドパレットで **LearnByDiff: コース生成 Skill をインストール** を実行します。拡張機能がそのフォルダに [コース生成 Skill](https://github.com/RJiazhen/learn-by-diff/tree/main/skills/generate-course-config.md) をインストールし、貼り付け可能な `/generate-course-config` プロンプトをクリップボードにコピーします。
+3. プロンプトをエージェントのチャットに貼り付け、必要に応じてプレースホルダのパスを直して送信すると、コース設定が生成されます。
+
+```text
+Snapshot path: ./path/to/chapter/code/root/folder
+Target folder: ./course-config
+```
+
+拡張機能のコマンドを使わず、スナップショットディレクトリで手動実行することもできます。
 
 ```bash
 npx skills add RJiazhen/learn-by-diff@generate-course-config -y
 ```
 
-ソーススナップショットがあるディレクトリで `/generate-course-config` を実行します。
+そのあと `/generate-course-config` を実行します。
 
 GitHub リポジトリ URL を渡せば、エージェントがソースを読んで設定を生成します。
 
