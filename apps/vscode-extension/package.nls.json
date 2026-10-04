@@ -20,7 +20,7 @@
   "learnByDiff.chapterMore.label": "More",
   "learnByDiff.courseView.name": "Learn By Diff",
   "learnByDiff.viewsWelcome.loading": "Loading…",
-  "learnByDiff.viewsWelcome.downloadingChapterConfig": "Downloading chapter config…",
+  "learnByDiff.viewsWelcome.downloadingChapterConfig": "Downloading course…",
   "learnByDiff.viewsWelcome.openCourse": "Open a LearnByDiff course to start learning.\n[Open Course](command:learnByDiff.openCourse)",
   "learnByDiff.currentChapter.colorDescription": "Highlight color for the active chapter in the Learn By Diff view"
 }

@@ -66,7 +66,7 @@
   "LearnByDiff: loading official courses": "LearnByDiff: loading official courses",
   "Downloading course config…": "Downloading course config…",
   "Could not download course.jsonc. Check the URL and try again.": "Could not download course.jsonc. Check the URL and try again.",
-  "LearnByDiff: downloading chapter config": "LearnByDiff: downloading chapter config",
+  "LearnByDiff: downloading course": "LearnByDiff: downloading course",
   "Could not load the official course list. Enter a course.jsonc path or URL instead.": "Could not load the official course list. Enter a course.jsonc path or URL instead.",
   "Official courses": "Official courses"
 }

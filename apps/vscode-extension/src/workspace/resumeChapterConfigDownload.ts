@@ -83,7 +83,7 @@ async function runResume(options: ResumeChapterConfigDownloadOptions): Promise<v
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Window,
-        title: vscode.l10n.t("LearnByDiff: downloading chapter config"),
+        title: vscode.l10n.t("LearnByDiff: downloading course"),
         cancellable: false,
       },
       downloadConfigs,
