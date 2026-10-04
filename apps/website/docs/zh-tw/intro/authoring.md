@@ -9,15 +9,24 @@ outline: deep
 
 ## 快速建立課程
 
-就算不熟悉課程設定檔要填什麼，也可以用本工具附帶的 Skill 快速產生。
+就算不清楚課程設定檔要填什麼，也可以透過本擴充功能提供的 skill 和 AI Agent 快速產生課程設定檔。
 
-使用以下命令安裝 [課程產生 Skill](https://github.com/RJiazhen/learn-by-diff/tree/main/skills/generate-course-config.md)：
+1. 先在 IDE 中開啟存放原始碼快照的資料夾（未開啟資料夾時命令不可用；也不在 Learn By Diff 視圖上）。
+2. 開啟命令面板，執行 **LearnByDiff: 安裝產生課程 Skill**。擴充功能會在該資料夾安裝 [課程產生 Skill](https://github.com/RJiazhen/learn-by-diff/tree/main/skills/generate-course-config.md)，並把一段可貼上的 `/generate-course-config` 提示詞複製到剪貼簿。
+3. 把提示詞貼進 Agent 對話，依需要改寫其中的佔位路徑後傳送，即可產生課程設定：
+
+```text
+Snapshot path: ./path/to/chapter/code/root/folder
+Target folder: ./course-config
+```
+
+也可以不經過擴充功能命令，在快照目錄裡手動執行：
 
 ```bash
 npx skills add RJiazhen/learn-by-diff@generate-course-config -y
 ```
 
-然後在原始碼所在目錄執行 `/generate-course-config`，即可產生課程設定檔。
+然後再執行 `/generate-course-config`。
 
 或在執行時提供原始碼的 GitHub 倉庫位址，Agent 也會讀取原始碼並產生設定檔。
 

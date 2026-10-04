@@ -9,15 +9,24 @@ A course is config plus source snapshots. Students paste the course config URL t
 
 ## Scaffold quickly
 
-If you are not sure what to put in the config files, use the bundled Skill to generate them.
+If you are not sure what to put in the config files, use the extension’s skill and an AI agent to generate them.
 
-Install the [course generator Skill](https://github.com/RJiazhen/learn-by-diff/tree/main/skills/generate-course-config.md):
+1. Open the folder that holds the source snapshots in the IDE (the command is unavailable with no folder open, and it is not on the Learn By Diff view).
+2. Open the Command Palette and run **LearnByDiff: Install Generate Course Skill**. The extension installs the [course generator Skill](https://github.com/RJiazhen/learn-by-diff/tree/main/skills/generate-course-config.md) in that folder and copies a pasteable `/generate-course-config` prompt to the clipboard.
+3. Paste the prompt into an agent chat, edit the placeholder paths as needed, and send it to generate the course config:
+
+```text
+Snapshot path: ./path/to/chapter/code/root/folder
+Target folder: ./course-config
+```
+
+You can also skip the extension command and run this in the snapshot folder yourself:
 
 ```bash
 npx skills add RJiazhen/learn-by-diff@generate-course-config -y
 ```
 
-Then run `/generate-course-config` in the directory that holds the source snapshots.
+Then run `/generate-course-config`.
 
 You can also pass a GitHub repository URL; the agent will read the source and generate the config.
 
