@@ -12,7 +12,7 @@ import path from "node:path";
 import * as vscode from "vscode";
 import { showError } from "../commands/showError.ts";
 import type { GitClient } from "../git/client.ts";
-import { writeChapterArchives } from "../snapshot/archive.ts";
+import { discardSourceCloneIfSnapshotsReady, writeChapterArchives } from "../snapshot/archive.ts";
 import { fetchRemoteText } from "./officialCourses.ts";
 import { applyFirstChapterStart, materializeCourseSource } from "./creator.ts";
 import { type LearningSession } from "./loader.ts";
@@ -182,6 +182,10 @@ async function runResume(options: ResumeChapterConfigDownloadOptions): Promise<v
       },
     });
     await sourceReady;
+    if (sortedNames.length > 0) {
+      const course = await loadCourseFromChapterFiles(courseDir, record.chaptersDir, sortedNames);
+      await discardSourceCloneIfSnapshotsReady(options.workspaceRoot, course);
+    }
     await removeChapterConfigDownloadRecord(options.workspaceRoot);
   }
 

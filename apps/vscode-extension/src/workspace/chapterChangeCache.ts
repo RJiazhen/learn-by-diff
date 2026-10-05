@@ -1,5 +1,6 @@
 import type { ChapterConfig } from "@learn-by-diff/protocol";
 import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import path from "node:path";
 import type { GitClient } from "../git/client.ts";
 import type { ChangedEntryFile, EntryChangeKind } from "./entryChange.ts";
 import { learningPaths } from "./paths.ts";
@@ -27,7 +28,7 @@ export interface ChapterChangeCacheFile {
  * Returns a cache identity key for the source store (git HEAD, or directory mtime).
  *
  * @param git - Git client
- * @param storePath - `.learn/source.git` (mirror or plain tree copy)
+ * @param storePath - `.learn/source-clone` (mirror or plain tree copy)
  */
 export async function sourceStoreRevision(git: GitClient, storePath: string): Promise<string> {
   try {
@@ -37,10 +38,17 @@ export async function sourceStoreRevision(git: GitClient, storePath: string): Pr
       return sha;
     }
   } catch {
-    // Plain tree copy, or a store that is not a git directory.
+    // Plain tree copy, a missing clone, or a store that is not a git directory.
   }
-  const info = await stat(storePath);
-  return `mtime:${String(info.mtimeMs)}`;
+  try {
+    const info = await stat(storePath);
+    return `mtime:${String(info.mtimeMs)}`;
+  } catch {
+    // The clone is removed after snapshots are extracted. Keep the last cache key.
+  }
+  const workspaceRoot = path.dirname(path.dirname(storePath));
+  const cache = await readChapterChangeCache(workspaceRoot);
+  return cache?.sourceRev ?? "snapshots";
 }
 
 /**

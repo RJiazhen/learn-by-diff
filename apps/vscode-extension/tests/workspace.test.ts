@@ -203,7 +203,7 @@ describe("learning workspace", () => {
       appliedSide: "start",
     });
     const gitignore = await readFile(path.join(created.learningRoot, ".gitignore"), "utf8");
-    expect(gitignore).toContain(".learn/source.git/");
+    expect(gitignore).toContain(".learn/source-clone/");
     expect(gitignore).toContain(".learn/snapshots/");
     expect(gitignore).toContain(".learn/refs/");
     expect(gitignore).toContain("*.code-workspace");
@@ -553,7 +553,7 @@ describe("learning workspace", () => {
     const gitignore = await readFile(path.join(created.learningRoot, ".gitignore"), "utf8");
     expect(gitignore).toContain("keep-me");
     expect(gitignore).toContain("dist/");
-    expect(gitignore).toContain(".learn/source.git/");
+    expect(gitignore).toContain(".learn/source-clone/");
     expect(gitignore).toContain(".learn/snapshots/");
     expect(gitignore).toContain(".learn/refs/");
     expect(gitignore).toContain("*.code-workspace");
@@ -626,7 +626,7 @@ describe("learning workspace", () => {
 
     await writeFile(
       path.join(created.learningRoot, ".gitignore"),
-      "custom-keep\n.learn/source.git/\n.learn/snapshots/\nnode_modules/\n",
+      "custom-keep\n.learn/source-clone/\n.learn/snapshots/\nnode_modules/\n",
       "utf8",
     );
 

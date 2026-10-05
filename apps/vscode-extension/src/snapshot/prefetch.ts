@@ -1,7 +1,12 @@
 import type { GitClient } from "../git/client.ts";
 import type { LearningSession } from "../workspace/loader.ts";
 import { learningPaths } from "../workspace/paths.ts";
-import { ensureSourceSnapshot, sourceSnapshotIsReady, uniqueSourceSubtrees } from "./archive.ts";
+import {
+  discardSourceCloneIfSnapshotsReady,
+  ensureSourceSnapshot,
+  sourceSnapshotIsReady,
+  uniqueSourceSubtrees,
+} from "./archive.ts";
 
 /** In-progress background prefetch for one learning workspace. */
 let background: { workspaceRoot: string; abort: AbortController } | undefined;
@@ -132,6 +137,9 @@ export function startBackgroundSnapshotPrefetch(
       }
     }
     if (missing === 0 || abort.signal.aborted) {
+      if (missing === 0 && !abort.signal.aborted) {
+        await discardSourceCloneIfSnapshotsReady(session.workspaceRoot, session.course);
+      }
       return;
     }
     const wrap = runProgress ?? runWithoutProgress;
@@ -176,6 +184,9 @@ export async function prefetchAllChapterSnapshots(
     }
   }
   if (pending.length === 0 || signal?.aborted) {
+    if (pending.length === 0 && signal?.aborted !== true) {
+      await discardSourceCloneIfSnapshotsReady(session.workspaceRoot, session.course);
+    }
     return;
   }
   const { sourceMirror } = learningPaths(session.workspaceRoot);
@@ -199,5 +210,6 @@ export async function prefetchAllChapterSnapshots(
   if (signal?.aborted) {
     return;
   }
+  await discardSourceCloneIfSnapshotsReady(session.workspaceRoot, session.course);
   onLog?.("Finished prefetching chapter snapshots.");
 }
