@@ -6,7 +6,6 @@ import {
   findCourseConfigDir,
   loadCourseFromConfigDir,
   ProtocolError,
-  resolveSourceSubtreePath,
   type Course,
 } from "@learn-by-diff/protocol";
 import type { GitClient } from "../git/client.ts";
@@ -20,11 +19,9 @@ import { githubCloneBranch, parseCourseConfigUrl } from "./parseCourseConfigUrl.
 import { describeCourseOrigin, writeCourseOrigin } from "./courseOrigin.ts";
 import { isRemoteGitUrl, localCourseOrigin, resolveSourceRepository } from "./resolveRepo.ts";
 import {
-  assertSourceSubtree,
   directoryExists,
   materializeSourceStore,
   overlayDirectoryChildren,
-  overlaySourceSubtree,
 } from "./sourceStore.ts";
 import { writeProgress, type ChapterSnapshotSide } from "./state.ts";
 
@@ -132,7 +129,7 @@ export async function installCourseSourceAndFirstChapter(
 }
 
 /**
- * Clones or copies the course source into `.learn/source.git`.
+ * Clones or copies the course source into `.learn/source-clone`.
  *
  * Does not export the student tree or write progress. Call
  * {@link applyFirstChapterStart} when chapter 1 is ready.
@@ -161,8 +158,9 @@ export async function materializeCourseSource(
 /**
  * Exports chapter 1 into the student tree and writes `.learn/progress.json`.
  *
- * Requires {@link materializeCourseSource} first. Asserts that chapter 1's
- * `fromDir` / `toDir` exist in the source store.
+ * Requires {@link materializeCourseSource} first. Copies the cached start snapshot
+ * after extracting it from the source clone, so the student tree is not read
+ * from the clone itself.
  *
  * @param git - Git client
  * @param workspaceRoot - Learning repository root
@@ -180,26 +178,16 @@ export async function applyFirstChapterStart(
   if (first === undefined) {
     throw new Error("course has no chapters");
   }
-  const fromSubtree = resolveSourceSubtreePath(course.config.source, first.fromDir);
-  const toSubtree = resolveSourceSubtreePath(course.config.source, first.toDir);
-  if (fromSubtree !== undefined) {
-    await assertSourceSubtree(git, paths.sourceMirror, fromSubtree);
-  }
-  if (toSubtree !== undefined) {
-    await assertSourceSubtree(git, paths.sourceMirror, toSubtree);
-  }
-
-  onLog?.(
-    `Exporting chapter ${first.id} (${fromSubtree === undefined ? "∅" : `${fromSubtree}/`})…`,
-  );
-  await replaceStudentTreeFromSource(
+  onLog?.(`Exporting chapter ${first.id}…`);
+  const archives = await writeChapterArchives(
     git,
-    workspaceRoot,
     paths.sourceMirror,
-    fromSubtree,
-    course.config.retain,
+    workspaceRoot,
+    first.fromDir,
+    first.toDir,
+    course.config.source,
   );
-
+  await replaceStudentTreeFromDirectory(workspaceRoot, archives.fromDir, course.config.retain);
   await writeProgress(workspaceRoot, {
     chapter: first.id,
     completed: false,
@@ -448,35 +436,6 @@ async function replaceStudentTreeFromDirectory(
 }
 
 /**
- * Overlays `subdir` onto the student tree, then deletes paths outside that snapshot.
- *
- * Chapter snapshots may include a `.gitignore`; that must not replace the learner's
- * file. Learn-related ignore rules are merged afterward via {@link ensureLearnGitignore}.
- * When `subdir` is `undefined`, nothing is copied and paths outside `retain` are removed.
- *
- * @param git - Git client
- * @param workspaceRoot - Learning workspace root
- * @param sourceStore - Materialized source store
- * @param subdir - Chapter directory to export, or `undefined` for an empty start
- * @param retain - Paths that must not be deleted, including built-ins from the learning copy
- */
-async function replaceStudentTreeFromSource(
-  git: GitClient,
-  workspaceRoot: string,
-  sourceStore: string,
-  subdir: string | undefined,
-  retain: readonly string[],
-): Promise<void> {
-  const preservedGitignore = await readGitignore(workspaceRoot);
-  const overlay = await overlaySourceSubtree(git, sourceStore, subdir, workspaceRoot);
-  try {
-    await finishStudentTreeReplace(workspaceRoot, overlay.snapshotRoot, retain, preservedGitignore);
-  } finally {
-    await overlay.dispose();
-  }
-}
-
-/**
  * Restores the learner `.gitignore`, merges learn ignore rules, and deletes extra paths.
  *
  * @param workspaceRoot - Learning workspace root
@@ -512,7 +471,7 @@ async function readGitignore(workspaceRoot: string): Promise<string | undefined>
 
 /** Ignore rules for regenerable `.learn` data; course config and progress stay trackable. */
 const LEARN_GITIGNORE_RULES = [
-  ".learn/source.git/",
+  ".learn/source-clone/",
   ".learn/snapshots/",
   ".learn/refs/",
   ".learn/origin.json",

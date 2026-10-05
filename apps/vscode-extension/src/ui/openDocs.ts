@@ -1,23 +1,24 @@
 import { access } from "node:fs/promises";
-import path from "node:path";
-import {
-  isHttpUrl,
-  normalizeRelativeFilePath,
-  resolveSourceSubtreePath,
-  type ChapterConfig,
-} from "@learn-by-diff/protocol";
+import { isHttpUrl, normalizeRelativeFilePath, type ChapterConfig } from "@learn-by-diff/protocol";
 import * as vscode from "vscode";
+import type { GitClient } from "../git/client.ts";
+import { snapshotFile, writeChapterArchives } from "../snapshot/archive.ts";
 import { learningPaths } from "../workspace/paths.ts";
 import type { LearningSession } from "../workspace/loader.ts";
 
 /**
  * Opens a chapter's `docs` target: Simple Browser for http(s), otherwise a local file
- * from the source mirror (Markdown preview when the path ends in `.md`).
+ * from the cached chapter snapshot (Markdown preview when the path ends in `.md`).
  *
+ * @param git - Git client used to fill a missing snapshot from the source clone
  * @param session - Active learning session
  * @param chapterId - Chapter whose docs to open
  */
-export async function openChapterDocs(session: LearningSession, chapterId: string): Promise<void> {
+export async function openChapterDocs(
+  git: GitClient,
+  session: LearningSession,
+  chapterId: string,
+): Promise<void> {
   const chapter = session.course.chapters.find((item) => item.id === chapterId);
   if (chapter === undefined) {
     throw new Error(vscode.l10n.t("Unknown chapter: {0}", chapterId));
@@ -32,7 +33,7 @@ export async function openChapterDocs(session: LearningSession, chapterId: strin
     return;
   }
 
-  const fileUri = await resolveChapterDocsFileUri(session, chapter, docs);
+  const fileUri = await resolveChapterDocsFileUri(git, session, chapter, docs);
   await openDocsFile(fileUri);
 }
 
@@ -52,7 +53,7 @@ async function openDocsUrl(url: string): Promise<void> {
 /**
  * Opens a local docs file; Markdown uses the preview editor when possible.
  *
- * @param uri - Absolute file URI under the source mirror
+ * @param uri - Absolute file URI under a cached snapshot
  */
 async function openDocsFile(uri: vscode.Uri): Promise<void> {
   if (uri.fsPath.toLowerCase().endsWith(".md")) {
@@ -67,13 +68,15 @@ async function openDocsFile(uri: vscode.Uri): Promise<void> {
 }
 
 /**
- * Resolves a chapter-relative docs path under `toDir`, then `fromDir`, in the source mirror.
+ * Resolves a chapter-relative docs path under `toDir`, then `fromDir`, in the snapshot cache.
  *
+ * @param git - Git client used to fill a missing snapshot from the source clone
  * @param session - Active learning session
  * @param chapter - Chapter config
  * @param docs - Relative file path from chapter JSONC
  */
 async function resolveChapterDocsFileUri(
+  git: GitClient,
   session: LearningSession,
   chapter: ChapterConfig,
   docs: string,
@@ -84,14 +87,18 @@ async function resolveChapterDocsFileUri(
   }
 
   const { sourceMirror } = learningPaths(session.workspaceRoot);
-  const source = session.course.config.source;
-  const candidates: string[] = [];
-  for (const dir of [chapter.toDir, chapter.fromDir]) {
-    const subtree = resolveSourceSubtreePath(source, dir);
-    if (subtree !== undefined) {
-      candidates.push(path.join(sourceMirror, subtree, ...relative.split("/")));
-    }
-  }
+  const archives = await writeChapterArchives(
+    git,
+    sourceMirror,
+    session.workspaceRoot,
+    chapter.fromDir,
+    chapter.toDir,
+    session.course.config.source,
+  );
+  const candidates = [
+    snapshotFile(archives.toDir, relative),
+    snapshotFile(archives.fromDir, relative),
+  ];
 
   for (const absolute of candidates) {
     try {

@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import type { GitClient } from "../git/client.ts";
 import { GitError } from "../git/errors.ts";
+import { learningPaths } from "./paths.ts";
 import { isRemoteGitUrl } from "./resolveRepo.ts";
 
 /**
@@ -45,7 +46,7 @@ async function isGitRepository(root: string): Promise<boolean> {
 /**
  * Returns whether `storePath` looks like a bare/git-dir mirror (vs a plain tree copy).
  *
- * @param storePath - `.learn/source.git` path
+ * @param storePath - `.learn/source-clone` path
  */
 async function isGitSourceStore(storePath: string): Promise<boolean> {
   try {
@@ -195,7 +196,7 @@ export async function readSourceFile(
  *
  * @param git - Git client
  * @param sourceRepository - Resolved source URL or absolute path
- * @param storePath - Destination under `.learn` (typically `source.git`)
+ * @param storePath - Destination under `.learn` (typically `source-clone`)
  * @param onLog - Optional progress logger
  */
 export async function materializeSourceStore(
@@ -225,6 +226,15 @@ export async function materializeSourceStore(
   onLog?.(`Copying local source tree… (${sourceRepository})`);
   await mkdir(path.dirname(storePath), { recursive: true });
   await cp(sourceRepository, storePath, { recursive: true });
+}
+
+/**
+ * Deletes `.learn/source-clone` after its chapter trees have been copied out.
+ *
+ * @param workspaceRoot - Learning workspace root
+ */
+export async function removeExtractedSourceClone(workspaceRoot: string): Promise<void> {
+  await rm(learningPaths(workspaceRoot).sourceMirror, { recursive: true, force: true });
 }
 
 /**
@@ -335,76 +345,6 @@ async function existingPathKind(target: string): Promise<"directory" | "file" | 
   } catch {
     return "missing";
   }
-}
-
-/** Snapshot directory produced while overlaying a source subtree onto the student tree. */
-export interface SnapshotOverlay {
-  /** Directory whose files were copied; missing when the snapshot is empty. */
-  snapshotRoot: string;
-  /** Removes a temporary archive. A no-op when `snapshotRoot` is the source store itself. */
-  dispose: () => Promise<void>;
-}
-
-/**
- * Overlays `subdir` from the source store onto `destDir`.
- *
- * Existing destination directories that also exist in the snapshot are kept and updated in place.
- * When `subdir` is `undefined`, creates `destDir` and writes nothing. The returned root is what
- * a later prune compares against; call `dispose` after that prune.
- *
- * @param git - Git client
- * @param storePath - Materialized source store
- * @param subdir - Chapter directory path relative to the source root, or `undefined` for empty
- * @param destDir - Destination directory (contents of the chapter tree)
- */
-export async function overlaySourceSubtree(
-  git: GitClient,
-  storePath: string,
-  subdir: string | undefined,
-  destDir: string,
-): Promise<SnapshotOverlay> {
-  await mkdir(destDir, { recursive: true });
-  if (subdir === undefined || subdir.trim() === "") {
-    const empty = await mkdtemp(path.join(tmpdir(), "learn-by-diff-empty-"));
-    return {
-      snapshotRoot: empty,
-      /**
-       * Removes the temporary empty snapshot used when the chapter tree has no files.
-       */
-      dispose: async () => {
-        await rm(empty, { recursive: true, force: true });
-      },
-    };
-  }
-  await assertSourceSubtree(git, storePath, subdir);
-  if (await isGitSourceStore(storePath)) {
-    const staging = await mkdtemp(path.join(tmpdir(), "learn-by-diff-export-"));
-    try {
-      await git.archiveSubtree(storePath, subdir, staging);
-      await overlayDirectoryChildren(staging, destDir);
-    } catch (error) {
-      await rm(staging, { recursive: true, force: true });
-      throw error;
-    }
-    return {
-      snapshotRoot: staging,
-      /**
-       * Deletes the temporary git archive created for this overlay.
-       */
-      dispose: async () => {
-        await rm(staging, { recursive: true, force: true });
-      },
-    };
-  }
-  const from = path.join(storePath, ...subdir.split(/[/\\]/).filter(Boolean));
-  await overlayDirectoryChildren(from, destDir);
-  return {
-    snapshotRoot: from,
-    /**
-     * No-op: the snapshot root is the source store directory and must stay.
-     */
-    dispose: async () => {},
-  };
 }
 
 /**

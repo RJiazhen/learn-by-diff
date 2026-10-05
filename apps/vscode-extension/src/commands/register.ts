@@ -736,7 +736,7 @@ export function registerCommands(
           return;
         }
         try {
-          await openChapterDocs(session, chapterId);
+          await openChapterDocs(git, session, chapterId);
         } catch (error) {
           showError(error);
         }

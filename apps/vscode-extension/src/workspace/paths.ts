@@ -38,7 +38,7 @@ export function learningPaths(workspaceRoot: string) {
     workspaceRoot,
     learnDir,
     progressFile: path.join(learnDir, "progress.json"),
-    sourceMirror: path.join(learnDir, "source.git"),
+    sourceMirror: path.join(learnDir, "source-clone"),
     courseDir: path.join(learnDir, "course"),
     snapshotsDir: path.join(learnDir, "snapshots"),
     refsDir: path.join(learnDir, "refs"),

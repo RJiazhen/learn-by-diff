@@ -83,7 +83,7 @@ Under a learning workspace root:
 | `.learn/course/`                         | Copy of course config                                                              |
 | `.learn/origin.json`                     | Open Course origin for copy-link (gitignored)                                      |
 | `.learn/chapter-config-download.json`    | Present only while remote chapter JSONC is not downloaded yet; deleted when done   |
-| `.learn/source.git/`                     | Materialized source store (mirror)                                                 |
+| `.learn/source-clone/`                   | Clone of the source repository; removed after snapshots are extracted              |
 | `.learn/snapshots/dirs/<source-dir>/`    | Cached source trees (one copy per unique `fromDir`/`toDir`; prefetched after open) |
 | `.learn/refs/<ordinal>-<title> (status)` | Runnable copy; folder name matches Explorer                                        |
 | `{root}.code-workspace`                  | Multi-root window (named after the course dir)                                     |

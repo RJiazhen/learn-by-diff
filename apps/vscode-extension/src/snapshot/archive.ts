@@ -4,7 +4,11 @@ import { mkdir, mkdtemp, rename, rm } from "node:fs/promises";
 import path from "node:path";
 import type { GitClient } from "../git/client.ts";
 import { learningPaths, sourceSnapshotDir } from "../workspace/paths.ts";
-import { directoryExists, exportSourceSubtree } from "../workspace/sourceStore.ts";
+import {
+  directoryExists,
+  exportSourceSubtree,
+  removeExtractedSourceClone,
+} from "../workspace/sourceStore.ts";
 
 /** In-flight unique source-tree writes, keyed by workspace root and subtree. */
 const inflightSnapshots = new Map<string, Promise<string>>();
@@ -173,6 +177,27 @@ export async function writeChapterArchives(
   const cachedFrom = await ensureSourceSnapshot(git, sourceStore, workspaceRoot, fromSubtree);
   const cachedTo = await ensureSourceSnapshot(git, sourceStore, workspaceRoot, toSubtree);
   return { fromDir: cachedFrom, toDir: cachedTo };
+}
+
+/**
+ * Deletes the source clone once every unique chapter tree is cached.
+ *
+ * Leaves the clone in place while any snapshot is still missing so a later
+ * export can finish.
+ *
+ * @param workspaceRoot - Learning workspace root
+ * @param course - Loaded course
+ */
+export async function discardSourceCloneIfSnapshotsReady(
+  workspaceRoot: string,
+  course: Course,
+): Promise<void> {
+  for (const subtree of uniqueSourceSubtrees(course)) {
+    if (!(await sourceSnapshotIsReady(workspaceRoot, subtree))) {
+      return;
+    }
+  }
+  await removeExtractedSourceClone(workspaceRoot);
 }
 
 /**

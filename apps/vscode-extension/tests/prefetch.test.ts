@@ -36,7 +36,8 @@ afterEach(async () => {
 /**
  * Creates a two-chapter course and a learning workspace seeded with chapter one.
  *
- * Chapter two reuses chapter one's `toDir` (`two`) as both `fromDir` and `toDir`.
+ * Chapter one uses `start` and `two`. Chapter two's goal is `later`, which is
+ * not extracted until prefetch.
  */
 async function createTwoChapterWorkspace(): Promise<{
   learningRoot: string;
@@ -47,6 +48,7 @@ async function createTwoChapterWorkspace(): Promise<{
   const courseDir = path.join(pair, "demo-course");
   await mkdir(path.join(sourceDir, "start", "pkg"), { recursive: true });
   await mkdir(path.join(sourceDir, "two", "pkg"), { recursive: true });
+  await mkdir(path.join(sourceDir, "later", "pkg"), { recursive: true });
   await writeFile(
     path.join(sourceDir, "start", "pkg", "index.ts"),
     "export const v = 1;\n",
@@ -54,6 +56,12 @@ async function createTwoChapterWorkspace(): Promise<{
   );
   await writeFile(path.join(sourceDir, "two", "pkg", "index.ts"), "export const v = 2;\n", "utf8");
   await writeFile(path.join(sourceDir, "two", "extra.ts"), "export {};\n", "utf8");
+  await writeFile(
+    path.join(sourceDir, "later", "pkg", "index.ts"),
+    "export const v = 2;\n",
+    "utf8",
+  );
+  await writeFile(path.join(sourceDir, "later", "extra.ts"), "export {};\n", "utf8");
 
   await mkdir(path.join(courseDir, ".course-config", "chapters"), { recursive: true });
   await writeFile(
@@ -80,7 +88,7 @@ async function createTwoChapterWorkspace(): Promise<{
   "id": "two",
   "title": "Two",
   "fromDir": "two",
-  "toDir": "two",
+  "toDir": "later",
   "entryFiles": [
     "pkg/index.ts"
   ]
@@ -100,8 +108,9 @@ async function createTwoChapterWorkspace(): Promise<{
 describe("chapter snapshot prefetch", () => {
   test("createLearningWorkspace does not block on caching every snapshot", async () => {
     const { learningRoot } = await createTwoChapterWorkspace();
-    expect(await sourceSnapshotIsReady(learningRoot, "start")).toBe(false);
-    expect(await sourceSnapshotIsReady(learningRoot, "two")).toBe(false);
+    expect(await sourceSnapshotIsReady(learningRoot, "start")).toBe(true);
+    expect(await sourceSnapshotIsReady(learningRoot, "two")).toBe(true);
+    expect(await sourceSnapshotIsReady(learningRoot, "later")).toBe(false);
     expect(await readFile(path.join(learningRoot, "pkg/index.ts"), "utf8")).toBe(
       "export const v = 1;\n",
     );
@@ -115,7 +124,7 @@ describe("chapter snapshot prefetch", () => {
       return;
     }
 
-    expect(uniqueSourceSubtrees(course)).toEqual(["start", "two"]);
+    expect(uniqueSourceSubtrees(course)).toEqual(["start", "two", "later"]);
 
     const logs: string[] = [];
     const reports: SnapshotPrefetchProgress[] = [];
@@ -139,13 +148,17 @@ describe("chapter snapshot prefetch", () => {
 
     expect(await sourceSnapshotIsReady(learningRoot, "start")).toBe(true);
     expect(await sourceSnapshotIsReady(learningRoot, "two")).toBe(true);
+    expect(await sourceSnapshotIsReady(learningRoot, "later")).toBe(true);
     const cachedDirs = await readdir(path.join(learningPaths(learningRoot).snapshotsDir, "dirs"));
-    expect(cachedDirs.sort()).toEqual(["start", "two"]);
-    expect(logs.some((line) => line.includes("Prefetching 2 snapshot"))).toBe(true);
+    expect(cachedDirs.sort()).toEqual(["later", "start", "two"]);
+    expect(logs.some((line) => line.includes("Prefetching 1 snapshot"))).toBe(true);
     expect(logs.some((line) => line.includes("Finished prefetching"))).toBe(true);
-    expect(reports.map((info) => info.subtree)).toEqual(["start", "two"]);
-    expect(reports[1]?.completed).toBe(2);
-    expect(reports[1]?.total).toBe(2);
+    await expect(access(learningPaths(learningRoot).sourceMirror)).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+    expect(reports.map((info) => info.subtree)).toEqual(["later"]);
+    expect(reports[0]?.completed).toBe(1);
+    expect(reports[0]?.total).toBe(1);
 
     const startDir = sourceSnapshotDir(learningRoot, "start");
     await writeFile(path.join(startDir, "marker.txt"), "keep\n", "utf8");
@@ -194,7 +207,8 @@ describe("chapter snapshot prefetch", () => {
     abort.abort();
     await prefetchAllChapterSnapshots(git, session, { signal: abort.signal });
 
-    expect(await sourceSnapshotIsReady(learningRoot, "start")).toBe(false);
-    expect(await sourceSnapshotIsReady(learningRoot, "two")).toBe(false);
+    expect(await sourceSnapshotIsReady(learningRoot, "start")).toBe(true);
+    expect(await sourceSnapshotIsReady(learningRoot, "two")).toBe(true);
+    expect(await sourceSnapshotIsReady(learningRoot, "later")).toBe(false);
   });
 });
