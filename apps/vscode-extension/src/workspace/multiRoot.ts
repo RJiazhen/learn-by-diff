@@ -14,14 +14,6 @@ interface WorkspaceFileBody {
   settings?: Record<string, unknown>;
 }
 
-/** Hidden generated trees and the workspace file itself in the student Explorer root. */
-const DEFAULT_FILES_EXCLUDE: Record<string, boolean> = {
-  "*.code-workspace": true,
-  ".learn/source.git": true,
-  ".learn/snapshots": true,
-  ".learn/refs": true,
-};
-
 /**
  * Creates a single-folder `.code-workspace` at the learning root if it is missing.
  *
@@ -29,8 +21,8 @@ const DEFAULT_FILES_EXCLUDE: Record<string, boolean> = {
  * and reopening loads saved extra roots (chapter Not Started / Completed
  * folders). Opening a `.code-workspace` (even with one folder) keeps the window
  * in multi-root mode, so later `updateWorkspaceFolders` does not restart the
- * host. Does not overwrite an existing file. Migrates a legacy file under
- * `.learn/` when present.
+ * host. Does not set `files.exclude`. Does not overwrite an existing file.
+ * Migrates a legacy file under `.learn/` when present.
  *
  * @param workspaceRoot - Learning repository root
  * @returns Absolute path of the `.code-workspace` file
@@ -65,9 +57,6 @@ export async function ensureLearningWorkspaceFile(workspaceRoot: string): Promis
 function defaultWorkspaceBody(workspaceRoot: string): WorkspaceFileBody {
   return {
     folders: [{ name: path.basename(workspaceRoot), path: "." }],
-    settings: {
-      "files.exclude": { ...DEFAULT_FILES_EXCLUDE },
-    },
   };
 }
 
@@ -106,7 +95,7 @@ async function readMigratedLegacyWorkspace(
   }
   const learnDir = path.join(workspaceRoot, ".learn");
   const folders = rewriteLegacyFolders(record.folders, workspaceRoot, learnDir);
-  return mergeDefaultExclude({ ...record, folders });
+  return { ...record, folders };
 }
 
 /**
@@ -170,27 +159,6 @@ function rewriteLegacyFolder(
     return { name: rootName, path: "." };
   }
   return { name: folder.name, path: relative };
-}
-
-/**
- * Ensures default `files.exclude` keys are present without dropping other settings.
- *
- * @param body - Workspace file body after folder rewrite
- */
-function mergeDefaultExclude(body: WorkspaceFileBody): WorkspaceFileBody {
-  const existingExclude =
-    body.settings !== undefined &&
-    typeof body.settings["files.exclude"] === "object" &&
-    body.settings["files.exclude"] !== null
-      ? (body.settings["files.exclude"] as Record<string, unknown>)
-      : {};
-  return {
-    ...body,
-    settings: {
-      ...body.settings,
-      "files.exclude": { ...DEFAULT_FILES_EXCLUDE, ...existingExclude },
-    },
-  };
 }
 
 /**
