@@ -19,6 +19,7 @@
   "main": "./dist/extension.cjs",
   "scripts": {
     "pack": "vp pack",
+    "package": "vp run @learn-by-diff/protocol#pack && vsce package --no-dependencies",
     "watch": "vp pack --watch",
     "vscode:prepublish": "node ../../scripts/copy-extension-readme.mjs && vp pack",
     "test": "vp test",

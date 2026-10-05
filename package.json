@@ -14,6 +14,7 @@
     "check": "vp check",
     "test": "vp run -r test",
     "pack": "vp run -r pack",
+    "package:extension": "pnpm --filter learn-by-diff package",
     "reset:sandbox": "node scripts/reset-sandbox.mjs",
     "prepare": "vp config"
   },
