@@ -20,6 +20,8 @@ jobs:
       RELEASE_TAG: ${{ github.event.inputs.release_tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
           version: 11.17.0
@@ -39,6 +41,15 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec vp run @learn-by-diff/protocol#pack
       - run: pnpm exec vp run learn-by-diff#pack
+      - name: Changelog
+        id: changelog
+        uses: ardalanamini/auto-changelog@v4
+        with:
+          release-name: ${{ env.RELEASE_TAG }}
+      - name: Write extension changelog
+        env:
+          CHANGELOG: ${{ steps.changelog.outputs.changelog }}
+        run: printf '%s\n' "$CHANGELOG" > apps/vscode-extension/CHANGELOG.md
       - name: Copy README into extension package
         run: node scripts/copy-extension-readme.mjs
       - name: Package VSIX
@@ -109,5 +120,5 @@ jobs:
           else
             gh release create "$tag" "$vsix" \
               --title "LearnByDiff ${tag}" \
-              --notes "LearnByDiff ${tag} for VS Code Marketplace and Open VSX."
+              --notes-file apps/vscode-extension/CHANGELOG.md
           fi
