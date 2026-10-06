@@ -20,6 +20,8 @@ jobs:
       RELEASE_TAG: ${{ github.event.inputs.release_tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
         with:
           version: 11.17.0
@@ -97,9 +99,15 @@ jobs:
               exit "$status"
             fi
           fi
+      - name: Changelog
+        id: changelog
+        uses: ardalanamini/auto-changelog@v4
+        with:
+          release-name: ${{ env.RELEASE_TAG }}
       - name: GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANGELOG: ${{ steps.changelog.outputs.changelog }}
         run: |
           set -euo pipefail
           tag="${{ env.RELEASE_TAG }}"
@@ -107,7 +115,8 @@ jobs:
           if gh release view "$tag" >/dev/null 2>&1; then
             gh release upload "$tag" "$vsix" --clobber
           else
+            printf '%s\n' "$CHANGELOG" > release-notes.md
             gh release create "$tag" "$vsix" \
               --title "LearnByDiff ${tag}" \
-              --notes "LearnByDiff ${tag} for VS Code Marketplace and Open VSX."
+              --notes-file release-notes.md
           fi
