@@ -69,7 +69,7 @@ Bump `version` in [`apps/vscode-extension/package.json`](apps/vscode-extension/p
 
 `publisher` is `RuanJiazhen` (same as Powerful NPM Run); the Open VSX namespace must match. Both secrets are required; the job fails if either is missing.
 
-The GitHub Release notes come from [ardalanamini/auto-changelog](https://github.com/ardalanamini/auto-changelog), grouped by Conventional Commit type since the previous tag.
+Publish writes [ardalanamini/auto-changelog](https://github.com/ardalanamini/auto-changelog) output to `apps/vscode-extension/CHANGELOG.md` before packaging, so the VSIX and the GitHub Release share those notes. Commits are grouped by Conventional Commit type since the previous tag.
 
 Do not use local `vsce publish` as the release path. `vsce package` is fine for a local preview (`vscode:prepublish` copies the English README then packs).
 
