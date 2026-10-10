@@ -208,7 +208,7 @@ export default defineConfig({
   ],
   transformHead: courseConfigIndexHead,
   /**
-   * Bundle `LoopVideo` `src` the same way Vite bundles a native `<video src>`.
+   * Bundle `LoopVideo` and `DocImage` `src` the same way Vite bundles a native media `src`.
    * Passing a tag map replaces the defaults, so the built-in tags stay listed.
    */
   vue: {
@@ -220,6 +220,7 @@ export default defineConfig({
         image: ["xlink:href", "href"],
         use: ["xlink:href", "href"],
         LoopVideo: ["src"],
+        DocImage: ["src"],
       },
     },
   },

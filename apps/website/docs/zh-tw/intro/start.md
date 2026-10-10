@@ -4,6 +4,7 @@ outline: deep
 ---
 
 <script setup>
+import DocImage from "../../.vitepress/theme/DocImage.vue";
 import LoopVideo from "../../.vitepress/theme/LoopVideo.vue";
 </script>
 
@@ -24,7 +25,7 @@ LearnByDiff 適用於 **VS Code**、**Cursor**，以及其他以 VS Code 為基�
 
 點一下 Explorer 的 **LEARN BY DIFF** 檢視標題列的「開啟課程」按鈕（或在命令選擇區執行 **LearnByDiff: 開啟課程**）。
 
-<img src="../../images/open-course-button.png" alt="開啟課程按鈕" style="height: 300px; width: auto; margin: 0 auto;" />
+<DocImage src="../../images/open-course-button.png" alt="開啟課程按鈕" />
 
 <LoopVideo src="../../video/open-course.mp4" />
 
@@ -36,7 +37,7 @@ https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course
 
 在彈出視窗中選擇一個目錄存放學習工作區，課程相關檔案會自動下載到該目錄。
 
-<image src="../../images/demo-course-screenshot.png" alt="demo course screenshot" style="height: 500px; width: auto; margin: 0 auto;" />
+<DocImage src="../../images/demo-course-screenshot.png" alt="demo course screenshot" />
 
 > 下載完成後的學習工作區目錄結構
 

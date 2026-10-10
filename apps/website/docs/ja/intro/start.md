@@ -4,6 +4,7 @@ outline: deep
 ---
 
 <script setup>
+import DocImage from "../../.vitepress/theme/DocImage.vue";
 import LoopVideo from "../../.vitepress/theme/LoopVideo.vue";
 </script>
 
@@ -24,7 +25,7 @@ LearnByDiff は **VS Code**、**Cursor**、その他の VS Code 系 IDE で使�
 
 Explorer の **LEARN BY DIFF** ビューのタイトルバーで「コースを開く」をクリックします（またはコマンドパレットで **LearnByDiff: コースを開く**）。
 
-<img src="../../images/open-course-button.png" alt="Open Course button" style="height: 300px; width: auto; margin: 0 auto;" />
+<DocImage src="../../images/open-course-button.png" alt="Open Course button" />
 
 <LoopVideo src="../../video/open-course.mp4" />
 
@@ -36,7 +37,7 @@ https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course
 
 フォルダー選択で学習ワークスペースの保存先を選びます。コース関連ファイルはそのディレクトリにダウンロードされます。
 
-<image src="../../images/demo-course-screenshot.png" alt="demo course screenshot" style="height: 500px; width: auto; margin: 0 auto;" />
+<DocImage src="../../images/demo-course-screenshot.png" alt="demo course screenshot" />
 
 > ダウンロード後の学習ワークスペース構成
 

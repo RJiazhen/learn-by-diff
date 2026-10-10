@@ -3,13 +3,17 @@ title: Features
 outline: deep
 ---
 
+<script setup>
+import DocImage from "../.vitepress/theme/DocImage.vue";
+</script>
+
 # Features
 
 ## Open a course
 
 If the current workspace is not a learning course, click **Open Course**, or run **LearnByDiff: Open Course** from the Command Palette.
 
-<img src="../images/features-open-course.png" alt="Open a course" style="height: 400px; width: auto; margin: 0 auto; display: block;"/>
+<DocImage src="../images/features-open-course.png" alt="Open a course" />
 
 Select an official course, or type a `course.jsonc` path or URL and confirm.
 
@@ -17,7 +21,7 @@ Select an official course, or type a `course.jsonc` path or URL and confirm.
 
 After a course is open, Explorer shows a **Learn By Diff** view with the chapter list.
 
-<img src="../images/features-chapter-switch-and-view.png" alt="Switch and inspect chapters" style="height: 400px; width: auto; margin: 0 auto; display: block;"/>
+<DocImage src="../images/features-chapter-switch-and-view.png" alt="Switch and inspect chapters" />
 
 In the Learn By Diff view, you can use these actions:
 
@@ -32,7 +36,7 @@ When you switch snapshots, you are asked whether to **overwrite the current fold
 
 ## File compare
 
-<img src="../images/features-file-compare.png" alt="File compare" style="height: 400px; width: auto; margin: 0 auto; display: block;"/>
+<DocImage src="../images/features-file-compare.png" alt="File compare" />
 
 Expand a chapter in the Learn By Diff view to see its change list. Click a file name to open the same kind of diff you get in Source Control.
 
@@ -40,4 +44,4 @@ Expand a chapter in the Learn By Diff view to see its change list. Click a file 
 
 To run different chapter snapshots side by side, click the **...** button on the chapter, then **Open Not Started folder** or **Open Completed folder**. That snapshot is downloaded and added as its own folder in the workspace.
 
-<img src="../images/features-chapter-compare.png" alt="Chapter compare" style="height: 400px; width: auto; margin: 0 auto; display: block;"/>
+<DocImage src="../images/features-chapter-compare.png" alt="Chapter compare" />
