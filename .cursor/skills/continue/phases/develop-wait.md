@@ -6,17 +6,13 @@
    - 扩展：`apps/vscode-extension`
    - 站点：`apps/website`
    - 演示课程：`examples/`（不要改 `sandbox/**` 生成态）
-3. 按改动范围跑验证：
+3. 改完一个逻辑变更后按 [commit.md](./commit.md) 提交。
+4. 按改动范围跑验证：
    - `pnpm exec vp check`
    - `pnpm exec vp run -r test`（或只跑相关 package 的 test）
    - 协议变更后再 pack，再跑扩展相关测试
    - 站点改动：`pnpm --filter website build`（或 `pnpm --filter website dev` 做本地确认）
-4. 全部验收项完成后：
-   - **禁止**在本阶段 `git add` / `git commit` / `git push` / `gh pr create`。
-   - 汇报完成情况与验证结果，**立即停止**。
-   - 提示用户**再次执行 `/continue`** 才会进入 **Commit**（只提交；再下一次干净工作区才会 Ship）。
-
-> 即使工作区已有未提交变更、验收已全部通过，也**不得**在同一次 skill 调用内进入 Commit。
+5. 验收完成后停止。禁止 push / 开 PR。工作区干净且有未推送提交时，下次 `/continue` 进入 **Ship**。
 
 ---
 
@@ -25,4 +21,4 @@
 - 汇报 PR 链接、`gh pr checks` 状态
 - 列出未通过项
 - 站点在版本 tag（`v*`）推送时部署到 GitHub Pages：`https://rjiazhen.github.io/learn-by-diff/`（PR 上没有独立预览环境）
-- 工作区干净且已推送时，验收通过后再次执行本 skill 进入 Merge；若还有未提交改动，先走 Commit（不 push）；仅未推送则走 Ship
+- 工作区干净且已推送时，验收通过后再次执行本 skill 进入 Merge。仅未推送则走 Ship
