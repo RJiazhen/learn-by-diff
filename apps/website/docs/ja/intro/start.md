@@ -3,6 +3,10 @@ title: はじめに
 outline: deep
 ---
 
+<script setup>
+import LoopVideo from "../../.vitepress/theme/LoopVideo.vue";
+</script>
+
 # はじめに
 
 ## インストール
@@ -21,6 +25,8 @@ LearnByDiff は **VS Code**、**Cursor**、その他の VS Code 系 IDE で使�
 Explorer の **LEARN BY DIFF** ビューのタイトルバーで「コースを開く」をクリックします（またはコマンドパレットで **LearnByDiff: コースを開く**）。
 
 <img src="../../images/open-course-button.png" alt="Open Course button" style="height: 300px; width: auto; margin: 0 auto;" />
+
+<LoopVideo src="../../video/open-course.mp4" />
 
 一覧から公式コースを選ぶか、次のデモコース設定 URL を貼り付けて確定します。
 
@@ -47,14 +53,14 @@ https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course
 
 章の「完了」をクリックすると、ローカルのコードがその章の完了スナップショットに置き換わり、完成形を確認できます。
 
-<video class="lbd-loop-video" src="../../video/change-chapter.mp4" autoplay muted loop playsinline></video>
+<LoopVideo src="../../video/change-chapter.mp4" />
 
 「ドキュメント」ボタンで、その章の内容と学習目標を読めます。
 
-<video class="lbd-loop-video" src="../../video/open-documents.mp4" autoplay muted loop playsinline></video>
+<LoopVideo src="../../video/open-documents.mp4" />
 
 章の中のファイルをクリックすると、目標に到達するためのコード変更を確認できます。
 
-<video class="lbd-loop-video" src="../../video/open-file.mp4" autoplay muted loop playsinline></video>
+<LoopVideo src="../../video/open-files.mp4" />
 
 章フォルダーを単独で開いて比較したり、未開始に戻したりする操作は [機能](/ja/intro/features) を参照してください。

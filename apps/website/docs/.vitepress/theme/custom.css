@@ -128,13 +128,6 @@
   padding-right: 3.5rem;
 }
 
-.vp-doc .lbd-loop-video {
-  display: block;
-  width: 100%;
-  height: auto;
-  margin: 1rem 0;
-}
-
 /* Home atmosphere — sits behind hero / features */
 .lbd-home-atmosphere {
   position: fixed;

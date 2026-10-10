@@ -3,6 +3,10 @@ title: 开始
 outline: deep
 ---
 
+<script setup>
+import LoopVideo from "../../.vitepress/theme/LoopVideo.vue";
+</script>
+
 # 开始
 
 ## 安装
@@ -21,6 +25,8 @@ LearnByDiff 适用于 **VS Code**、**Cursor**，以及其他基于 VS Code 的 
 点击 Explorer 的 **LEARN BY DIFF** 视图标题栏的「打开课程」按钮（或在命令面板运行 **LearnByDiff: Open Course**）。
 
 <img src="../../images/open-course-button.png" alt="open course button" style="height: 300px; width: auto; margin: 0 auto;" />
+
+<LoopVideo src="../../video/open-course.mp4" />
 
 从列表中选择一门官方课程，或填入以下 demo 课程配置文件地址并确认：
 
@@ -47,14 +53,14 @@ https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course
 
 然后点击对应章节的「已完成」按钮，就会将本地的代码替换为该章的完成状态的代码，从而预览该章的完成效果。
 
-<video class="lbd-loop-video" src="../../video/change-chapter.mp4" autoplay muted loop playsinline></video>
+<LoopVideo src="../../video/change-chapter.mp4" />
 
 当然，你也可以点击「文档」按钮查看该章的文档，了解该章的内容和学习目标。
 
-<video class="lbd-loop-video" src="../../video/open-documents.mp4" autoplay muted loop playsinline></video>
+<LoopVideo src="../../video/open-documents.mp4" />
 
 又或者，你也可以点击章节中的文件，查看为达成目标所做的代码修改。
 
-<video class="lbd-loop-video" src="../../video/open-file.mp4" autoplay muted loop playsinline></video>
+<LoopVideo src="../../video/open-files.mp4" />
 
 还有诸如单独打开单一章节的代码进行对比测试、切换至未完成状态等功能，请参考 [功能](/zh/intro/features)。

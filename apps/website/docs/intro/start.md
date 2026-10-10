@@ -3,6 +3,10 @@ title: Get started
 outline: deep
 ---
 
+<script setup>
+import LoopVideo from "../.vitepress/theme/LoopVideo.vue";
+</script>
+
 # Get started
 
 ## Install
@@ -21,6 +25,8 @@ You can also [install a `.vsix` manually](https://github.com/RJiazhen/learn-by-d
 Click **Open Course** on the **LEARN BY DIFF** view title bar in Explorer (or run **LearnByDiff: Open Course** from the Command Palette).
 
 <img src="../images/open-course-button.png" alt="Open Course button" style="height: 300px; width: auto; margin: 0 auto;" />
+
+<LoopVideo src="../video/open-course.mp4" />
 
 Select an official course, or paste this demo course config URL and confirm:
 
@@ -47,14 +53,14 @@ For the demo course, preview `index.html` with the [Live Preview](https://market
 
 Click **Completed** on a chapter to replace the local tree with that chapter’s finish snapshot and preview the result.
 
-<video class="lbd-loop-video" src="../video/change-chapter.mp4" autoplay muted loop playsinline></video>
+<LoopVideo src="../video/change-chapter.mp4" />
 
 You can also open the chapter **docs** to read the goals and walkthrough.
 
-<video class="lbd-loop-video" src="../video/open-documents.mp4" autoplay muted loop playsinline></video>
+<LoopVideo src="../video/open-documents.mp4" />
 
 Or click a file under the chapter to see the code that reaches the goal.
 
-<video class="lbd-loop-video" src="../video/open-file.mp4" autoplay muted loop playsinline></video>
+<LoopVideo src="../video/open-files.mp4" />
 
 For opening a single chapter folder to compare, switching back to Not Started, and more, see [Features](/intro/features).
