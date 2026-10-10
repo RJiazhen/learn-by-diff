@@ -14,7 +14,6 @@ interface LocaleChrome {
   authoring: string;
   courseConfig: string;
   retained: string;
-  sample: string;
   editLink: string;
   outlineTitle: string;
   lastUpdatedText: string;
@@ -27,20 +26,12 @@ interface LocaleChrome {
 }
 
 /**
- * Builds Introduction + Course configuration + Sample course nav.
- *
- * Sample course always points at the English demo.
+ * Builds Introduction + Course configuration nav.
  */
-function docsNav(
-  prefix: string,
-  intro: string,
-  courseConfig: string,
-  sample: string,
-): DefaultTheme.NavItem[] {
+function docsNav(prefix: string, intro: string, courseConfig: string): DefaultTheme.NavItem[] {
   return [
     { text: intro, link: `${prefix}/intro/start` },
     { text: courseConfig, link: `${prefix}/course-config/` },
-    { text: sample, link: "/demo/" },
   ];
 }
 
@@ -99,7 +90,7 @@ function docsSidebar(
 function cjkTheme(chrome: LocaleChrome): DefaultTheme.Config {
   const prefix = chrome.link.replace(/\/$/, "");
   return {
-    nav: docsNav(prefix, chrome.intro, chrome.courseConfig, chrome.sample),
+    nav: docsNav(prefix, chrome.intro, chrome.courseConfig),
     sidebar: docsSidebar(
       prefix,
       chrome.intro,
@@ -139,7 +130,6 @@ const zhChrome: LocaleChrome = {
   authoring: "制作课程",
   courseConfig: "课程配置",
   retained: "保留文件",
-  sample: "示例课程",
   editLink: "在 GitHub 上编辑此页",
   outlineTitle: "本页目录",
   lastUpdatedText: "最后更新",
@@ -161,7 +151,6 @@ const jaChrome: LocaleChrome = {
   authoring: "コースを作る",
   courseConfig: "コース設定",
   retained: "残すファイル",
-  sample: "サンプルコース",
   editLink: "GitHub でこのページを編集",
   outlineTitle: "目次",
   lastUpdatedText: "最終更新",
@@ -183,7 +172,6 @@ const zhTwChrome: LocaleChrome = {
   authoring: "製作課程",
   courseConfig: "課程設定",
   retained: "保留檔案",
-  sample: "示例課程",
   editLink: "在 GitHub 上編輯此頁",
   outlineTitle: "本頁目錄",
   lastUpdatedText: "最後更新",
@@ -236,7 +224,7 @@ export default defineConfig({
       label: "English",
       lang: "en",
       themeConfig: {
-        nav: docsNav("", "Introduction", "Course configuration", "Sample course"),
+        nav: docsNav("", "Introduction", "Course configuration"),
         sidebar: docsSidebar(
           "",
           "Introduction",
