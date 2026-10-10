@@ -2,9 +2,7 @@
 
 仅当 `git status` 干净，且本地有未推送提交或尚未开 PR 时进入。
 
-本阶段**禁止** `git commit`。不要从 Commit 阶段连着执行本文件。
-
-若当前分支**已有 OPEN PR**：只执行 §1 Push，**禁止** `gh pr create` / merge，然后按 §3 汇报。
+本阶段禁止 `git commit`。
 
 若当前分支**已有 OPEN PR**：只执行 §1 Push，**禁止** `gh pr create` / merge，然后按 §3 汇报。
 

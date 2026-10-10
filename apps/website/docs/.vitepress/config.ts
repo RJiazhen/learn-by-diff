@@ -207,6 +207,23 @@ export default defineConfig({
     ["meta", { name: "theme-color", content: "#00754c" }],
   ],
   transformHead: courseConfigIndexHead,
+  /**
+   * Bundle `LoopVideo` and `DocImage` `src` the same way Vite bundles a native media `src`.
+   * Passing a tag map replaces the defaults, so the built-in tags stay listed.
+   */
+  vue: {
+    template: {
+      transformAssetUrls: {
+        video: ["src", "poster"],
+        source: ["src"],
+        img: ["src"],
+        image: ["xlink:href", "href"],
+        use: ["xlink:href", "href"],
+        LoopVideo: ["src"],
+        DocImage: ["src"],
+      },
+    },
+  },
   themeConfig: {
     logo: "/icon.png",
     socialLinks: [{ icon: "github", link: GITHUB }],

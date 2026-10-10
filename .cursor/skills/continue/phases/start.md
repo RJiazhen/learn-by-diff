@@ -26,7 +26,5 @@ gh issue list --repo RJiazhen/learn-by-diff --state all --search "<query>" --lim
 ## 3. 开始实现
 
 - 按 [AGENTS.md](../../../../AGENTS.md) 与 [docs/architecture.md](../../../../docs/architecture.md) 选读相关包边界
-- 输出简短计划后立即编码
-- 本阶段仅做分支与实现启动；**禁止** commit / push / 开 PR。
-- 若本次调用内已完成全部验收项，仍须停止并等待**下一次** `/continue` 进入 **Commit**（不得同轮串联 Develop → Commit）。
-- 若签出功能分支后**暂存区已有变更**（从 `main` 误带过来的工作除外，那种情况应先澄清），下次 `/continue` 会走 Commit，并在同一调用内 push + 开 PR。
+- 输出简短计划后立即编码。改完一个逻辑变更后按 [commit.md](./commit.md) 提交。
+- 本阶段禁止 push / 开 PR。做完后停止；下次 `/continue` 在工作区干净且有未推送提交时进入 **Ship**。
