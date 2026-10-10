@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onUnmounted, ref } from "vue";
 import { useData } from "vitepress";
 
 defineProps<{
@@ -19,8 +19,61 @@ const { lang } = useData();
 const videoRef = ref<HTMLVideoElement | null>(null);
 /** Optimistic playback flag so a second click pauses before `play()` resolves. */
 const playing = ref(true);
+/** True for one second after a finger tap resumes playback, so the pause icon can show without hover. */
+const touchPauseHint = ref(false);
 
 const actionLabel = computed(() => loopVideoActionLabel(lang.value, playing.value));
+
+let suppressClick = false;
+let touchPauseHintTimer = 0;
+
+/**
+ * Toggles playback on a finger lift and ignores the click that follows.
+ * Resuming shows the pause icon for one second, because a touch has no hover.
+ *
+ * @param event - Pointer release on the clip frame
+ */
+function onFramePointerUp(event: PointerEvent): void {
+  if (event.pointerType !== "touch") {
+    return;
+  }
+  suppressClick = true;
+  const willResume = !playing.value;
+  togglePlayback();
+  if (willResume) {
+    showTouchPauseHint();
+  }
+}
+
+/**
+ * Toggles playback for a mouse click or keyboard activation.
+ * Skips the click that a finger tap already handled.
+ */
+function onFrameClick(): void {
+  if (suppressClick) {
+    suppressClick = false;
+    return;
+  }
+  togglePlayback();
+}
+
+/**
+ * Shows the pause icon, then hides it one second after a touch resume.
+ */
+function showTouchPauseHint(): void {
+  window.clearTimeout(touchPauseHintTimer);
+  touchPauseHint.value = true;
+  touchPauseHintTimer = window.setTimeout(hideTouchPauseHint, 1000);
+}
+
+/**
+ * Hides the touch pause icon and cancels a pending hide.
+ */
+function hideTouchPauseHint(): void {
+  window.clearTimeout(touchPauseHintTimer);
+  touchPauseHintTimer = 0;
+  touchPauseHint.value = false;
+}
 
 /**
  * Pauses a playing loop, or resumes a paused one.
@@ -33,6 +86,7 @@ function togglePlayback(): void {
   }
   if (playing.value) {
     playing.value = false;
+    hideTouchPauseHint();
     video.pause();
     return;
   }
@@ -50,7 +104,7 @@ function onClipKeydown(event: KeyboardEvent): void {
     return;
   }
   event.preventDefault();
-  togglePlayback();
+  onFrameClick();
 }
 
 /**
@@ -72,7 +126,10 @@ function onClipPause(): void {
  */
 function onPlayRejected(): void {
   playing.value = false;
+  hideTouchPauseHint();
 }
+
+onUnmounted(hideTouchPauseHint);
 
 /**
  * Returns the locale label for the action the next click will take.
@@ -90,7 +147,9 @@ function loopVideoActionLabel(pageLang: string, isPlaying: boolean): string {
   <div
     class="lbd-loop-video-frame"
     :data-paused="playing ? 'false' : 'true'"
-    @click="togglePlayback"
+    :data-pause-hint="touchPauseHint ? 'true' : 'false'"
+    @pointerup="onFramePointerUp"
+    @click="onFrameClick"
   >
     <video
       ref="videoRef"
@@ -116,6 +175,7 @@ function loopVideoActionLabel(pageLang: string, isPlaying: boolean): string {
   margin: 1rem 0;
   cursor: pointer;
   line-height: 0;
+  touch-action: manipulation;
 }
 
 .lbd-loop-video {
@@ -143,7 +203,14 @@ function loopVideoActionLabel(pageLang: string, isPlaying: boolean): string {
   opacity: 0;
 }
 
-.lbd-loop-video-frame[data-paused="false"]:has(.lbd-loop-video:hover) .lbd-loop-video-badge {
+@media (hover: hover) and (pointer: fine) {
+  .lbd-loop-video-frame[data-paused="false"]:has(.lbd-loop-video:hover) .lbd-loop-video-badge {
+    opacity: 1;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M6 5h4v14H6zm8 0h4v14h-4z'/%3E%3C/svg%3E");
+  }
+}
+
+.lbd-loop-video-frame[data-paused="false"][data-pause-hint="true"] .lbd-loop-video-badge {
   opacity: 1;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M6 5h4v14H6zm8 0h4v14h-4z'/%3E%3C/svg%3E");
 }
