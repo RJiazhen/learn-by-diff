@@ -10,6 +10,21 @@
       "path": "chibivue-zh-cn",
     },
     {
+      "id": "chibivue-zh-tw",
+      "title": "chibivue 繁體中文課程",
+      "path": "chibivue-zh-tw",
+    },
+    {
+      "id": "chibivue-ja",
+      "title": "chibivue 日本語コース",
+      "path": "chibivue-ja",
+    },
+    {
+      "id": "chibivue-en",
+      "title": "chibivue",
+      "path": "chibivue-en",
+    },
+    {
       "id": "demo-course",
       "title": "Cursor particles",
       "path": "demo-course",

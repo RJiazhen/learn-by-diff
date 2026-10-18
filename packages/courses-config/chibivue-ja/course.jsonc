@@ -1,0 +1,10 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/course",
+  "id": "chibivue-ja",
+  "title": "chibivue 日本語コース",
+  "description": "chibivue のオンラインブックに沿って、createApp から Vue.js を段階的に実装する。ソースは chibivue の book/impls。",
+  "source": {
+    "repository": "https://github.com/chibivue-land/chibivue",
+    "root": "book/impls",
+  },
+}
