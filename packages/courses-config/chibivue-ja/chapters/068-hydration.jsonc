@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "hydration",
+  "title": "Hydration",
+  "fromDir": "90_web_application_essentials/010_ssr",
+  "toDir": "90_web_application_essentials/010_ssr",
+  "docs": "https://book.chibivue.land/ja/90-web-application-essentials/020-ssr/020-hydration",
+  "changedFiles": [],
+}

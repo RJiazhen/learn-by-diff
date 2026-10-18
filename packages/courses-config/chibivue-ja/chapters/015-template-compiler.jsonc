@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "template-compiler",
+  "title": "テンプレートコンパイラを理解する",
+  "fromDir": "10_minimum_example/050_component_system3",
+  "toDir": "10_minimum_example/050_component_system3",
+  "docs": "https://book.chibivue.land/ja/10-minimum-example/060-template-compiler",
+  "changedFiles": [],
+}

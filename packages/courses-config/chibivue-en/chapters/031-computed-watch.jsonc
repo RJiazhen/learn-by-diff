@@ -1,0 +1,46 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "computed-watch",
+  "title": "computed / watch API",
+  "fromDir": "30_basic_reactivity_system/040_to_refs",
+  "toDir": "30_basic_reactivity_system/090_watch_effect",
+  "docs": "https://book.chibivue.land/30-basic-reactivity-system/020-computed-watch",
+  "changedFiles": [
+    {
+      "path": "examples/playground/src/App.vue",
+      "kind": "M",
+    },
+    {
+      "path": "examples/playground/src/main.ts",
+      "kind": "M",
+    },
+    {
+      "path": "packages/reactivity/baseHandler.ts",
+      "kind": "M",
+    },
+    {
+      "path": "packages/reactivity/computed.ts",
+      "kind": "U",
+    },
+    {
+      "path": "packages/reactivity/index.ts",
+      "kind": "M",
+    },
+    {
+      "path": "packages/runtime-core/apiWatch.ts",
+      "kind": "U",
+    },
+    {
+      "path": "packages/runtime-core/index.ts",
+      "kind": "M",
+    },
+    {
+      "path": "packages/shared/general.ts",
+      "kind": "M",
+    },
+    {
+      "path": "tests/e2e.spec.ts",
+      "kind": "M",
+    },
+  ],
+}

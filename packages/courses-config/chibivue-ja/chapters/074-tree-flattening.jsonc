@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "tree-flattening",
+  "title": "Tree Flattening",
+  "fromDir": "90_web_application_essentials/050_patch_flags",
+  "toDir": "90_web_application_essentials/050_patch_flags",
+  "docs": "https://book.chibivue.land/ja/90-web-application-essentials/040-optimizations/030-tree-flattening",
+  "changedFiles": [],
+}

@@ -187,7 +187,7 @@ Deep link authority = `publisher.name` → `RuanJiazhen.learn-by-diff`.
 
 ## Examples
 
-- `packages/courses-config` — course catalog plus each course’s JSONC. Includes `chibivue-zh-cn` and `demo-course` (git URL + `source.root: examples/demo-source`, chapter `docs` samples: https tutorial, Markdown, PDF).
+- `packages/courses-config` — course catalog plus each course’s JSONC. Includes `chibivue-zh-cn`, `chibivue-zh-tw`, `chibivue-ja`, `chibivue-en` (same `book/impls` snapshots; chapter `docs` follow the book locale) and `demo-course` (git URL + `source.root: examples/demo-source`, chapter `docs` samples: https tutorial, Markdown, PDF).
 - `examples/demo-source` — `start` / `skeleton` / `particles` / `follow` / `glow` snapshots (canvas particles that follow the cursor).
 - `apps/website` — VitePress docs site (`https://rjiazhen.github.io/learn-by-diff/`).
 

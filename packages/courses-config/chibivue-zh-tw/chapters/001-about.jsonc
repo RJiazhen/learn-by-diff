@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "about",
+  "title": "入門指南",
+  "fromDir": "",
+  "toDir": "",
+  "docs": "https://book.chibivue.land/zh-tw/00-introduction/010-about",
+  "changedFiles": [],
+}

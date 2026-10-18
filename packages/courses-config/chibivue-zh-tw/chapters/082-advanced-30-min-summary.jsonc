@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "advanced-30-min-summary",
+  "title": "高階 30 分鐘概要",
+  "fromDir": "90_web_application_essentials/050_patch_flags",
+  "toDir": "90_web_application_essentials/050_patch_flags",
+  "docs": "https://book.chibivue.land/zh-tw/bonus/hot-paths/advanced-30-min-summary",
+  "changedFiles": [],
+}

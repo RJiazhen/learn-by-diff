@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "hyper-ultimate-super-extreme-minimal-vue",
+  "title": "chibivue, isn't it small...?",
+  "fromDir": "90_web_application_essentials/050_patch_flags",
+  "toDir": "90_web_application_essentials/050_patch_flags",
+  "docs": "https://book.chibivue.land/bonus/hyper-ultimate-super-extreme-minimal-vue",
+  "changedFiles": [],
+}

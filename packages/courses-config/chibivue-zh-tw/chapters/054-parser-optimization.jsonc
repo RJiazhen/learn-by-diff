@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "parser-optimization",
+  "title": "解析器最佳化",
+  "fromDir": "50_basic_template_compiler/100_chore_compiler",
+  "toDir": "50_basic_template_compiler/100_chore_compiler",
+  "docs": "https://book.chibivue.land/zh-tw/50-basic-template-compiler/110-parser-optimization",
+  "changedFiles": [],
+}

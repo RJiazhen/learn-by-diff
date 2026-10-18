@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "debug-vuejs-core",
+  "title": "调试原始 Vue.js 源码",
+  "fromDir": "bonus/hyper-ultimate-super-extreme-minimal-vue",
+  "toDir": "bonus/hyper-ultimate-super-extreme-minimal-vue",
+  "docs": "https://book.chibivue.land/zh-cn/bonus/debug-vuejs-core",
+  "changedFiles": [],
+}
