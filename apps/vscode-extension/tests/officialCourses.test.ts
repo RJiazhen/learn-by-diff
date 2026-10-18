@@ -36,7 +36,8 @@ function fixtureFetcher(files: Record<string, string>): RemoteTextFetcher {
     if (url === OFFICIAL_COURSES_CATALOG_RAW_URL) {
       return catalog;
     }
-    const prefix = "https://raw.githubusercontent.com/RJiazhen/learn-by-diff-courses/main/";
+    const prefix =
+      "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/packages/courses-config/";
     if (!url.startsWith(prefix)) {
       return undefined;
     }
@@ -77,40 +78,40 @@ describe("loadOfficialCourses", () => {
         id: "from-file",
         title: "From file",
         courseJsoncUrl:
-          "https://github.com/RJiazhen/learn-by-diff-courses/blob/main/chibivue-zh-cn/course.jsonc",
+          "https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/chibivue-zh-cn/course.jsonc",
         courseJsoncText: `{ "id": "from-file", "title": "From file" }`,
       },
       {
         id: "nested-file",
         title: "Nested file",
         courseJsoncUrl:
-          "https://github.com/RJiazhen/learn-by-diff-courses/blob/main/nested-course/.course-config/course.jsonc",
+          "https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/nested-course/.course-config/course.jsonc",
         courseJsoncText: `{ "id": "nested-file", "title": "Nested file" }`,
       },
       {
         id: "missing",
         title: "Missing file",
         courseJsoncUrl:
-          "https://github.com/RJiazhen/learn-by-diff-courses/blob/main/missing-course/course.jsonc",
+          "https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/missing-course/course.jsonc",
       },
       {
         id: "spaced",
         title: "Spaced file",
         courseJsoncUrl:
-          "https://github.com/RJiazhen/learn-by-diff-courses/blob/main/my%20course/course.jsonc",
+          "https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/my%20course/course.jsonc",
         courseJsoncText: `{ "title": "Spaced file" }`,
       },
       {
         id: "direct",
         title: "Direct file",
         courseJsoncUrl:
-          "https://github.com/RJiazhen/learn-by-diff-courses/blob/main/direct/course.jsonc",
+          "https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/direct/course.jsonc",
         courseJsoncText: `{ "title": "Direct file" }`,
       },
     ]);
     expect(parseCourseConfigUrl(courses[0]?.courseJsoncUrl ?? "")).toMatchObject({
       kind: "githubFile",
-      configRelPath: "chibivue-zh-cn/course.jsonc",
+      configRelPath: "packages/courses-config/chibivue-zh-cn/course.jsonc",
     });
   });
 

@@ -54,5 +54,8 @@ export function resolveSourceRepository(declared: string, configDir: string): st
  * @param extensionPath - `context.extensionPath` (`apps/vscode-extension`)
  */
 export function demoCoursePath(extensionPath: string): string {
-  return path.resolve(extensionPath, "../../examples/demo-course/.course-config/course.jsonc");
+  return path.resolve(
+    extensionPath,
+    "../../packages/courses-config/demo-course/.course-config/course.jsonc",
+  );
 }

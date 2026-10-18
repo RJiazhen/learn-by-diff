@@ -24,7 +24,7 @@
 從清單中選擇一門官方課程，或貼上以下 demo 課程設定檔位址並確認：
 
 ```text
-https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc
+https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/.course-config/course.jsonc
 ```
 
 在彈出視窗中選擇一個目錄存放學習工作區，課程相關檔案會下載到該目錄。
@@ -35,8 +35,8 @@ https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course
 
 已安裝擴充功能時，也可以點以下連結一鍵開課：
 
-- [VS Code](vscode://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc)
-- [Cursor](cursor://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc)
+- [VS Code](vscode://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/.course-config/course.jsonc)
+- [Cursor](cursor://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/.course-config/course.jsonc)
 
 ## 用你習慣的方式學習
 

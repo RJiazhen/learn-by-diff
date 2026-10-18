@@ -268,7 +268,7 @@ async function loadOfficialCoursesForPicker(
 function courseInputPrompt(options: PromptOpenCourseOptions): string {
   return options.isDevHost
     ? vscode.l10n.t(
-        "Path to course.jsonc (prefilled with local examples/demo-course/.course-config/course.jsonc)",
+        "Path to course.jsonc (prefilled with local packages/courses-config/demo-course/.course-config/course.jsonc)",
       )
     : vscode.l10n.t(
         "Path to course.jsonc, a GitHub course.jsonc URL, or a git URL to a course repository",

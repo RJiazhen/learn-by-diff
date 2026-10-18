@@ -21,9 +21,9 @@ afterEach(async () => {
   await Promise.all(temps.splice(0).map((dir) => rm(dir, { recursive: true, force: true })));
 });
 
-const nestedRel = "examples/demo-course/.course-config/course.jsonc";
+const nestedRel = "packages/courses-config/demo-course/.course-config/course.jsonc";
 const demoBlob =
-  "https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc";
+  "https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/.course-config/course.jsonc";
 const expectedClone = "https://github.com/RJiazhen/learn-by-diff.git";
 const expectedFile = {
   kind: "githubFile",
@@ -40,7 +40,7 @@ describe("parseCourseConfigUrl", () => {
     expect(parseCourseConfigUrl(`${demoBlob}#L1`)).toEqual(expectedFile);
     expect(
       parseCourseConfigUrl(
-        "https://www.github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc",
+        "https://www.github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/.course-config/course.jsonc",
       ),
     ).toEqual(expectedFile);
   });
@@ -48,7 +48,7 @@ describe("parseCourseConfigUrl", () => {
   test("parses github.com raw URLs", () => {
     expect(
       parseCourseConfigUrl(
-        "https://github.com/RJiazhen/learn-by-diff/raw/main/examples/demo-course/.course-config/course.jsonc",
+        "https://github.com/RJiazhen/learn-by-diff/raw/main/packages/courses-config/demo-course/.course-config/course.jsonc",
       ),
     ).toEqual(expectedFile);
   });
@@ -56,12 +56,12 @@ describe("parseCourseConfigUrl", () => {
   test("parses raw.githubusercontent.com including refs/heads", () => {
     expect(
       parseCourseConfigUrl(
-        "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/examples/demo-course/.course-config/course.jsonc",
+        "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/packages/courses-config/demo-course/.course-config/course.jsonc",
       ),
     ).toEqual(expectedFile);
     expect(
       parseCourseConfigUrl(
-        "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/examples/demo-course/.course-config/course.jsonc",
+        "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/courses-config/demo-course/.course-config/course.jsonc",
       ),
     ).toEqual({
       ...expectedFile,
@@ -69,7 +69,7 @@ describe("parseCourseConfigUrl", () => {
     });
     expect(
       parseCourseConfigUrl(
-        "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/tags/v0.1.0/examples/demo-course/.course-config/course.jsonc",
+        "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/tags/v0.1.0/packages/courses-config/demo-course/.course-config/course.jsonc",
       ),
     ).toEqual({
       ...expectedFile,
@@ -102,7 +102,7 @@ describe("parseCourseConfigUrl", () => {
     });
     expect(
       parseCourseConfigUrl(
-        "https://github.com/RJiazhen/learn-by-diff#examples/demo-course/.course-config/course.jsonc",
+        "https://github.com/RJiazhen/learn-by-diff#packages/courses-config/demo-course/.course-config/course.jsonc",
       ),
     ).toEqual({
       kind: "gitRepo",
@@ -130,14 +130,14 @@ describe("parseCourseConfigUrl", () => {
   test("ignores local paths", () => {
     expect(parseCourseConfigUrl("/tmp/course.jsonc")).toBeUndefined();
     expect(
-      parseCourseConfigUrl("examples/demo-course/.course-config/course.jsonc"),
+      parseCourseConfigUrl("packages/courses-config/demo-course/.course-config/course.jsonc"),
     ).toBeUndefined();
   });
 
   test("rejects GitHub file URLs that are not course.jsonc", () => {
     expect(() =>
       parseCourseConfigUrl(
-        "https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/README.md",
+        "https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/README.md",
       ),
     ).toThrow(/must point at course\.jsonc/);
     expect(() =>
@@ -223,7 +223,7 @@ describe("resolveCourseConfigDir GitHub file URLs", () => {
     const git = new RecordingGitClient(tree);
     const source = await resolveCourseConfigDir(
       git,
-      "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/examples/demo-course/.course-config/course.jsonc",
+      "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/courses-config/demo-course/.course-config/course.jsonc",
     );
     try {
       expect(git.cloneCalls[0]).toMatchObject({

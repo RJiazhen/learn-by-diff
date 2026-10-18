@@ -1,6 +1,6 @@
 {
   "LearnByDiff: Open Course": "LearnByDiff: Open Course",
-  "Path to course.jsonc (prefilled with local examples/demo-course/.course-config/course.jsonc)": "Path to course.jsonc (prefilled with local examples/demo-course/.course-config/course.jsonc)",
+  "Path to course.jsonc (prefilled with local packages/courses-config/demo-course/.course-config/course.jsonc)": "Path to course.jsonc (prefilled with local packages/courses-config/demo-course/.course-config/course.jsonc)",
   "Path to course.jsonc, a GitHub course.jsonc URL, or a git URL to a course repository": "Path to course.jsonc, a GitHub course.jsonc URL, or a git URL to a course repository",
   "This is the last chapter.": "This is the last chapter.",
   "This is the first chapter.": "This is the first chapter.",

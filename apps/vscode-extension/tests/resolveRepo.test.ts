@@ -16,15 +16,25 @@ describe("resolveSourceRepository", () => {
 
   test("resolves relative paths against the directory that contains course.jsonc", () => {
     expect(
-      resolveSourceRepository("../demo-source", "/repo/examples/demo-course/.course-config"),
-    ).toBe(path.resolve("/repo/examples/demo-course/.course-config", "../demo-source"));
+      resolveSourceRepository(
+        "../demo-source",
+        "/repo/packages/courses-config/demo-course/.course-config",
+      ),
+    ).toBe(
+      path.resolve("/repo/packages/courses-config/demo-course/.course-config", "../demo-source"),
+    );
     expect(
-      resolveSourceRepository("../../demo-source", "/repo/examples/demo-course/.course-config"),
-    ).toBe(path.resolve("/repo/examples/demo-course/.course-config", "../../demo-source"));
+      resolveSourceRepository(
+        "../../demo-source",
+        "/repo/packages/courses-config/demo-course/.course-config",
+      ),
+    ).toBe(
+      path.resolve("/repo/packages/courses-config/demo-course/.course-config", "../../demo-source"),
+    );
   });
 
   test("treats omitted and . as the config directory", () => {
-    const configDir = "/repo/examples/demo-course/.course-config";
+    const configDir = "/repo/packages/courses-config/demo-course/.course-config";
     expect(resolveSourceRepository("", configDir)).toBe(path.resolve(configDir));
     expect(resolveSourceRepository(".", configDir)).toBe(path.resolve(configDir));
   });
@@ -35,9 +45,9 @@ describe("resolveSourceRepository", () => {
     expect(isRemoteGitUrl("/tmp/course")).toBe(false);
   });
 
-  test("demoCoursePath points at examples/demo-course/.course-config/course.jsonc", () => {
+  test("demoCoursePath points at packages/courses-config/demo-course/.course-config/course.jsonc", () => {
     expect(demoCoursePath("/repo/apps/vscode-extension")).toBe(
-      path.resolve("/repo/examples/demo-course/.course-config/course.jsonc"),
+      path.resolve("/repo/packages/courses-config/demo-course/.course-config/course.jsonc"),
     );
   });
 });

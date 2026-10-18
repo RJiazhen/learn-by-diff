@@ -29,11 +29,7 @@ LearnByDiff 适用于 **VS Code**、**Cursor**，以及其他基于 VS Code 的 
 
 <LoopVideo src="../../video/open-course.mp4" />
 
-从列表中选择一门官方课程，或填入以下 demo 课程配置文件地址并确认：
-
-```text
-https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc
-```
+从列表中选择一门已有课程（首次使用推荐选择 **demo-course**）并确认。
 
 在弹出窗口中选择一个目录存放课程仓库，课程相关文件会自动下载到该目录下。
 
@@ -43,8 +39,8 @@ https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course
 
 对应 IDE 用户也可以点击以下链接一键开课：
 
-- [VS Code](vscode://RuanJiazhen.learn-by-diff/open-course?url=https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc)
-- [Cursor](cursor://RuanJiazhen.learn-by-diff/open-course?url=https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc)
+- [VS Code](vscode://RuanJiazhen.learn-by-diff/open-course?url=https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/.course-config/course.jsonc)
+- [Cursor](cursor://RuanJiazhen.learn-by-diff/open-course?url=https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/.course-config/course.jsonc)
 
 ## 按照你的风格进行学习
 

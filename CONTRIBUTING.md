@@ -15,7 +15,7 @@ pnpm exec vp run learn-by-diff#pack
 pnpm --filter website dev
 ```
 
-Press **F5** (`Run Extension`). The prelaunch task runs `vp pack --watch`, then the Extension Development Host opens [`sandbox/`](sandbox) in a temporary empty profile. After code changes, reload the Extension Development Host to pick up the rebuilt bundle. **LearnByDiff: Open Course** prefills [`examples/demo-course/.course-config/course.jsonc`](examples/demo-course/.course-config/course.jsonc).
+Press **F5** (`Run Extension`). The prelaunch task runs `vp pack --watch`, then the Extension Development Host opens [`sandbox/`](sandbox) in a temporary empty profile. After code changes, reload the Extension Development Host to pick up the rebuilt bundle. **LearnByDiff: Open Course** prefills [`packages/courses-config/demo-course/.course-config/course.jsonc`](packages/courses-config/demo-course/.course-config/course.jsonc).
 
 ## Layout
 

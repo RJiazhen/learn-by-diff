@@ -195,14 +195,16 @@ describe("describeCourseOrigin / collectOpenCourseLinkSources", () => {
   test("describes a GitHub file URL origin", async () => {
     const origin = await describeCourseOrigin(
       git,
-      "https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc",
+      "https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/.course-config/course.jsonc",
       "/tmp/unused",
     );
     expect(origin.gitUrl).toBe("https://github.com/RJiazhen/learn-by-diff.git");
     expect(origin.input).toBe(
-      "https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc",
+      "https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/.course-config/course.jsonc",
     );
-    expect(origin.configRelPath).toBe("examples/demo-course/.course-config/course.jsonc");
+    expect(origin.configRelPath).toBe(
+      "packages/courses-config/demo-course/.course-config/course.jsonc",
+    );
     expect(origin.githubRef).toBe("main");
     expect(origin.githubFileUrl).toContain("blob/main/");
   });

@@ -114,7 +114,7 @@ GitHub 上にある場合は、`course.jsonc` のアドレスを共有できま�
 例:
 
 ```text
-https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc
+https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/.course-config/course.jsonc
 ```
 
 `course.jsonc` がリポジトリルート、またはルート直下の `.course-config/course.jsonc` にあるときは、git リポジトリ URL だけでも共有できます。
@@ -126,7 +126,7 @@ https://github.com/RJiazhen/learn-by-diff.git
 `course.jsonc` がサブディレクトリにあるときは、git URL に `#` と、リポジトリルートからの相対パス（`course.jsonc` を指す）を付けます。
 
 ```text
-https://github.com/RJiazhen/learn-by-diff.git#examples/demo-course/.course-config/course.jsonc
+https://github.com/RJiazhen/learn-by-diff.git#packages/courses-config/demo-course/.course-config/course.jsonc
 ```
 
 ### ワンクリック共有リンク

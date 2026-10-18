@@ -226,7 +226,7 @@ cursor://RuanJiazhen.learn-by-diff/open?url=<urlencoded-absolute-course.jsonc>
 Also point authors at:
 
 - Schema: `packages/protocol/schema.json` (or repo README)
-- Demo pair: `examples/demo-course` + `examples/demo-source`
+- Demo pair: `packages/courses-config/demo-course` + `examples/demo-source`
 
 ## Hard rules
 

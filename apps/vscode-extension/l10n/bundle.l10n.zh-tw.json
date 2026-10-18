@@ -1,6 +1,6 @@
 {
   "LearnByDiff: Open Course": "LearnByDiff: 開啟課程",
-  "Path to course.jsonc (prefilled with local examples/demo-course/.course-config/course.jsonc)": "course.jsonc 路徑（已預填本機 examples/demo-course/.course-config/course.jsonc）",
+  "Path to course.jsonc (prefilled with local packages/courses-config/demo-course/.course-config/course.jsonc)": "course.jsonc 路徑（已預填本機 packages/courses-config/demo-course/.course-config/course.jsonc）",
   "Path to course.jsonc, a GitHub course.jsonc URL, or a git URL to a course repository": "course.jsonc 路徑、GitHub 上的 course.jsonc 連結，或課程存放庫的 git URL",
   "This is the last chapter.": "已經是最後一章。",
   "This is the first chapter.": "已經是第一章。",

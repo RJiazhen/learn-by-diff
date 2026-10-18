@@ -1,6 +1,6 @@
 {
   "LearnByDiff: Open Course": "LearnByDiff: コースを開く",
-  "Path to course.jsonc (prefilled with local examples/demo-course/.course-config/course.jsonc)": "course.jsonc のパス（ローカルの examples/demo-course/.course-config/course.jsonc を事前入力済み）",
+  "Path to course.jsonc (prefilled with local packages/courses-config/demo-course/.course-config/course.jsonc)": "course.jsonc のパス（ローカルの packages/courses-config/demo-course/.course-config/course.jsonc を事前入力済み）",
   "Path to course.jsonc, a GitHub course.jsonc URL, or a git URL to a course repository": "course.jsonc のパス、GitHub 上の course.jsonc URL、またはコースリポジトリの git URL",
   "This is the last chapter.": "これが最後の章です。",
   "This is the first chapter.": "これが最初の章です。",

@@ -10,15 +10,16 @@ Not in scope: course hosting, accounts, AI explanations of code.
 
 ## Layout
 
-| Path                                   | Role                                                                            |
-| -------------------------------------- | ------------------------------------------------------------------------------- |
-| `packages/protocol`                    | LCP types, JSONC parse/validate/load, `schema.json` (`@learn-by-diff/protocol`) |
-| `apps/vscode-extension`                | Extension UI, git, workspace create, explorer, deep links                       |
-| `apps/website`                         | VitePress site (GitHub Pages: `https://rjiazhen.github.io/learn-by-diff/`)      |
-| `examples/demo-course` + `demo-source` | Local F5 fixtures                                                               |
-| `sandbox/`                             | Extension Development Host folder (generated `.learn/` gitignored)              |
-| `skills/`                              | Author Agent Skills (not in pnpm workspace)                                     |
-| `docs/`                                | Architecture                                                                    |
+| Path                      | Role                                                                            |
+| ------------------------- | ------------------------------------------------------------------------------- |
+| `packages/protocol`       | LCP types, JSONC parse/validate/load, `schema.json` (`@learn-by-diff/protocol`) |
+| `apps/vscode-extension`   | Extension UI, git, workspace create, explorer, deep links                       |
+| `apps/website`            | VitePress site (GitHub Pages: `https://rjiazhen.github.io/learn-by-diff/`)      |
+| `packages/courses-config` | Course catalog and course JSONC (`courses.jsonc`, chibivue, demo course)        |
+| `examples/demo-source`    | Demo chapter snapshots for the demo course                                      |
+| `sandbox/`                | Extension Development Host folder (generated `.learn/` gitignored)              |
+| `skills/`                 | Author Agent Skills (not in pnpm workspace)                                     |
+| `docs/`                   | Architecture                                                                    |
 
 ## Commands
 

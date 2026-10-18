@@ -1,0 +1,9 @@
+{
+  "$schema": "../../../../packages/protocol/course.schema.json",
+  "title": "Cursor particles",
+  "description": "Prepared for a quick start-up experience: build a canvas particle field that drifts, follows the pointer, and leaves a glow trail.",
+  "source": {
+    "repository": "https://github.com/RJiazhen/learn-by-diff.git",
+    "root": "examples/demo-source",
+  },
+}

@@ -2,12 +2,14 @@ import { parseCourseJsonc } from "@learn-by-diff/protocol";
 import { parse, printParseErrorCode, type ParseError } from "jsonc-parser";
 
 const OFFICIAL_COURSES_OWNER = "RJiazhen";
-const OFFICIAL_COURSES_REPO = "learn-by-diff-courses";
+const OFFICIAL_COURSES_REPO = "learn-by-diff";
 const OFFICIAL_COURSES_REF = "main";
+/** Directory in this repo that holds `courses.jsonc` and each course tree. */
+const OFFICIAL_COURSES_DIR = "packages/courses-config";
 const COURSE_FILE_NAME = "course.jsonc";
 
 /** Raw URL of the official course catalog on the default branch. */
-export const OFFICIAL_COURSES_CATALOG_RAW_URL = `https://raw.githubusercontent.com/${OFFICIAL_COURSES_OWNER}/${OFFICIAL_COURSES_REPO}/${OFFICIAL_COURSES_REF}/courses.jsonc`;
+export const OFFICIAL_COURSES_CATALOG_RAW_URL = `https://raw.githubusercontent.com/${OFFICIAL_COURSES_OWNER}/${OFFICIAL_COURSES_REPO}/${OFFICIAL_COURSES_REF}/${OFFICIAL_COURSES_DIR}/courses.jsonc`;
 
 /** One course recorded in the official `courses.jsonc` catalog. */
 export interface OfficialCourseEntry {
@@ -250,7 +252,7 @@ function officialCourseJsoncPaths(catalogPath: string): string[] {
  * @param relPath - Normalized posix path
  */
 function officialRawFileUrl(relPath: string): string {
-  return `https://raw.githubusercontent.com/${OFFICIAL_COURSES_OWNER}/${OFFICIAL_COURSES_REPO}/${OFFICIAL_COURSES_REF}/${encodeRepoPath(relPath)}`;
+  return `https://raw.githubusercontent.com/${OFFICIAL_COURSES_OWNER}/${OFFICIAL_COURSES_REPO}/${OFFICIAL_COURSES_REF}/${OFFICIAL_COURSES_DIR}/${encodeRepoPath(relPath)}`;
 }
 
 /**
@@ -259,7 +261,7 @@ function officialRawFileUrl(relPath: string): string {
  * @param relPath - Normalized posix path
  */
 function officialBlobFileUrl(relPath: string): string {
-  return `https://github.com/${OFFICIAL_COURSES_OWNER}/${OFFICIAL_COURSES_REPO}/blob/${OFFICIAL_COURSES_REF}/${encodeRepoPath(relPath)}`;
+  return `https://github.com/${OFFICIAL_COURSES_OWNER}/${OFFICIAL_COURSES_REPO}/blob/${OFFICIAL_COURSES_REF}/${OFFICIAL_COURSES_DIR}/${encodeRepoPath(relPath)}`;
 }
 
 /**

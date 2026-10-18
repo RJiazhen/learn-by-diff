@@ -112,7 +112,7 @@ npx skills add RJiazhen/learn-by-diff@generate-course-config -y
 例如：
 
 ```text
-https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc
+https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/.course-config/course.jsonc
 ```
 
 如果课程配置文件是直接放在仓库根目录下，或在根目录的 `.course-config/course.jsonc` 时，则可以直接分享仓库 git 地址 URL：
@@ -124,7 +124,7 @@ https://github.com/RJiazhen/learn-by-diff.git
 如果课程配置文件在仓库的子目录下，用 git 地址加 `#` 再拼上相对路径（相对仓库根，指向 `course.jsonc`）：
 
 ```text
-https://github.com/RJiazhen/learn-by-diff.git#examples/demo-course/.course-config/course.jsonc
+https://github.com/RJiazhen/learn-by-diff.git#packages/courses-config/demo-course/.course-config/course.jsonc
 ```
 
 ### 生成一键分享链接

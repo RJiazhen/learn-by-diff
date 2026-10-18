@@ -14,7 +14,7 @@ import {
 
 const temps: string[] = [];
 const courseUrl =
-  "https://github.com/RJiazhen/learn-by-diff-courses/blob/main/chibivue-zh-cn/course.jsonc";
+  "https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/chibivue-zh-cn/course.jsonc";
 const courseJsonc = `{
   "id": "chibivue-zh-cn",
   "title": "chibivue",
@@ -40,13 +40,13 @@ describe("chapterConfigDownloadRecordFromCourse", () => {
     expect(chapterConfigDownloadRecordFromCourse(courseUrl, courseJsonc)).toEqual({
       completed: false,
       owner: "RJiazhen",
-      repo: "learn-by-diff-courses",
+      repo: "learn-by-diff",
       ref: "main",
       chaptersDir: "chapters",
-      chaptersRelPath: "chibivue-zh-cn/chapters",
+      chaptersRelPath: "packages/courses-config/chibivue-zh-cn/chapters",
     });
     expect(githubRawCourseJsoncUrl(courseUrl)).toBe(
-      "https://raw.githubusercontent.com/RJiazhen/learn-by-diff-courses/main/chibivue-zh-cn/course.jsonc",
+      "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/packages/courses-config/chibivue-zh-cn/course.jsonc",
     );
   });
 });

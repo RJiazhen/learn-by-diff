@@ -114,7 +114,7 @@ If the course is on GitHub, you can share the `course.jsonc` file URL. The other
 For example:
 
 ```text
-https://github.com/RJiazhen/learn-by-diff/blob/main/examples/demo-course/.course-config/course.jsonc
+https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/.course-config/course.jsonc
 ```
 
 If `course.jsonc` is at the repository root, or at `.course-config/course.jsonc` under the root, you can share the git repository URL instead:
@@ -126,7 +126,7 @@ https://github.com/RJiazhen/learn-by-diff.git
 If `course.jsonc` lives in a subdirectory, append `#` and the path relative to the repository root (pointing at `course.jsonc`):
 
 ```text
-https://github.com/RJiazhen/learn-by-diff.git#examples/demo-course/.course-config/course.jsonc
+https://github.com/RJiazhen/learn-by-diff.git#packages/courses-config/demo-course/.course-config/course.jsonc
 ```
 
 ### One-click share links

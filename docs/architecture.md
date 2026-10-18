@@ -145,7 +145,7 @@ flowchart TD
 Notes:
 
 - The picker stays busy until remote **`course.jsonc`** downloads finish (catalog rows and a typed GitHub file URL). **Chapter JSONC is not** part of that wait.
-- Official catalog: [`RJiazhen/learn-by-diff-courses`](https://github.com/RJiazhen/learn-by-diff-courses) `courses.jsonc` on `main`. Catalog failure still allows a typed path or URL.
+- Official catalog: [`packages/courses-config/courses.jsonc`](https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/courses.jsonc) on `main`. Catalog failure still allows a typed path or URL.
 - Remote prepare writes `.learn/chapter-config-download.json` (`completed: false`). After the workspace is open, resume materializes the source **in parallel with** chapter 1’s JSONC download, then downloads remaining chapter JSONC **in parallel**. As each file lands it caches that chapter’s snapshots. Status-bar progress uses `ProgressLocation.Window`. The empty-view tip (`learnByDiff.downloadingChapterConfig`) shows only before chapter 1 appears; afterward a tree status row keeps “Downloading course…” until every chapter finishes. Later chapters that finish earlier stay hidden until chapter 1 is ready; then finished rows appear in course order without waiting for the whole course.
 - Local / full clone path uses `createLearningWorkspace` (course + chapters + source + chapter 1) before the folder opens; snapshot trees still prefetch in the background afterward.
 
@@ -176,7 +176,7 @@ Deep link authority = `publisher.name` → `RuanJiazhen.learn-by-diff`.
 
 1. Change protocol and/or extension; keep doc comments on every function.
 2. `vp check` + package tests; pack protocol if needed.
-3. F5 against `sandbox/` + `examples/demo-*`; reload host after rebuild.
+3. F5 against `sandbox/` + `packages/courses-config/demo-course` and `examples/demo-source`; reload host after rebuild.
 4. Update `schema.json`, fixtures, demo JSONC, and skill docs when the protocol surface changes.
 5. Commit with Conventional Commits, **split by logical change** (protocol → extension → examples → docs).
 
@@ -186,7 +186,7 @@ Deep link authority = `publisher.name` → `RuanJiazhen.learn-by-diff`.
 
 ## Examples
 
-- `examples/demo-course` — course config (git URL + `source.root: examples/demo-source`, chapter `docs` samples: https tutorial, Markdown, PDF).
+- `packages/courses-config` — course catalog plus each course’s JSONC. Includes `chibivue-zh-cn` and `demo-course` (git URL + `source.root: examples/demo-source`, chapter `docs` samples: https tutorial, Markdown, PDF).
 - `examples/demo-source` — `start` / `skeleton` / `particles` / `follow` / `glow` snapshots (canvas particles that follow the cursor).
 - `apps/website` — VitePress docs site (`https://rjiazhen.github.io/learn-by-diff/`).
 

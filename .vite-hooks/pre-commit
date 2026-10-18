@@ -4,4 +4,6 @@ set -e
 root=$(git rev-parse --show-toplevel)
 pnpm --dir "$root/packages/generate-course-config" exec vp build
 git add -- "$root/skills/generate-course-config/scripts/chapter-jsonc.mjs"
+node "$root/packages/courses-config/scripts/sync-course-list.mjs" "$root/packages/courses-config"
+git add -- "$root/packages/courses-config/courses.jsonc"
 vp staged
