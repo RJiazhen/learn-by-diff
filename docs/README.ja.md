@@ -19,7 +19,7 @@ diff の形でコースのソースを直感的に学べます。講座に沿っ
 
 Explorer の **LEARN BY DIFF** ビューのタイトルバーで「コースを開く」をクリックします（またはコマンドパレットで **LearnByDiff: コースを開く**）。
 
-<img src="https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/apps/website/docs/images/open-course-button.png" alt="コースを開くボタン" style="max-width: 300px; display: block; margin: 0 auto;">
+<img src="https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/apps/website/docs/images/open-course-button.png" alt="コースを開くボタン" style="display: block; margin: 0 auto; max-width: 500px; max-height: 700px;">
 
 一覧から公式コースを選ぶか、次のデモコース設定 URL を貼り付けて確定します。
 
@@ -31,7 +31,7 @@ https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo
 
 ダウンロード後の学習ワークスペース：
 
-<img src="https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/apps/website/docs/images/demo-course-screenshot.png" alt="ダウンロード後の学習ワークスペース" style="max-width: 300px; display: block; margin: 0 auto;">
+<img src="https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/apps/website/docs/images/demo-course-screenshot.png" alt="ダウンロード後の学習ワークスペース" style="display: block; margin: 0 auto; max-width: 500px; max-height: 700px;">
 
 拡張機能をインストール済みなら、次のリンクからワンクリックで開けます。
 
