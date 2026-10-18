@@ -19,7 +19,7 @@ You can also [install a `.vsix` manually](https://github.com/RJiazhen/learn-by-d
 
 Click **Open Course** on the **LEARN BY DIFF** view title bar in Explorer (or run **LearnByDiff: Open Course** from the Command Palette).
 
-<img src="https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/apps/website/docs/images/open-course-button.png" alt="Open Course button" style="max-width: 300px; display: block; margin: 0 auto;">
+<img src="https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/apps/website/docs/images/open-course-button.png" alt="Open Course button" style="display: block; margin: 0 auto; max-width: 500px; max-height: 700px;">
 
 Select an official course, or paste this demo course config URL and confirm:
 
@@ -31,7 +31,7 @@ In the folder picker, choose a directory for the learning workspace. Course file
 
 Learning workspace after download:
 
-<img src="https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/apps/website/docs/images/demo-course-screenshot.png" alt="Learning workspace after download" style="max-width: 300px; display: block; margin: 0 auto;">
+<img src="https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/apps/website/docs/images/demo-course-screenshot.png" alt="Learning workspace after download" style="display: block; margin: 0 auto; max-width: 500px; max-height: 700px;">
 
 With the extension installed, you can also open the demo in one click:
 
