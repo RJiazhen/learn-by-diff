@@ -8,6 +8,8 @@ import { normalizeRetainPattern, normalizeSourceDirPath } from "./sourcePath.ts"
 export interface ParsedCourseFields {
   id: string;
   title: string;
+  /** Empty when omitted in JSONC. */
+  description?: string;
   source: CourseSource;
   /** Empty when omitted in JSONC; {@link applyCourseDefaults} fills `chapters`. */
   chaptersDir: string;
@@ -60,6 +62,7 @@ export function defaultCourseId(configDir: string): string {
  *
  * - `id` ← course home folder (or `{repo}-learn` at a git root); for `.learn/course`, learning folder name
  * - `title` ← `id`
+ * - `description` ← omitted when empty
  * - `source.repository` ← `.` (directory that contains `course.jsonc`)
  * - `chaptersDir` ← `chapters` (directory next to `course.jsonc`)
  * - `retain` ← `node_modules` when omitted; an explicit array is kept (including `[]`)
@@ -70,6 +73,7 @@ export function defaultCourseId(configDir: string): string {
 export function applyCourseDefaults(partial: ParsedCourseFields, configDir: string): CourseConfig {
   const id = partial.id.trim() || defaultCourseId(configDir);
   const title = partial.title.trim() || id;
+  const description = partial.description?.trim();
   const repository = partial.source.repository.trim() || ".";
   const root = partial.source.root?.trim();
   const chaptersRaw = partial.chaptersDir.trim();
@@ -78,6 +82,7 @@ export function applyCourseDefaults(partial: ParsedCourseFields, configDir: stri
   return {
     id,
     title,
+    ...(description !== undefined && description !== "" ? { description } : {}),
     source: {
       repository,
       ...(root !== undefined && root !== "" ? { root } : {}),

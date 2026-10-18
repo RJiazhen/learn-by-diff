@@ -45,7 +45,9 @@ describe("course defaults", () => {
   });
 
   test("defaultCourseId uses parent folder name when not a git root", () => {
-    expect(defaultCourseId("/repo/examples/demo-course/.course-config")).toBe("demo-course");
+    expect(defaultCourseId("/repo/packages/courses-config/demo-course/.course-config")).toBe(
+      "demo-course",
+    );
   });
 
   test("defaultCourseId appends -learn when .course-config is at a git root", () => {
@@ -138,6 +140,15 @@ describe("parseCourseJsonc", () => {
     ]);
     expect(parseCourseJsonc('{ "retain": [] }\n', "course.jsonc").retain).toEqual([]);
     expect(parseCourseJsonc("{}\n", "course.jsonc").retain).toBeUndefined();
+  });
+
+  test("parses an optional description and drops a blank one", () => {
+    expect(
+      parseCourseJsonc('{ "description": "A short course." }\n', "course.jsonc").description,
+    ).toBe("A short course.");
+    expect(
+      parseCourseJsonc('{ "description": "  " }\n', "course.jsonc").description,
+    ).toBeUndefined();
   });
 
   test("parses optional source.root", () => {

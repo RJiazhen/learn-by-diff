@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/packages/protocol/course.schema.json",
+  "$ref": "schema.json#/$defs/course"
+}

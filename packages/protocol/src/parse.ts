@@ -46,9 +46,11 @@ export function parseCourseJsonc(text: string, path: string): ParsedCourseFields
   const source = isRecord(value.source) ? value.source : {};
   const root = asString(source.root);
   const retain = Array.isArray(value.retain) ? asStringArray(value.retain) : undefined;
+  const description = asString(value.description).trim();
   return {
     id: asString(value.id),
     title: asString(value.title),
+    ...(description !== "" ? { description } : {}),
     source: {
       repository: asString(source.repository),
       ...(root !== "" ? { root } : {}),

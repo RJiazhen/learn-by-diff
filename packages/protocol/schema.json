@@ -77,6 +77,10 @@
           "$ref": "#/$defs/nonEmptyString",
           "description": "Human-readable course title. Defaults to id."
         },
+        "description": {
+          "type": "string",
+          "description": "Optional short description of the course. Omitted when empty."
+        },
         "source": {
           "$ref": "#/$defs/courseSource"
         },

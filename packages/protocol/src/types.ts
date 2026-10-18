@@ -64,6 +64,7 @@ export interface CourseSource {
  * No field is required in the JSONC file. Defaults:
  * - `id` ← course home folder, or `{repoName}-learn` when that home is a git root
  * - `title` ← `id`
+ * - `description` ← omitted when empty
  * - `source.repository` ← `.` (directory that contains `course.jsonc`)
  * - `chaptersDir` ← `chapters` (next to `course.jsonc`)
  * - `retain` ← `node_modules` (explicit `[]` keeps no author paths)
@@ -73,6 +74,8 @@ export interface CourseSource {
 export interface CourseConfig {
   id: string;
   title: string;
+  /** Optional short description. Omitted when the JSONC field is empty. */
+  description?: string;
   source: CourseSource;
   /**
    * Directory of chapter JSONC files, relative to the directory that contains `course.jsonc`.
