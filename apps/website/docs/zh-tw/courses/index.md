@@ -2,8 +2,18 @@
 title: 課程
 ---
 
-<script setup>
+<script setup lang="ts">
+import { pickCourseDescription, type CourseDescription } from "../../courseDescription";
 import { data as courses } from "../../courses.data";
+
+/**
+ * Returns the Traditional Chinese text for a course description.
+ *
+ * @param description - String or locale map from `course.jsonc`
+ */
+function courseText(description: CourseDescription): string {
+  return pickCourseDescription(description, "zh-TW");
+}
 </script>
 
 # 課程
@@ -25,7 +35,7 @@ import { data as courses } from "../../courses.data";
         <br />
         <code>{{ course.id }}</code>
       </td>
-      <td>{{ course.description }}</td>
+      <td>{{ courseText(course.description) }}</td>
       <td>
         <a :href="course.blobUrl">course.jsonc</a>
         ·

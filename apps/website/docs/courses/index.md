@@ -2,8 +2,18 @@
 title: Courses
 ---
 
-<script setup>
+<script setup lang="ts">
+import { pickCourseDescription, type CourseDescription } from "../courseDescription";
 import { data as courses } from "../courses.data";
+
+/**
+ * Returns the English text for a course description.
+ *
+ * @param description - String or locale map from `course.jsonc`
+ */
+function courseText(description: CourseDescription): string {
+  return pickCourseDescription(description, "en");
+}
 </script>
 
 # Courses
@@ -25,7 +35,7 @@ These are the courses in this repository’s [`packages/courses-config`](https:/
         <br />
         <code>{{ course.id }}</code>
       </td>
-      <td>{{ course.description }}</td>
+      <td>{{ courseText(course.description) }}</td>
       <td>
         <a :href="course.blobUrl">course.jsonc</a>
         ·

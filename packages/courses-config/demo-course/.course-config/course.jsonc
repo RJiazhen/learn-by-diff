@@ -1,7 +1,12 @@
 {
   "$schema": "../../../../packages/protocol/course.schema.json",
   "title": "Cursor particles",
-  "description": "Prepared for a quick start-up experience: build a canvas particle field that drifts, follows the pointer, and leaves a glow trail.",
+  "description": {
+    "en": "Prepared for a quick start-up experience: build a canvas particle field that drifts, follows the pointer, and leaves a glow trail.",
+    "zh-CN": "用来快速上手：做一个画布粒子场，粒子会漂移、跟随指针，并留下光晕轨迹。",
+    "zh-TW": "用來快速上手：做一個畫布粒子場，粒子會漂移、跟隨指標，並留下光暈軌跡。",
+    "ja": "すぐ試すためのコースです。漂い、ポインタに追従し、光の軌跡を残すキャンバスのパーティクルを作ります。",
+  },
   "source": {
     "repository": "https://github.com/RJiazhen/learn-by-diff.git",
     "root": "examples/demo-source",
