@@ -275,6 +275,9 @@ importers:
 
   apps/website:
     devDependencies:
+      jsonc-parser:
+        specifier: 'catalog:'
+        version: 3.3.1
       vitepress:
         specifier: 'catalog:'
         version: 1.6.4(@algolia/client-search@5.57.0)(@types/node@24.13.3)(lightningcss@1.33.0)(postcss@8.5.26)(search-insights@2.17.3)(typescript@7.0.2)(yaml@2.9.0)

@@ -12,6 +12,7 @@ interface LocaleChrome {
   start: string;
   features: string;
   authoring: string;
+  courses: string;
   courseConfig: string;
   retained: string;
   editLink: string;
@@ -26,11 +27,22 @@ interface LocaleChrome {
 }
 
 /**
- * Builds Introduction + Course configuration nav.
+ * Builds Introduction, Courses, and Course configuration nav.
+ *
+ * @param prefix - Locale path prefix, empty for English
+ * @param intro - Introduction label
+ * @param courses - Course list label
+ * @param courseConfig - Course configuration label
  */
-function docsNav(prefix: string, intro: string, courseConfig: string): DefaultTheme.NavItem[] {
+function docsNav(
+  prefix: string,
+  intro: string,
+  courses: string,
+  courseConfig: string,
+): DefaultTheme.NavItem[] {
   return [
     { text: intro, link: `${prefix}/intro/start` },
+    { text: courses, link: `${prefix}/courses/` },
     { text: courseConfig, link: `${prefix}/course-config/` },
   ];
 }
@@ -57,7 +69,10 @@ function courseConfigIndexHead(ctx: { pageData: { relativePath: string } }): Hea
 }
 
 /**
- * Builds Introduction + Course configuration sidebars for one locale prefix.
+ * Builds the locale sidebar: introduction, the course list, then course configuration.
+ *
+ * @param prefix - Locale path prefix, empty for English
+ * @param courses - Label for the page that lists existing courses
  */
 function docsSidebar(
   prefix: string,
@@ -65,6 +80,7 @@ function docsSidebar(
   start: string,
   features: string,
   authoring: string,
+  courses: string,
   courseConfig: string,
   retained: string,
 ): DefaultTheme.SidebarItem[] {
@@ -77,6 +93,7 @@ function docsSidebar(
         { text: authoring, link: `${prefix}/intro/authoring` },
       ],
     },
+    { text: courses, link: `${prefix}/courses/` },
     {
       text: courseConfig,
       items: [{ text: retained, link: `${prefix}/course-config/retained` }],
@@ -90,13 +107,14 @@ function docsSidebar(
 function cjkTheme(chrome: LocaleChrome): DefaultTheme.Config {
   const prefix = chrome.link.replace(/\/$/, "");
   return {
-    nav: docsNav(prefix, chrome.intro, chrome.courseConfig),
+    nav: docsNav(prefix, chrome.intro, chrome.courses, chrome.courseConfig),
     sidebar: docsSidebar(
       prefix,
       chrome.intro,
       chrome.start,
       chrome.features,
       chrome.authoring,
+      chrome.courses,
       chrome.courseConfig,
       chrome.retained,
     ),
@@ -128,6 +146,7 @@ const zhChrome: LocaleChrome = {
   start: "快速开始",
   features: "功能",
   authoring: "制作课程",
+  courses: "课程",
   courseConfig: "课程配置",
   retained: "保留文件",
   editLink: "在 GitHub 上编辑此页",
@@ -149,6 +168,7 @@ const jaChrome: LocaleChrome = {
   start: "はじめに",
   features: "機能",
   authoring: "コースを作る",
+  courses: "コース",
   courseConfig: "コース設定",
   retained: "残すファイル",
   editLink: "GitHub でこのページを編集",
@@ -170,6 +190,7 @@ const zhTwChrome: LocaleChrome = {
   start: "快速開始",
   features: "功能",
   authoring: "製作課程",
+  courses: "課程",
   courseConfig: "課程設定",
   retained: "保留檔案",
   editLink: "在 GitHub 上編輯此頁",
@@ -224,13 +245,14 @@ export default defineConfig({
       label: "English",
       lang: "en",
       themeConfig: {
-        nav: docsNav("", "Introduction", "Course configuration"),
+        nav: docsNav("", "Introduction", "Courses", "Course configuration"),
         sidebar: docsSidebar(
           "",
           "Introduction",
           "Get started",
           "Features",
           "Author a course",
+          "Courses",
           "Course configuration",
           "Retained files",
         ),
