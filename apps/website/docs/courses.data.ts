@@ -2,13 +2,14 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "jsonc-parser";
+import { normalizeCourseDescription, type CourseDescription } from "./courseDescription.ts";
 
 /** One course shown on every locale's course list. */
 export interface CourseListItem {
   id: string;
   title: string;
-  /** Short description from `course.jsonc`. Empty when the file omits it. */
-  description: string;
+  /** Description from `course.jsonc`: one string, or a map of language tags. */
+  description: CourseDescription;
   /** GitHub blob URL of that course's `course.jsonc`. */
   blobUrl: string;
   /** `vscode://` link that opens this course. */
@@ -109,13 +110,13 @@ function courseListItem(row: unknown): CourseListItem | undefined {
   const filePath = path.join(coursesDir, relPath);
   let fileId = "";
   let fileTitle = "";
-  let description = "";
+  let description: CourseDescription = "";
   if (existsSync(filePath)) {
     const course = readJsonc(filePath);
     if (isRecord(course)) {
       fileId = asNonEmptyString(course.id) ?? "";
       fileTitle = asNonEmptyString(course.title) ?? "";
-      description = asNonEmptyString(course.description) ?? "";
+      description = normalizeCourseDescription(course.description) ?? "";
     }
   }
   const id = fileId || asNonEmptyString(row.id) || catalogPath;

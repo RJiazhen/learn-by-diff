@@ -14,6 +14,7 @@ export type {
   ChapterConfig,
   Course,
   CourseConfig,
+  CourseDescription,
   CourseSource,
   ProtocolIssue,
 } from "./types.ts";
@@ -22,6 +23,8 @@ export {
   applyCourseDefaults,
   courseHomeDir,
   defaultCourseId,
+  normalizeCourseDescription,
+  pickCourseDescription,
   type ParsedCourseFields,
 } from "./courseDefaults.ts";
 export { parseChapterJsonc, parseCourseJsonc } from "./parse.ts";

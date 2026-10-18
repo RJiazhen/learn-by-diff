@@ -48,6 +48,7 @@ chapters/*.jsonc                # default chaptersDir
 | ------------------- | ------------------------------------------------------------- |
 | `id`                | Course home folder; `{repo}-learn` if that home is a git root |
 | `title`             | `id`                                                          |
+| `description`       | none — a string, or an object of BCP 47 tags to text          |
 | `source.repository` | `.` (directory that contains `course.jsonc`)                  |
 | `source.root`       | none                                                          |
 | `chaptersDir`       | `chapters` (directory next to `course.jsonc`)                 |

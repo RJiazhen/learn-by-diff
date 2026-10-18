@@ -78,8 +78,25 @@
           "description": "Human-readable course title. Defaults to id."
         },
         "description": {
-          "type": "string",
-          "description": "Optional short description of the course. Omitted when empty."
+          "description": "Optional short description. A string is language-neutral. An object maps BCP 47 language tags (en, zh-CN, zh-TW, ja) to strings. Omitted when empty.",
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1
+              },
+              "propertyNames": {
+                "type": "string",
+                "pattern": "^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$"
+              }
+            }
+          ]
         },
         "source": {
           "$ref": "#/$defs/courseSource"
