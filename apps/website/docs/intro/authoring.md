@@ -113,19 +113,19 @@ If the course is on GitHub, you can share the `course.jsonc` file URL. The other
 
 For example:
 
-```text
+```url
 https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/.course-config/course.jsonc
 ```
 
 If `course.jsonc` is at the repository root, or at `.course-config/course.jsonc` under the root, you can share the git repository URL instead:
 
-```text
+```url
 https://github.com/RJiazhen/learn-by-diff.git
 ```
 
 If `course.jsonc` lives in a subdirectory, append `#` and the path relative to the repository root (pointing at `course.jsonc`):
 
-```text
+```url
 https://github.com/RJiazhen/learn-by-diff.git#packages/courses-config/demo-course/.course-config/course.jsonc
 ```
 
@@ -133,7 +133,7 @@ https://github.com/RJiazhen/learn-by-diff.git#packages/courses-config/demo-cours
 
 Or turn that address into a one-click link. Clicking it wakes the IDE and opens the course:
 
-```text
+```url
 vscode://RuanJiazhen.learn-by-diff/open?url=<course.jsonc-or-git-repo-URL>
 cursor://RuanJiazhen.learn-by-diff/open?url=<course.jsonc-or-git-repo-URL>
 ```
@@ -142,7 +142,7 @@ Use `vscode://` for VS Code and `cursor://` for Cursor. The other person needs L
 
 Example for `https://github.com/RJiazhen/learn-by-diff.git`:
 
-```text
+```url
 vscode://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff.git
 cursor://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff.git
 ```

@@ -57,7 +57,7 @@ After files are written, the agent should print:
 - The **absolute `course.jsonc` path** to paste into **Open Course**
 - Local try-open links:
 
-```text
+```url
 vscode://RuanJiazhen.learn-by-diff/open?url=<urlencoded-absolute-course.jsonc>
 cursor://RuanJiazhen.learn-by-diff/open?url=<urlencoded-absolute-course.jsonc>
 ```

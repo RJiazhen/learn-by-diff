@@ -31,7 +31,7 @@ Click **Open Course** on the **LEARN BY DIFF** view title bar in Explorer (or ru
 
 Select an official course, or paste this demo course config URL and confirm:
 
-```text
+```url
 https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/.course-config/course.jsonc
 ```
 

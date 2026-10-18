@@ -23,7 +23,7 @@
 
 從清單中選擇一門官方課程，或貼上以下 demo 課程設定檔位址並確認：
 
-```text
+```url
 https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/.course-config/course.jsonc
 ```
 

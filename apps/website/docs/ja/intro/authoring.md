@@ -113,19 +113,19 @@ GitHub 上にある場合は、`course.jsonc` のアドレスを共有できま�
 
 例:
 
-```text
+```url
 https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/.course-config/course.jsonc
 ```
 
 `course.jsonc` がリポジトリルート、またはルート直下の `.course-config/course.jsonc` にあるときは、git リポジトリ URL だけでも共有できます。
 
-```text
+```url
 https://github.com/RJiazhen/learn-by-diff.git
 ```
 
 `course.jsonc` がサブディレクトリにあるときは、git URL に `#` と、リポジトリルートからの相対パス（`course.jsonc` を指す）を付けます。
 
-```text
+```url
 https://github.com/RJiazhen/learn-by-diff.git#packages/courses-config/demo-course/.course-config/course.jsonc
 ```
 
@@ -133,7 +133,7 @@ https://github.com/RJiazhen/learn-by-diff.git#packages/courses-config/demo-cours
 
 そのアドレスをワンクリックリンクに変換することもできます。クリックすると IDE が起き、コースが開きます。
 
-```text
+```url
 vscode://RuanJiazhen.learn-by-diff/open?url=<course.jsoncのアドレスまたはgitリポジトリURL>
 cursor://RuanJiazhen.learn-by-diff/open?url=<course.jsoncのアドレスまたはgitリポジトリURL>
 ```
@@ -142,7 +142,7 @@ VS Code は `vscode://`、Cursor は `cursor://`。相手は LearnByDiff をイ�
 
 リポジトリ `https://github.com/RJiazhen/learn-by-diff.git` の例:
 
-```text
+```url
 vscode://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff.git
 cursor://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff.git
 ```
