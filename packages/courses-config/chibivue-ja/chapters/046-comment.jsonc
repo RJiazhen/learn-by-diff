@@ -8,47 +8,47 @@
   "changedFiles": [
     {
       "path": "examples/playground/src/main.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/ast.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/codegen.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/parse.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/runtimeHelpers.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/transform.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/renderer.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/vnode.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-dom/nodeOps.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

@@ -8,35 +8,35 @@
   "changedFiles": [
     {
       "path": "examples/playground/src/main.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "examples/playground/vite.config.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/reactivity/baseHandler.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/reactivity/collectionHandlers.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/reactivity/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/reactivity/reactive.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/reactivity/ref.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

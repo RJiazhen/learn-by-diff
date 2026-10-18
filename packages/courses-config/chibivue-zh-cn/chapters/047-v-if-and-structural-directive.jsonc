@@ -8,35 +8,35 @@
   "changedFiles": [
     {
       "path": "examples/playground/src/main.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "examples/playground/vite.config.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/ast.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/codegen.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/compile.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/transform.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/transforms/vIf.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

@@ -8,63 +8,63 @@
   "changedFiles": [
     {
       "path": "examples/playground/src/main.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/ast.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/codegen.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/compile.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/parse.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/runtimeHelpers.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/transform.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/transforms/vOn.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-dom/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-dom/transforms/vOn.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-dom/directives/vOn.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-dom/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-dom/runtimeHelpers.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/shared/general.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

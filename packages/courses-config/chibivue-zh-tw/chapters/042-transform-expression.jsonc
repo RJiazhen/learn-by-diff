@@ -8,59 +8,59 @@
   "changedFiles": [
     {
       "path": "examples/playground/src/App.vue",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "examples/playground/src/main.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/ast.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/babelUtils.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/compiler-core/codegen.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/compile.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/options.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/parse.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/transform.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/transforms/transformExpression.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/compiler-core/transforms/vBind.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/utils.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/shared/makeMap.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

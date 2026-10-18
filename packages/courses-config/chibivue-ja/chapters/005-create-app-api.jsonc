@@ -8,19 +8,19 @@
   "changedFiles": [
     {
       "path": "examples/playground/src/main.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "examples/playground/vite.config.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "U"
-    }
+      "kind": "U",
+    },
   ],
 }

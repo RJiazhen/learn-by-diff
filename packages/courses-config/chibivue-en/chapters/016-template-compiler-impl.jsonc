@@ -8,59 +8,59 @@
   "changedFiles": [
     {
       "path": "examples/playground/src/main.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/ast.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/compiler-core/codegen.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/compiler-core/compile.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/compiler-core/index.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/compiler-core/parse.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/compiler-dom/index.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/component.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/componentOptions.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/renderer.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-dom/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

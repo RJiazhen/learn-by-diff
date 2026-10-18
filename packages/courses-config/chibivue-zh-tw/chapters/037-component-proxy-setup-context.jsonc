@@ -8,47 +8,47 @@
   "changedFiles": [
     {
       "path": "examples/playground/src/main.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/reactivity/ref.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/apiDefineComponent.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-core/component.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/componentOptions.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/componentProps.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/componentPublicInstance.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-core/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/renderer.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/rendererTemplateRef.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

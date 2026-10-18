@@ -8,27 +8,27 @@
   "changedFiles": [
     {
       "path": "examples/playground/src/App.vue",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "examples/playground/src/Counter.vue",
-      "kind": "D"
+      "kind": "D",
     },
     {
       "path": "packages/runtime-core/vnode.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-dom/components/Transition.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-dom/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

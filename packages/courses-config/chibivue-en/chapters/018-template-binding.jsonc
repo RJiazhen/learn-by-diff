@@ -8,35 +8,35 @@
   "changedFiles": [
     {
       "path": "examples/playground/src/main.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/ast.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/codegen.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/parse.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/component.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/componentOptions.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/renderer.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

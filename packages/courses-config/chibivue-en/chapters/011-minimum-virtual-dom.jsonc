@@ -8,27 +8,27 @@
   "changedFiles": [
     {
       "path": "packages/runtime-core/apiCreateApp.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/h.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/renderer.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/vnode.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-dom/nodeOps.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

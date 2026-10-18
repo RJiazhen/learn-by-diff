@@ -8,31 +8,31 @@
   "changedFiles": [
     {
       "path": "examples/playground/vite.config.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "package.json",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/@extensions/vite-plugin-chibivue/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-sfc/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-sfc/rewriteDefault.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-core/component.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

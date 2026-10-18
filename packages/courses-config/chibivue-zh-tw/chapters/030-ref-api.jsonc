@@ -8,47 +8,47 @@
   "changedFiles": [
     {
       "path": "examples/playground/src/App.vue",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "examples/playground/src/main.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/codegen.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/reactivity/effect.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/reactivity/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/reactivity/reactive.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/reactivity/ref.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/shared/general.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/shared/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/shared/typeUtils.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

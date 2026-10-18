@@ -8,47 +8,47 @@
   "changedFiles": [
     {
       "path": "examples/playground/src/App.vue",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "examples/playground/src/main.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/reactivity/baseHandler.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/reactivity/collectionHandlers.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/reactivity/effect.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/reactivity/reactive.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/renderer.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/rendererTemplateRef.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-core/vnode.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/shared/general.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

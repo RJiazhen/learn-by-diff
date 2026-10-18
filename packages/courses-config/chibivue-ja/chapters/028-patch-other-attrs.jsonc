@@ -8,35 +8,35 @@
   "changedFiles": [
     {
       "path": "packages/runtime-core/renderer.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/vnode.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-dom/modules/class.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-dom/modules/props.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-dom/modules/style.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-dom/patchProp.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/shared/general.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

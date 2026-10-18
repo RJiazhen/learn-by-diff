@@ -8,31 +8,31 @@
   "changedFiles": [
     {
       "path": "examples/playground/src/App.vue",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/ast.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/codegen.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/vnode.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/shared/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/shared/patchFlags.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

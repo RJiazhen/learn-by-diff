@@ -8,27 +8,27 @@
   "changedFiles": [
     {
       "path": "packages/reactivity/baseHandler.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/renderer.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/vnode.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/shared/general.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/shared/shapeFlags.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

@@ -8,67 +8,67 @@
   "changedFiles": [
     {
       "path": "plugin-sample/README.md",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "plugin-sample/index.html",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "plugin-sample/package.json",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "plugin-sample/pnpm-lock.yaml",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "plugin-sample/public/vite.svg",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "plugin-sample/src/App.vue",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "plugin-sample/src/assets/vue.svg",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "plugin-sample/src/components/HelloWorld.vue",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "plugin-sample/src/main.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "plugin-sample/src/plugin.sample.js",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "plugin-sample/src/style.css",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "plugin-sample/src/vite-env.d.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "plugin-sample/tsconfig.json",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "plugin-sample/tsconfig.node.json",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "plugin-sample/vite.config.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

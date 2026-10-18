@@ -8,43 +8,43 @@
   "changedFiles": [
     {
       "path": "examples/playground/vite.config.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/apiCreateApp.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-core/component.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-core/componentOptions.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-core/index.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-core/renderer.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-dom/index.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-dom/nodeOps.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

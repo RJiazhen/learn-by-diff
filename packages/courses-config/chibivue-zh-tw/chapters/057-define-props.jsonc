@@ -8,35 +8,35 @@
   "changedFiles": [
     {
       "path": "examples/playground/src/App.vue",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "examples/playground/src/Child.vue",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/compiler-sfc/compileScript.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-sfc/compileSfc.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-sfc/compileStyle.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/compiler-sfc/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-sfc/parse.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

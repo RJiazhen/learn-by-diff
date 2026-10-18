@@ -8,19 +8,19 @@
   "changedFiles": [
     {
       "path": "examples/playground/src/App.vue",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "examples/playground/src/Child.vue",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-sfc/compileScript.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }

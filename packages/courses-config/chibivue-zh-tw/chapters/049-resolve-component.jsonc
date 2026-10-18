@@ -8,95 +8,95 @@
   "changedFiles": [
     {
       "path": "examples/playground/src/App.vue",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "examples/playground/src/components/Counter.vue",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "examples/playground/src/main.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "examples/playground/vite.config.js",
-      "kind": "D"
+      "kind": "D",
     },
     {
       "path": "examples/playground/vite.config.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/compiler-core/ast.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/codegen.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/options.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/parse.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/runtimeHelpers.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/transform.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/transforms/transformElement.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-core/utils.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-dom/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/compiler-dom/parserOptions.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-core/apiCreateApp.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/componentOptions.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/componentRenderContext.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-core/helpers/resolveAssets.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "packages/runtime-core/index.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/runtime-core/renderer.ts",
-      "kind": "M"
+      "kind": "M",
     },
     {
       "path": "packages/shared/domTagConfig.ts",
-      "kind": "U"
+      "kind": "U",
     },
     {
       "path": "tests/e2e.spec.ts",
-      "kind": "M"
-    }
+      "kind": "M",
+    },
   ],
 }
