@@ -44,6 +44,13 @@ export function isChapterChangeKind(value: string): value is ChapterChangeKind {
   return (CHAPTER_CHANGE_KINDS as readonly string[]).includes(value);
 }
 
+/**
+ * Course description in `course.jsonc`.
+ *
+ * A string is language-neutral. A record maps a BCP 47 language tag to that language's text.
+ */
+export type CourseDescription = string | Record<string, string>;
+
 /** Source repository pointer in `course.jsonc`. */
 export interface CourseSource {
   /**
@@ -64,7 +71,7 @@ export interface CourseSource {
  * No field is required in the JSONC file. Defaults:
  * - `id` ← course home folder, or `{repoName}-learn` when that home is a git root
  * - `title` ← `id`
- * - `description` ← omitted when empty
+ * - `description` ← omitted when empty; a string is one language, an object maps language tags to text
  * - `source.repository` ← `.` (directory that contains `course.jsonc`)
  * - `chaptersDir` ← `chapters` (next to `course.jsonc`)
  * - `retain` ← `node_modules` (explicit `[]` keeps no author paths)
@@ -74,8 +81,12 @@ export interface CourseSource {
 export interface CourseConfig {
   id: string;
   title: string;
-  /** Optional short description. Omitted when the JSONC field is empty. */
-  description?: string;
+  /**
+   * Optional short description.
+   * A string is language-neutral. An object maps BCP 47 tags (`en`, `zh-CN`) to text.
+   * Omitted when empty.
+   */
+  description?: CourseDescription;
   source: CourseSource;
   /**
    * Directory of chapter JSONC files, relative to the directory that contains `course.jsonc`.

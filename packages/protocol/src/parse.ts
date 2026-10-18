@@ -1,6 +1,6 @@
 import { parse, printParseErrorCode, type ParseError } from "jsonc-parser";
 import { chapterIdFromFileName } from "./chapterDefaults.ts";
-import type { ParsedCourseFields } from "./courseDefaults.ts";
+import { normalizeCourseDescription, type ParsedCourseFields } from "./courseDefaults.ts";
 import type { ChapterChangedFile, ChapterConfig } from "./types.ts";
 import { isChapterChangeKind, ProtocolError } from "./types.ts";
 
@@ -46,11 +46,11 @@ export function parseCourseJsonc(text: string, path: string): ParsedCourseFields
   const source = isRecord(value.source) ? value.source : {};
   const root = asString(source.root);
   const retain = Array.isArray(value.retain) ? asStringArray(value.retain) : undefined;
-  const description = asString(value.description).trim();
+  const description = normalizeCourseDescription(value.description);
   return {
     id: asString(value.id),
     title: asString(value.title),
-    ...(description !== "" ? { description } : {}),
+    ...(description !== undefined ? { description } : {}),
     source: {
       repository: asString(source.repository),
       ...(root !== "" ? { root } : {}),

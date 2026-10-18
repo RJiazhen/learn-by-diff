@@ -3,7 +3,12 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, test } from "vite-plus/test";
 import { chapterIdFromFileName } from "../src/chapterDefaults.ts";
-import { applyCourseDefaults, courseHomeDir, defaultCourseId } from "../src/courseDefaults.ts";
+import {
+  applyCourseDefaults,
+  courseHomeDir,
+  defaultCourseId,
+  pickCourseDescription,
+} from "../src/courseDefaults.ts";
 import { parseChapterJsonc, parseCourseJsonc } from "../src/parse.ts";
 import {
   isHttpUrl,
@@ -149,6 +154,27 @@ describe("parseCourseJsonc", () => {
     expect(
       parseCourseJsonc('{ "description": "  " }\n', "course.jsonc").description,
     ).toBeUndefined();
+  });
+
+  test("parses a description in several languages and drops blank entries", () => {
+    expect(
+      parseCourseJsonc(
+        '{ "description": { "en": " Particles ", "zh-CN": "粒子", "ja": "  " } }\n',
+        "course.jsonc",
+      ).description,
+    ).toEqual({ en: "Particles", "zh-CN": "粒子" });
+    expect(
+      parseCourseJsonc('{ "description": { "en": " " } }\n', "course.jsonc").description,
+    ).toBeUndefined();
+  });
+
+  test("picks a description for the requested language", () => {
+    const descriptions = { en: "Particles", "zh-CN": "粒子", ja: "粒子場" };
+    expect(pickCourseDescription("Particles", "ja")).toBe("Particles");
+    expect(pickCourseDescription(descriptions, "zh-cn")).toBe("粒子");
+    expect(pickCourseDescription(descriptions, "zh-TW")).toBe("粒子");
+    expect(pickCourseDescription({ ja: "粒子場" }, "en")).toBe("粒子場");
+    expect(pickCourseDescription(undefined, "en")).toBe("");
   });
 
   test("parses optional source.root", () => {
