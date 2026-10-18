@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "debug-vuejs-core",
+  "title": "本家のソースコードをデバッグする",
+  "fromDir": "bonus/hyper-ultimate-super-extreme-minimal-vue",
+  "toDir": "bonus/hyper-ultimate-super-extreme-minimal-vue",
+  "docs": "https://book.chibivue.land/ja/bonus/debug-vuejs-core",
+  "changedFiles": [],
+}

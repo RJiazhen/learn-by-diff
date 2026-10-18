@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "what-is-vue",
+  "title": "Vue.jsとは",
+  "fromDir": "",
+  "toDir": "",
+  "docs": "https://book.chibivue.land/ja/00-introduction/020-what-is-vue",
+  "changedFiles": [],
+}

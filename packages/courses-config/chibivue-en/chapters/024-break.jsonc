@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "break",
+  "title": "Taking a Short Break",
+  "fromDir": "10_minimum_example/070_sfc_compiler4",
+  "toDir": "10_minimum_example/070_sfc_compiler4",
+  "docs": "https://book.chibivue.land/10-minimum-example/100-break",
+  "changedFiles": [],
+}

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "intermediate-60-min-hands-on",
+  "title": "中級者向け 1 時間ハンズオン",
+  "fromDir": "90_web_application_essentials/050_patch_flags",
+  "toDir": "90_web_application_essentials/050_patch_flags",
+  "docs": "https://book.chibivue.land/ja/bonus/hot-paths/intermediate-60-min-hands-on",
+  "changedFiles": [],
+}

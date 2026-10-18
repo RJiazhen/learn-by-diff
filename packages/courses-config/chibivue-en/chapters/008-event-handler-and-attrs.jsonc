@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "event-handler-and-attrs",
+  "title": "Let's work on supporting event handlers and attributes.",
+  "fromDir": "10_minimum_example/020_simple_h_function",
+  "toDir": "10_minimum_example/020_simple_h_function",
+  "docs": "https://book.chibivue.land/10-minimum-example/025-event-handler-and-attrs",
+  "changedFiles": [],
+}

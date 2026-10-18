@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "store",
+  "title": "ストア",
+  "fromDir": "60_basic_sfc_compiler/060_type_based_macros",
+  "toDir": "60_basic_sfc_compiler/060_type_based_macros",
+  "docs": "https://book.chibivue.land/ja/90-web-application-essentials/010-plugins/020-store",
+  "changedFiles": [],
+}

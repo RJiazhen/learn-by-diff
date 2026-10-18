@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "compile-sfc-script",
+  "title": "SFC script block",
+  "fromDir": "10_minimum_example/070_sfc_compiler3",
+  "toDir": "10_minimum_example/070_sfc_compiler3",
+  "docs": "https://book.chibivue.land/10-minimum-example/093-compile-sfc-script",
+  "changedFiles": [],
+}

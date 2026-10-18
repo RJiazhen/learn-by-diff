@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/RJiazhen/learn-by-diff/refs/heads/main/packages/protocol/schema.json#/$defs/chapter",
+  "id": "vue-core-components",
+  "title": "Vue.jsを構成する主要な要素",
+  "fromDir": "",
+  "toDir": "",
+  "docs": "https://book.chibivue.land/ja/00-introduction/030-vue-core-components",
+  "changedFiles": [],
+}
