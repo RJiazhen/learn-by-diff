@@ -19,7 +19,7 @@
 
 点击 Explorer 中 **LEARN BY DIFF** 视图标题栏的「打开课程」按钮（或在命令面板运行 **LearnByDiff: 打开课程**）。
 
-<img src="https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/apps/website/docs/images/open-course-button.png" alt="打开课程按钮" style="max-width: 300px; display: block; margin: 0 auto;">
+<img src="https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/apps/website/docs/images/open-course-button.png" alt="打开课程按钮" style="display: block; margin: 0 auto; max-width: 500px; max-height: 700px;">
 
 从列表中选择一门官方课程，或填入以下 demo 课程配置地址并确认：
 
@@ -31,7 +31,7 @@ https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo
 
 下载完成后的学习工作区：
 
-<img src="https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/apps/website/docs/images/demo-course-screenshot.png" alt="下载完成后的学习工作区" style="max-width: 300px; display: block; margin: 0 auto;">
+<img src="https://raw.githubusercontent.com/RJiazhen/learn-by-diff/main/apps/website/docs/images/demo-course-screenshot.png" alt="下载完成后的学习工作区" style="display: block; margin: 0 auto; max-width: 500px; max-height: 700px;">
 
 已安装扩展时，也可以点击以下链接一键开课：
 
