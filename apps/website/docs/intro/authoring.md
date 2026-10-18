@@ -17,7 +17,7 @@ If you are not sure what to put in the config files, use the extension’s skill
 
 ```text
 Snapshot path: ./path/to/chapter/code/root/folder
-Target folder: ./course-config
+Target folder: /absolute/path/to/course-config
 ```
 
 You can also skip the extension command and run this in the snapshot folder yourself:

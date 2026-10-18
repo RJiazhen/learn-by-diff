@@ -17,7 +17,7 @@ outline: deep
 
 ```text
 Snapshot path: ./path/to/chapter/code/root/folder
-Target folder: ./course-config
+Target folder: /absolute/path/to/course-config
 ```
 
 也可以不经过扩展命令，在快照目录里手动执行：

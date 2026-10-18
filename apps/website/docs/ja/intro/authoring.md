@@ -17,7 +17,7 @@ outline: deep
 
 ```text
 Snapshot path: ./path/to/chapter/code/root/folder
-Target folder: ./course-config
+Target folder: /absolute/path/to/course-config
 ```
 
 拡張機能のコマンドを使わず、スナップショットディレクトリで手動実行することもできます。

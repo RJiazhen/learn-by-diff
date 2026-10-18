@@ -556,7 +556,7 @@ export function registerCommands(
   /**
    * Installs generate-course-config in the open folder, then copies the agent prompt.
    *
-   * The prompt uses placeholder paths the author replaces in chat.
+   * The snapshot path in the prompt is a placeholder. The target folder is absolute.
    */
   async function onInstallGenerateCourseSkill(): Promise<void> {
     const snapshotPath = await pickSnapshotRoot();
@@ -585,7 +585,7 @@ export function registerCommands(
       return;
     }
     await copyToClipboard(
-      buildGenerateCoursePrompt(),
+      buildGenerateCoursePrompt(snapshotPath),
       vscode.l10n.t("Copied the generate course prompt to the clipboard."),
     );
   }
