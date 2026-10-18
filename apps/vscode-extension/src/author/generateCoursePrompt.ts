@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process";
+import path from "node:path";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
@@ -6,8 +7,8 @@ const execFileAsync = promisify(execFile);
 /** Snapshot path placeholder written into the copied generate-course prompt. */
 export const GENERATE_COURSE_SNAPSHOT_PATH = "./path/to/chapter/code/root/folder";
 
-/** Course output folder written into the copied generate-course prompt. */
-export const GENERATE_COURSE_TARGET_FOLDER = "./course-config";
+/** Course output directory name under the chosen snapshot folder. */
+export const GENERATE_COURSE_TARGET_DIR_NAME = "course-config";
 
 /** Shown when `npx` cannot be started. Callers localize this exact string. */
 export const NPX_NOT_FOUND_MESSAGE =
@@ -31,16 +32,28 @@ export function generateCourseSkillInstallArgs(): string[] {
 }
 
 /**
+ * Returns the absolute course output folder under the chosen snapshot root.
+ *
+ * @param snapshotRoot - Folder the skill was installed into
+ */
+export function generateCourseTargetFolder(snapshotRoot: string): string {
+  return path.resolve(snapshotRoot, GENERATE_COURSE_TARGET_DIR_NAME);
+}
+
+/**
  * Builds the agent prompt copied after the skill install.
  *
- * Snapshot path and target folder are placeholders the author edits in chat.
+ * The snapshot path stays a placeholder. The target folder is absolute so the
+ * agent writes course config under the opened snapshot folder.
+ *
+ * @param snapshotRoot - Folder the skill was installed into
  */
-export function buildGenerateCoursePrompt(): string {
+export function buildGenerateCoursePrompt(snapshotRoot: string): string {
   return [
     "/generate-course-config",
     "replace the snapshot path placeholders with the actual paths",
     `Snapshot path: ${GENERATE_COURSE_SNAPSHOT_PATH}`,
-    `Target folder: ${GENERATE_COURSE_TARGET_FOLDER}`,
+    `Target folder: ${generateCourseTargetFolder(snapshotRoot)}`,
   ].join("\n");
 }
 
