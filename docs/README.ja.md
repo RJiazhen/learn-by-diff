@@ -23,7 +23,7 @@ Explorer の **LEARN BY DIFF** ビューのタイトルバーで「コースを�
 
 一覧から公式コースを選ぶか、次のデモコース設定 URL を貼り付けて確定します。
 
-```text
+```url
 https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/.course-config/course.jsonc
 ```
 

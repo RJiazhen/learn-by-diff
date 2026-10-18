@@ -218,7 +218,7 @@ Summarize generated chapters (`fromDir` → `toDir`). Then give the author a way
 1. Print the **absolute path** of `course.jsonc` (for example `.course-config/course.jsonc`). They can paste it into **Open Course**.
 2. Print clickable local deep links (URL-encode the same absolute file path, or a `file:` URL, as `url=`):
 
-```text
+```url
 vscode://RuanJiazhen.learn-by-diff/open?url=<urlencoded-absolute-course.jsonc>
 cursor://RuanJiazhen.learn-by-diff/open?url=<urlencoded-absolute-course.jsonc>
 ```

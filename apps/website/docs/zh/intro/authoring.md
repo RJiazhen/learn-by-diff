@@ -111,19 +111,19 @@ npx skills add RJiazhen/learn-by-diff@generate-course-config -y
 
 例如：
 
-```text
+```url
 https://github.com/RJiazhen/learn-by-diff/blob/main/packages/courses-config/demo-course/.course-config/course.jsonc
 ```
 
 如果课程配置文件是直接放在仓库根目录下，或在根目录的 `.course-config/course.jsonc` 时，则可以直接分享仓库 git 地址 URL：
 
-```text
+```url
 https://github.com/RJiazhen/learn-by-diff.git
 ```
 
 如果课程配置文件在仓库的子目录下，用 git 地址加 `#` 再拼上相对路径（相对仓库根，指向 `course.jsonc`）：
 
-```text
+```url
 https://github.com/RJiazhen/learn-by-diff.git#packages/courses-config/demo-course/.course-config/course.jsonc
 ```
 
@@ -131,7 +131,7 @@ https://github.com/RJiazhen/learn-by-diff.git#packages/courses-config/demo-cours
 
 或者可以按照以下规则，将课程配置文件的地址转换为一键分享链接，他人点击链接即可打开课程（会唤醒 IDE 并自动打开课程）。
 
-```text
+```url
 vscode://RuanJiazhen.learn-by-diff/open?url=<course.jsonc地址或git仓库URL>
 cursor://RuanJiazhen.learn-by-diff/open?url=<course.jsonc地址或git仓库URL>
 ```
@@ -140,7 +140,7 @@ VS Code 用 `vscode://`，Cursor 用 `cursor://`。对方需要已安装 LearnBy
 
 例如仓库 `https://github.com/RJiazhen/learn-by-diff.git`：
 
-```text
+```url
 vscode://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff.git
 cursor://RuanJiazhen.learn-by-diff/open?url=https://github.com/RJiazhen/learn-by-diff.git
 ```
