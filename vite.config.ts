@@ -1,8 +1,9 @@
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
+  // Format and auto-fix lint on staged files before each commit; CI still runs the full check.
   staged: {
-    "*": "vp check --fix",
+    "*": ["vp fmt --write", "vp lint --fix"],
   },
   fmt: {
     ignorePatterns: ["skills/generate-course-config/scripts/chapter-jsonc.mjs"],
