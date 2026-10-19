@@ -146,6 +146,20 @@ describe("course view menus", () => {
     expect(viewItemPattern(finishItem)?.test("chapter-start-docs")).toBe(true);
   });
 
+  test("shows the no-changes hint only in the inline slot, not the context menu", () => {
+    const listed = menuItems("view/item/context").filter(
+      (item) => item.command === "learnByDiff.chapterHasNoChanges",
+    );
+    expect(listed).toHaveLength(1);
+    expect(listed[0]?.group).toBe("inline@3");
+    for (const menuId of ["learnByDiff.chapterMore", "view/title"]) {
+      const inMenu = menuItems(menuId).some(
+        (item) => item.command === "learnByDiff.chapterHasNoChanges",
+      );
+      expect(inMenu).toBe(false);
+    }
+  });
+
   test("view button titles omit the LearnByDiff prefix", () => {
     const commandIds = new Set<string>();
     for (const menuId of ["view/title", "view/item/context", "learnByDiff.chapterMore"]) {

@@ -272,11 +272,6 @@
           "group": "navigation@2"
         },
         {
-          "command": "learnByDiff.chapterHasNoChanges",
-          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?-unchanged$/",
-          "group": "navigation@2"
-        },
-        {
           "command": "learnByDiff.openChapterDocs",
           "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?-docs(-unchanged)?$/",
           "group": "navigation@3"
