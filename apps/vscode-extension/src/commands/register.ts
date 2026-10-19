@@ -446,10 +446,11 @@ export function registerCommands(
   );
 
   /**
-   * Scrolls the course view to the applied chapter without expanding or selecting it.
+   * Focuses the course view and scrolls it to the applied chapter without
+   * expanding or selecting it. Used by the view title and the status bar item.
    */
   async function onScrollToCurrentChapter(): Promise<void> {
-    await tree.revealCurrentChapter({ expand: false });
+    await tree.revealCurrentChapter({ expand: false, focus: true });
   }
 
   context.subscriptions.push(

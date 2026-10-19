@@ -5,7 +5,8 @@ import { appliedSnapshotSide } from "../workspace/state.ts";
 import { localizedSnapshotStatus } from "./labels.ts";
 
 /**
- * Status bar item showing the current course chapter; click runs Next Chapter.
+ * Status bar item showing the current course chapter; click focuses the course
+ * view and scrolls it to the applied chapter.
  *
  * @param context - Extension context for disposal
  * @returns Setter for the active session
@@ -14,7 +15,7 @@ export function registerStatusBar(
   context: vscode.ExtensionContext,
 ): (session: LearningSession | undefined) => void {
   const item = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 10);
-  item.command = "learnByDiff.nextChapter";
+  item.command = "learnByDiff.scrollToCurrentChapter";
   context.subscriptions.push(item);
 
   /**
@@ -31,7 +32,7 @@ export function registerStatusBar(
     const position = chapterPosition(session.course, chapter.id);
     const side = localizedSnapshotStatus(appliedSnapshotSide(session.progress));
     item.text = `$(mortar-board) ${position} ${chapter.title} · ${side}`;
-    item.tooltip = vscode.l10n.t("Next Chapter");
+    item.tooltip = vscode.l10n.t("Scroll to Current Chapter");
     item.show();
   }
 
