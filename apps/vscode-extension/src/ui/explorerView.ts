@@ -219,12 +219,14 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
   /**
    * Scrolls the applied chapter into view without selecting it.
    *
-   * @param options - `expand: false` only scrolls, so the title-bar jump does not open the row
+   * @param options - `expand: false` only scrolls, so a jump does not open the row;
+   *   `focus: true` moves keyboard focus into the view (status bar click), while
+   *   `focus: false` leaves focus where it was (after a chapter switch)
    */
-  async revealCurrentChapter(options?: { expand?: boolean }): Promise<void> {
+  async revealCurrentChapter(options?: { expand?: boolean; focus?: boolean }): Promise<void> {
     await this.revealChapter(undefined, {
       select: false,
-      focus: false,
+      focus: options?.focus === true,
       expand: options?.expand,
     });
   }
