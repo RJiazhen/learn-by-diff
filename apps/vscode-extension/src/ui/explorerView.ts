@@ -185,9 +185,14 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
     this.chapterElements.clear();
     if (!grow) {
       this.expandedChapterIds.clear();
-      this.changedFiles.clear();
-      this.knownHasChanges.clear();
-      this.diskChangeCache = undefined;
+      // Chapter diffs belong to the workspace snapshots, not to the applied
+      // chapter, so a same-root switch keeps them. Re-detecting would rebuild
+      // unchanged rows with a chevron and then drop it, shifting the list.
+      if (!sameRoot) {
+        this.changedFiles.clear();
+        this.knownHasChanges.clear();
+        this.diskChangeCache = undefined;
+      }
     }
     if (session === undefined) {
       this.downloadingMoreChapters = false;
