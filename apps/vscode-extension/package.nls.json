@@ -12,6 +12,7 @@
   "learnByDiff.installGenerateCourseSkill.title": "Install Generate Course Skill",
   "learnByDiff.applyChapterStart.title": "Not Started",
   "learnByDiff.applyChapterFinish.title": "Completed",
+  "learnByDiff.chapterHasNoChanges.title": "No changes in this chapter",
   "learnByDiff.openChapterDocs.title": "Open Chapter Docs",
   "learnByDiff.openChapterStartFolder.title": "Open Not Started Folder",
   "learnByDiff.openChapterFinishFolder.title": "Open Completed Folder",

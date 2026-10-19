@@ -12,6 +12,8 @@ type CommandContribution = {
   command: string;
   title: string;
   category?: string;
+  icon?: string;
+  enablement?: string;
 };
 
 type ExtensionManifest = {
@@ -71,6 +73,16 @@ function commandGroup(items: MenuContribution[], command: string): string | unde
   return items.find((item) => item.command === command)?.group;
 }
 
+/**
+ * Extracts the `viewItem` regex from a contribution's `when` clause.
+ *
+ * @param item - Menu contribution to read
+ */
+function viewItemPattern(item: MenuContribution | undefined): RegExp | undefined {
+  const match = /viewItem =~ \/(.+)\//.exec(item?.when ?? "");
+  return match?.[1] === undefined ? undefined : new RegExp(match[1]);
+}
+
 describe("course view menus", () => {
   test("folds course navigation into the view More Actions menu", () => {
     const title = menuItems("view/title");
@@ -105,6 +117,33 @@ describe("course view menus", () => {
       (submenu) => submenu.id === "learnByDiff.chapterMore",
     );
     expect(chapterMore?.icon).toBeDefined();
+  });
+
+  test("swaps Completed for a disabled no-changes hint on unchanged chapters", () => {
+    const hint = manifest.contributes.commands.find(
+      (item) => item.command === "learnByDiff.chapterHasNoChanges",
+    );
+    expect(hint?.icon).toBe("$(pass)");
+    expect(hint?.enablement).toBe("false");
+    for (const suffix of nlsLocales) {
+      expect(commandTitle("learnByDiff.chapterHasNoChanges", loadNls(suffix))).not.toMatch(/^%/);
+    }
+    expect(
+      menuItems("commandPalette").find((item) => item.command === "learnByDiff.chapterHasNoChanges")
+        ?.when,
+    ).toBe("false");
+
+    const context = menuItems("view/item/context");
+    const hintItem = context.find(
+      (item) => item.command === "learnByDiff.chapterHasNoChanges" && item.group === "inline@3",
+    );
+    const finishItem = context.find(
+      (item) => item.command === "learnByDiff.applyChapterFinish" && item.group === "inline@3",
+    );
+    expect(viewItemPattern(hintItem)?.test("chapter-docs-unchanged")).toBe(true);
+    expect(viewItemPattern(hintItem)?.test("chapter-start-docs-unchanged")).toBe(true);
+    expect(viewItemPattern(finishItem)?.test("chapter-docs-unchanged")).toBe(false);
+    expect(viewItemPattern(finishItem)?.test("chapter-start-docs")).toBe(true);
   });
 
   test("view button titles omit the LearnByDiff prefix", () => {

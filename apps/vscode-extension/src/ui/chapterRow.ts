@@ -31,6 +31,32 @@ export function chapterRowIsExpandable(
 }
 
 /**
+ * Returns whether a chapter has no code changes between its start and goal.
+ *
+ * Author-declared `changedFiles` wins. An explicitly empty `entryFiles` list
+ * means there is nothing to compare. A finished from/to check that found no
+ * difference also counts; `undefined` while that check is still running does
+ * not, so the row keeps its actions until the result is known.
+ *
+ * @param entryFiles - Chapter `entryFiles`, or `undefined` to discover at runtime
+ * @param hasChanges - Whether from/to differ, or `undefined` while still loading
+ * @param changedFiles - Author-declared diffs, or `undefined` to classify at runtime
+ */
+export function chapterRowHasNoChanges(
+  entryFiles: string[] | undefined,
+  hasChanges: boolean | undefined,
+  changedFiles?: readonly ChapterChangedFile[],
+): boolean {
+  if (changedFiles !== undefined) {
+    return changedFiles.length === 0;
+  }
+  if (entryFiles !== undefined && entryFiles.length === 0) {
+    return true;
+  }
+  return hasChanges === false;
+}
+
+/**
  * Returns the codicon id for an applied chapter status.
  *
  * Matches the Not Started (`circle-large`) and Completed (`pass`) action

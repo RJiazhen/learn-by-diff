@@ -1,6 +1,10 @@
 import type { ChapterChangedFile } from "@learn-by-diff/protocol";
 import { describe, expect, test } from "vite-plus/test";
-import { chapterRowIsExpandable, chapterStatusIconId } from "../src/ui/chapterRow.ts";
+import {
+  chapterRowHasNoChanges,
+  chapterRowIsExpandable,
+  chapterStatusIconId,
+} from "../src/ui/chapterRow.ts";
 
 const oneChange: ChapterChangedFile[] = [{ path: "a.ts", kind: "M" }];
 
@@ -28,6 +32,24 @@ describe("chapterRowIsExpandable", () => {
   test("keeps the chevron when the chapter has at least one from/to diff", () => {
     expect(chapterRowIsExpandable(undefined, true)).toBe(true);
     expect(chapterRowIsExpandable(["a.ts"], true)).toBe(true);
+  });
+});
+
+describe("chapterRowHasNoChanges", () => {
+  test("uses author-declared changedFiles when present", () => {
+    expect(chapterRowHasNoChanges(["a.ts"], true, [])).toBe(true);
+    expect(chapterRowHasNoChanges([], false, oneChange)).toBe(false);
+  });
+
+  test("treats an explicitly empty entryFiles list as no changes", () => {
+    expect(chapterRowHasNoChanges([], undefined)).toBe(true);
+  });
+
+  test("uses a finished from/to check and keeps pending checks unknown", () => {
+    expect(chapterRowHasNoChanges(undefined, false)).toBe(true);
+    expect(chapterRowHasNoChanges(undefined, true)).toBe(false);
+    expect(chapterRowHasNoChanges(undefined, undefined)).toBe(false);
+    expect(chapterRowHasNoChanges(["a.ts"], undefined)).toBe(false);
   });
 });
 

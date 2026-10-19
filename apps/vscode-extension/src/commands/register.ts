@@ -624,6 +624,20 @@ export function registerCommands(
   );
 
   /**
+   * Placeholder handler for the disabled hint shown where Completed would be.
+   *
+   * The command is always disabled (`enablement: "false"`); unchanged chapter rows
+   * use its title as the hover explanation, so the UI never invokes it.
+   */
+  function onChapterHasNoChanges(): void {
+    // No-op: `enablement` keeps the action disabled; its title carries the hint.
+  }
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("learnByDiff.chapterHasNoChanges", onChapterHasNoChanges),
+  );
+
+  /**
    * Loads the session for a chapter tree item, or returns undefined after a warning.
    *
    * @param item - Explorer chapter row

@@ -12,6 +12,7 @@
   "learnByDiff.installGenerateCourseSkill.title": "コース生成 Skill をインストール",
   "learnByDiff.applyChapterStart.title": "未開始",
   "learnByDiff.applyChapterFinish.title": "完了",
+  "learnByDiff.chapterHasNoChanges.title": "この章にはコードの変更がありません",
   "learnByDiff.openChapterDocs.title": "章のドキュメントを開く",
   "learnByDiff.openChapterStartFolder.title": "未開始フォルダーを開く",
   "learnByDiff.openChapterFinishFolder.title": "完了フォルダーを開く",
