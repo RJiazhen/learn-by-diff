@@ -2,6 +2,7 @@ import type { ChapterChangedFile } from "@learn-by-diff/protocol";
 import { describe, expect, test } from "vite-plus/test";
 import {
   chapterRowHasNoChanges,
+  chapterRowIconId,
   chapterRowIsExpandable,
   chapterStatusIconId,
 } from "../src/ui/chapterRow.ts";
@@ -57,5 +58,16 @@ describe("chapterStatusIconId", () => {
   test("uses the Not Started and Completed action icons", () => {
     expect(chapterStatusIconId("start")).toBe("circle-large");
     expect(chapterStatusIconId("finish")).toBe("pass");
+  });
+});
+
+describe("chapterRowIconId", () => {
+  test("shows the applied status icon on the current chapter", () => {
+    expect(chapterRowIconId("start")).toBe("circle-large");
+    expect(chapterRowIconId("finish")).toBe("pass");
+  });
+
+  test("gives every other chapter the neutral chapter marker", () => {
+    expect(chapterRowIconId(undefined)).toBe("mortar-board");
   });
 });

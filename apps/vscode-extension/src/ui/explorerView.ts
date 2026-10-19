@@ -22,11 +22,7 @@ import type { LearningSession } from "../workspace/loader.ts";
 import { learningPaths } from "../workspace/paths.ts";
 import { chapterOrdinal, currentChapter } from "../workspace/session.ts";
 import { appliedSnapshotSide, type ChapterSnapshotSide } from "../workspace/state.ts";
-import {
-  chapterRowHasNoChanges,
-  chapterRowIsExpandable,
-  chapterStatusIconId,
-} from "./chapterRow.ts";
+import { chapterRowHasNoChanges, chapterRowIconId, chapterRowIsExpandable } from "./chapterRow.ts";
 import { localizedSnapshotStatus } from "./labels.ts";
 
 /** URI scheme used to decorate chapter rows. */
@@ -705,6 +701,10 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
    * and carry an `-unchanged` `contextValue` token, which swaps the Completed
    * action for a disabled hint that says the chapter has no changes.
    *
+   * Every row gets an icon, chevron or not: the applied chapter shows its status
+   * icon and the others a neutral chapter marker, so titles keep one left edge
+   * across row kinds and while the applied chapter changes.
+   *
    * @param chapter - Chapter config
    * @param appliedSide - Snapshot side when this chapter is applied to the student tree
    * @param index - Zero-based chapter index
@@ -749,9 +749,8 @@ export class CourseTreeProvider implements vscode.TreeDataProvider<CourseTreeIte
     } else {
       item.contextValue = `chapter${sideToken}${unchangedToken}`;
     }
-    if (appliedSide !== undefined) {
-      item.iconPath = new vscode.ThemeIcon(chapterStatusIconId(appliedSide));
-    }
+    const iconId = chapterRowIconId(appliedSide);
+    item.iconPath = new vscode.ThemeIcon(iconId);
     item.tooltip = `${ordinal}-${chapter.title}${
       status === undefined ? "" : ` (${status})`
     }${hasDocs ? `\n${vscode.l10n.t("Docs: {0}", chapter.docs ?? "")}` : ""}`;

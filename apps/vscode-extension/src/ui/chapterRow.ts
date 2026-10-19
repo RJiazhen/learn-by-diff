@@ -68,3 +68,27 @@ export function chapterRowHasNoChanges(
 export function chapterStatusIconId(side: ChapterSnapshotSide): "circle-large" | "pass" {
   return side === "finish" ? "pass" : "circle-large";
 }
+
+/**
+ * Codicon for a chapter that is not the applied one.
+ *
+ * A neutral course-chapter marker, deliberately distinct from the Not Started
+ * (`circle-large`) and Completed (`pass`) status icons so the leading slot never
+ * reads as a status the chapter does not have.
+ */
+const CHAPTER_ROW_ICON = "mortar-board";
+
+/**
+ * Returns the codicon id for the leading slot of a chapter row.
+ *
+ * Every chapter row gets an icon, expandable or not. A current chapter shows
+ * its applied status icon; any other chapter shows a neutral chapter marker.
+ * VS Code drops the twistie column on non-collapsible rows, so setting an icon
+ * unconditionally keeps one title edge across row kinds and while the applied
+ * chapter changes.
+ *
+ * @param side - Snapshot side when this chapter is applied, or `undefined`
+ */
+export function chapterRowIconId(side: ChapterSnapshotSide | undefined): string {
+  return side === undefined ? CHAPTER_ROW_ICON : chapterStatusIconId(side);
+}
