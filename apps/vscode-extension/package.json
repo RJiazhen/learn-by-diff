@@ -112,6 +112,12 @@
         "enablement": "!(viewItem =~ /^chapter-finish(-docs)?$/) || learnByDiff.studentHasEdits"
       },
       {
+        "command": "learnByDiff.chapterHasNoChanges",
+        "title": "%learnByDiff.chapterHasNoChanges.title%",
+        "icon": "$(pass)",
+        "enablement": "false"
+      },
+      {
         "command": "learnByDiff.openChapterDocs",
         "title": "%learnByDiff.openChapterDocs.title%",
         "icon": "$(book)"
@@ -232,12 +238,12 @@
       "view/item/context": [
         {
           "command": "learnByDiff.openChapterDocs",
-          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?-docs$/",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?-docs(-unchanged)?$/",
           "group": "inline@1"
         },
         {
           "command": "learnByDiff.applyChapterStart",
-          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?(-unchanged)?$/",
           "group": "inline@2"
         },
         {
@@ -246,13 +252,18 @@
           "group": "inline@3"
         },
         {
+          "command": "learnByDiff.chapterHasNoChanges",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?-unchanged$/",
+          "group": "inline@3"
+        },
+        {
           "submenu": "learnByDiff.chapterMore",
-          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?(-unchanged)?$/",
           "group": "inline@4"
         },
         {
           "command": "learnByDiff.applyChapterStart",
-          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?(-unchanged)?$/",
           "group": "navigation@1"
         },
         {
@@ -262,29 +273,29 @@
         },
         {
           "command": "learnByDiff.openChapterDocs",
-          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?-docs$/",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?-docs(-unchanged)?$/",
           "group": "navigation@3"
         },
         {
           "command": "learnByDiff.openChapterStartFolder",
-          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?(-unchanged)?$/",
           "group": "navigation@4"
         },
         {
           "command": "learnByDiff.openChapterFinishFolder",
-          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?(-unchanged)?$/",
           "group": "navigation@5"
         }
       ],
       "learnByDiff.chapterMore": [
         {
           "command": "learnByDiff.openChapterStartFolder",
-          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?(-unchanged)?$/",
           "group": "navigation@1"
         },
         {
           "command": "learnByDiff.openChapterFinishFolder",
-          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?$/",
+          "when": "view == learnByDiff.courseView && viewItem =~ /^chapter(-start|-finish)?(-docs)?(-unchanged)?$/",
           "group": "navigation@2"
         }
       ],
@@ -315,6 +326,10 @@
         },
         {
           "command": "learnByDiff.applyChapterFinish",
+          "when": "false"
+        },
+        {
+          "command": "learnByDiff.chapterHasNoChanges",
           "when": "false"
         },
         {

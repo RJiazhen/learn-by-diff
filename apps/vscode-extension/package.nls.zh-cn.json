@@ -12,6 +12,7 @@
   "learnByDiff.installGenerateCourseSkill.title": "安装生成课程 Skill",
   "learnByDiff.applyChapterStart.title": "未开始",
   "learnByDiff.applyChapterFinish.title": "已完成",
+  "learnByDiff.chapterHasNoChanges.title": "本章没有代码改动",
   "learnByDiff.openChapterDocs.title": "打开章节文档",
   "learnByDiff.openChapterStartFolder.title": "打开未开始文件夹",
   "learnByDiff.openChapterFinishFolder.title": "打开已完成文件夹",
